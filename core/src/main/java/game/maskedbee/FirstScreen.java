@@ -50,9 +50,9 @@ public class FirstScreen implements Screen {
         Table table = new Table();
         table.setFillParent(true);
 
-        table.add(startbtn).padBottom(20).row();
-        table.add(settingbtn).padBottom(20).row();
-        table.add(quitbtn);
+        table.add(startbtn).width(200).height(60).padBottom(20).row();
+        table.add(settingbtn).width(200).height(60).padBottom(20).row();
+        table.add(quitbtn).width(200).height(60);
 
         stage.addActor(table);
 
