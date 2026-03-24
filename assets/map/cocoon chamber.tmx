@@ -28,7 +28,7 @@
 0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="16" name="Wax_texture" width="11" height="8">
+ <layer id="16" name="Wax_Texture" width="11" height="8">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,
 0,301,302,303,304,305,306,307,308,309,0,
