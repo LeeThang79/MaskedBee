@@ -98,7 +98,7 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="14" name="Exit">
+ <objectgroup id="14" name="ritual_chamber">
   <object id="134" name="exit_to_ritual" x="336" y="146">
    <point/>
   </object>
