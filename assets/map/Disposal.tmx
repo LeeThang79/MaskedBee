@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="11" height="11" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="13">
+ <tileset firstgid="1" source="wallfloor.tsx"/>
+ <tileset firstgid="301" source="wax_texture.tsx"/>
+ <tileset firstgid="319" source="bookself.tsx"/>
+ <tileset firstgid="643" source="floor_paid.tsx"/>
+ <tileset firstgid="741" source="stone.tsx"/>
+ <tileset firstgid="765" source="wall_paid.tsx"/>
+ <layer id="1" name="Wall" width="11" height="11">
+  <data encoding="csv">
+28,23,23,23,23,23,23,23,23,23,27,
+6,42,42,42,42,42,42,42,42,42,26,
+6,43,43,43,43,43,43,43,43,43,26,
+6,0,0,0,0,0,0,0,0,0,26,
+6,0,0,0,0,0,0,0,0,0,26,
+6,0,0,0,0,0,0,0,0,0,26,
+6,0,0,0,0,0,0,0,0,0,26,
+6,0,0,0,0,0,0,0,0,0,26,
+6,0,0,0,0,0,0,0,0,0,26,
+6,0,0,0,0,0,0,0,0,0,26,
+8,2,2,2,2,2,2,2,2,2,7
+</data>
+ </layer>
+ <layer id="2" name="Floor" width="11" height="11">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,41,41,41,41,41,41,41,41,41,0,
+0,41,41,41,41,41,41,41,41,41,0,
+0,41,41,41,41,41,41,41,41,41,0,
+0,41,41,41,41,41,41,41,41,41,0,
+0,41,41,41,41,41,41,41,41,41,0,
+0,41,41,41,41,41,41,41,41,41,0,
+0,41,41,41,41,41,41,41,41,41,0,
+0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="4" name="Stair">
+  <object id="7" gid="5" x="64" y="128" width="32" height="32"/>
+ </objectgroup>
+ <objectgroup id="5" name="Floor_Switch">
+  <object id="8" gid="46" x="288" y="288" width="32" height="32"/>
+ </objectgroup>
+ <objectgroup id="3" name="Door">
+  <object id="1" gid="45" x="160" y="64" width="32" height="32"/>
+  <object id="2" gid="25" x="160" y="32" width="32" height="32"/>
+ </objectgroup>
+ <objectgroup id="7" name="Floor_Hide">
+  <object id="11" gid="41" x="64" y="128" width="32" height="32"/>
+ </objectgroup>
+</map>
