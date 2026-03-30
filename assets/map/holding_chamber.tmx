@@ -41,7 +41,7 @@
   <object id="4" gid="190" x="160" y="94" width="32" height="32"/>
   <object id="5" gid="210" x="160" y="125.957" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="5" name="Ritual_Chamber">
+ <objectgroup id="5" name="ritual_chamber">
   <object id="6" name="Ritual_Chamber" x="176.5" y="247.5">
    <point/>
   </object>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="1">
+ <tileset firstgid="1" source="floor_paid.tsx"/>
+ <tileset firstgid="99" source="wall_paid.tsx"/>
+ <layer id="1" name="Wall" width="8" height="8">
+  <data encoding="csv">
+103,104,104,104,104,104,104,105,
+117,222,222,222,222,222,222,119,
+117,255,255,255,255,255,255,119,
+117,0,0,0,0,0,0,119,
+117,0,0,0,0,0,0,119,
+117,0,0,0,0,0,0,119,
+117,0,0,0,0,0,0,119,
+131,132,132,132,132,132,132,133
+</data>
+ </layer>
+ <layer id="2" name="Floor" width="8" height="8">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,64,64,64,64,64,64,0,
+0,64,64,64,64,64,64,0,
+0,64,64,64,64,64,64,0,
+0,64,64,64,64,64,64,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+</map>
