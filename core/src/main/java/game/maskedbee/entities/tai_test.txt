@@ -1,0 +1,46 @@
+package game.maskedbee.main;
+
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import game.maskedbee.entities.Player; // Dòng 1: Import class Player của bạn vào đây
+import game.maskedbee.screens.FirstScreen;
+
+public class CORE extends Game {
+    public SpriteBatch batch;
+
+    // Dòng 2: Khai báo 1 con nhân vật của bạn
+    public Player myPlayer;
+
+    @Override
+    public void create() {
+        batch = new SpriteBatch();
+
+        // Dòng 3: Khởi tạo nhân vật ở tọa độ x=100, y=100
+        myPlayer = new Player(100, 100);
+
+        // Giữ nguyên code của Thắng
+        this.setScreen(new FirstScreen(this));
+    }
+
+    @Override
+    public void render() {
+        // Giữ nguyên dòng này của Thắng (Dòng này sẽ vẽ cái nền của FirstScreen)
+        super.render();
+
+        // --- BẮT ĐẦU PHẦN CODE TEST CỦA TÀI ---
+        // Gọi hàm update để nhân vật tính toán di chuyển
+        myPlayer.update(Gdx.graphics.getDeltaTime());
+
+        // Mở cọ ra vẽ nhân vật đè lên trên cùng
+        batch.begin();
+        myPlayer.draw(batch);
+        batch.end();
+        // --- KẾT THÚC PHẦN CODE TEST ---
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
+    }
+}
