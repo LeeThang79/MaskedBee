@@ -1,26 +1,12 @@
 package game.maskedbee.main;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import game.maskedbee.screens.FirstScreen;
 
-/** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
-public class CORE extends Game {
-    public SpriteBatch batch;
+public class Core extends Game {
 
     @Override
-    public void create() {
-        batch = new SpriteBatch();
-        this.setScreen(new FirstScreen(this)); // Chuyển sang màn hình FirstScreen của Thắng
-    }
-
-    @Override
-    public void render() {
-        super.render();
-    }
-
-    @Override
-    public void dispose() {
-        batch.dispose();
+    public void create () {
+        setScreen(new GameScreen());
     }
 }
+
