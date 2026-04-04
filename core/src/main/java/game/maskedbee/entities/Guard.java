@@ -162,9 +162,21 @@ public class Guard {
         // GAME OVER CHECK
         // ==========================================
         if (this.hitbox.overlaps(player.hitbox)) {
-            player.x = 100; player.y = 100;
+            // 1. Phạt Player: Đưa về điểm xuất phát
+            player.x = 100;
+            player.y = 100;
             player.hitbox.setPosition(100, 100);
-            System.out.println("BỊ BẮT!!! QUAY LẠI TỪ ĐẦU!");
+
+            // 2. Reset Guard: Đưa Lính gác về vị trí cũ và bắt đi tuần lại từ đầu
+            this.x = this.startX;
+            this.y = this.startY;
+            this.hitbox.setPosition(startX, startY);
+
+            this.currentState = State.PATROL; // Quên chuyện vừa rượt đuổi đi
+            this.stuckTimer = 0f;             // Reset luôn cả đồng hồ nổi cáu
+            this.bypassTimer = 0f;
+
+            System.out.println("Ban da bi bat!");
         }
     }
 
