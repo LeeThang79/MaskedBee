@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="11" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="28">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="11" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="34">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
  <layer id="1" name="Ground" width="11" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,10,0,0,0,0,0,
+0,0,0,0,0,30,0,0,0,0,0,
 0,41,41,41,41,41,41,41,41,41,0,
 0,41,41,41,41,41,41,41,41,41,0,
 41,41,41,41,41,41,41,41,41,41,0,
@@ -28,11 +28,24 @@
 8,2,2,2,4,0,1,2,2,2,7
 </data>
  </layer>
- <layer id="3" name="Door" width="11" height="9">
+ <layer id="3" name="Door_Open" width="11" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,25,0,0,0,0,0,
-0,0,0,0,0,45,0,0,0,0,0,
+0,0,0,0,0,31,0,0,0,0,0,
+0,0,0,0,0,51,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="11" name="Door_Close" width="11" height="9">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,10,0,0,0,0,0,
+0,0,0,0,0,30,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,
@@ -72,18 +85,23 @@
   <object id="25" x="0.363636" y="192.182" width="27.3636" height="10.5455"/>
   <object id="26" x="0.0909091" y="149.455" width="28.7273" height="10.4545"/>
  </objectgroup>
- <objectgroup id="6" name="cocoon_chamber">
-  <object id="4" name="Cocoon_Chamber" x="15" y="177.5">
+ <objectgroup id="6" name="cocoon_Chamber">
+  <object id="30" name="cocoon_chamber.tmx" x="0" y="159.951" width="31.2362" height="31.7748"/>
+ </objectgroup>
+ <objectgroup id="7" name="Corridor_Chamber">
+  <object id="29" name="corridor.tmx" x="159.951" y="257.43" width="31.7748" height="29.6206"/>
+ </objectgroup>
+ <objectgroup id="8" name="holding_Chamber">
+  <object id="28" name="holding_chamber.tmx" x="163.721" y="71.6279" width="23.6965" height="24.7736"/>
+ </objectgroup>
+ <objectgroup id="10" name="SpawnPoints">
+  <object id="31" name="holding_chamber.tmx" x="175.031" y="100.171">
    <point/>
   </object>
- </objectgroup>
- <objectgroup id="7" name="Corridor">
-  <object id="7" name="Corridor" x="176" y="276.5">
+  <object id="32" name="cocoon_chamber.tmx" x="35.5447" y="172.338">
    <point/>
   </object>
- </objectgroup>
- <objectgroup id="8" name="holding_chamber">
-  <object id="10" name="Holding_Chamber" x="176" y="94">
+  <object id="33" name="corridor.tmx" x="175.569" y="250.428">
    <point/>
   </object>
  </objectgroup>

@@ -1,29 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="1">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="7" height="7" tilewidth="32" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="12">
  <tileset firstgid="1" source="floor_paid.tsx"/>
  <tileset firstgid="99" source="wall_paid.tsx"/>
- <layer id="1" name="Wall" width="8" height="8">
+ <tileset firstgid="295" source="wallfloor.tsx"/>
+ <layer id="1" name="Wall" width="7" height="7">
   <data encoding="csv">
-103,104,104,104,104,104,104,105,
-117,222,222,222,222,222,222,119,
-117,255,255,255,255,255,255,119,
-117,0,0,0,0,0,0,119,
-117,0,0,0,0,0,0,119,
-117,0,0,0,0,0,0,119,
-117,0,0,0,0,0,0,119,
-131,132,132,132,132,132,132,133
+103,104,104,104,104,104,105,
+117,222,222,222,222,222,119,
+117,255,255,222,255,255,119,
+117,0,0,0,0,0,119,
+117,0,0,0,0,0,119,
+117,0,0,0,0,0,119,
+131,132,132,132,132,132,133
 </data>
  </layer>
- <layer id="2" name="Floor" width="8" height="8">
+ <layer id="4" name="Ladder" width="7" height="7">
   <data encoding="csv">
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,
-0,64,64,64,64,64,64,0,
-0,64,64,64,64,64,64,0,
-0,64,64,64,64,64,64,0,
-0,64,64,64,64,64,64,0,
-0,0,0,0,0,0,0,0
+0,0,0,364,0,0,0,
+0,0,0,364,0,0,0,
+0,0,0,384,0,0,0,
+0,0,0,404,0,0,0,
+0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,
+0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="3" name="Wall_Collision">
+  <object id="1" x="22.7225" y="74.1053" width="77.392" height="22.6603"/>
+  <object id="3" x="190.928" y="70.4306" width="25.11" height="130.576"/>
+  <object id="4" x="11.9976" y="73.9306" width="17.7608" height="126.181"/>
+  <object id="5" x="24.4386" y="194.48" width="177.906" height="21.4354"/>
+  <object id="6" x="122.667" y="72.6667" width="73.3333" height="25.3333"/>
+  <object id="7" x="123.333" y="0.666667" width="26.6667" height="94.6667"/>
+  <object id="8" x="75.3333" y="-0.666667" width="26" height="94.6667"/>
+ </objectgroup>
+ <objectgroup id="5" name="Library_Chamber">
+  <object id="9" name="library.tmx" x="104" y="3.33333" width="16.6667" height="16.6667"/>
+ </objectgroup>
+ <objectgroup id="6" name="SpawnPoints">
+  <object id="11" name="library.tmx" x="112.667" y="24">
+   <point/>
+  </object>
+ </objectgroup>
+ <layer id="2" name="Floor" width="7" height="7">
+  <data encoding="csv">
+0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,
+0,64,64,64,64,64,0,
+0,64,64,64,64,64,0,
+0,64,64,64,64,64,0,
+0,0,0,0,0,0,0
 </data>
  </layer>
 </map>

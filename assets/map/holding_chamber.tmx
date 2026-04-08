@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="11" height="8" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="20">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="11" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="26">
  <tileset firstgid="1" source="wallfloor.tsx"/>
- <layer id="1" name="Wall" width="11" height="8">
+ <tileset firstgid="301" source="../../../../../map-demo/wallfloor.tsx"/>
+ <layer id="1" name="Wall" width="11" height="10">
   <data encoding="csv">
 28,23,23,23,23,23,23,23,23,23,27,
 6,42,42,42,42,42,42,42,42,42,26,
@@ -10,10 +11,12 @@
 6,0,0,0,0,0,0,0,0,0,26,
 6,0,0,0,0,0,0,0,0,0,26,
 6,0,0,0,0,0,0,0,0,0,26,
-8,3,3,3,4,0,1,3,3,3,7
+6,0,0,0,0,0,0,0,0,0,26,
+6,0,0,0,0,0,0,0,0,0,26,
+8,2,2,2,4,0,1,2,2,2,7
 </data>
  </layer>
- <layer id="2" name="Ground" width="11" height="8">
+ <layer id="2" name="Ground" width="11" height="10">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,
@@ -22,10 +25,12 @@
 0,41,41,41,41,41,41,41,41,41,0,
 0,41,41,41,41,41,41,41,41,41,0,
 0,41,41,41,41,41,41,41,41,41,0,
+0,41,41,41,41,41,41,41,41,41,0,
+0,41,41,41,41,41,41,41,41,41,0,
 0,0,0,0,0,41,0,0,0,0,0
 </data>
  </layer>
- <layer id="3" name="Jail" width="11" height="8">
+ <layer id="3" name="Jail" width="11" height="10">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,
@@ -34,30 +39,73 @@
 0,201,202,203,204,205,206,207,208,209,0,
 0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="4" name="Jail_Door">
-  <object id="4" gid="190" x="160" y="94" width="32" height="32"/>
-  <object id="5" gid="210" x="160" y="125.957" width="32" height="32"/>
- </objectgroup>
- <objectgroup id="5" name="ritual_chamber">
-  <object id="6" name="Ritual_Chamber" x="176.5" y="247.5">
-   <point/>
-  </object>
+ <layer id="11" name="Switch" width="11" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,148,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,126,128,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="12" name="Spike" width="11" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,169,167,145,169,145,0,145,169,0,
+0,0,0,169,167,167,167,145,167,169,0,
+0,0,0,0,169,169,169,168,169,0,0,
+0,0,0,0,0,0,0,168,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="13" name="Jail_Door" width="11" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,490,0,0,0,0,0,
+0,0,0,0,0,510,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="5" name="ritual_Chamber">
+  <object id="24" name="ritual_chamber.tmx" x="159.615" y="288.039" width="31.7748" height="31.7748"/>
  </objectgroup>
  <objectgroup id="6" name="Jail_Collision">
   <object id="9" x="29.75" y="150.5" width="130" height="7.25"/>
   <object id="10" x="191.875" y="150.83" width="130.625" height="6.79545"/>
  </objectgroup>
  <objectgroup id="8" name="Wall_Collision">
-  <object id="12" x="21" y="85.25" width="11" height="149.75"/>
-  <object id="13" x="20.75" y="224" width="139" height="31.0833"/>
-  <object id="14" x="192.5" y="224.375" width="139" height="31.0833"/>
-  <object id="16" x="320.045" y="89.8182" width="11" height="143"/>
+  <object id="12" x="21" y="85.25" width="11" height="215.75"/>
+  <object id="13" x="20.5227" y="288.5" width="139" height="31.0833"/>
+  <object id="14" x="191.955" y="288.527" width="139" height="31.0833"/>
+  <object id="16" x="320.045" y="89.8182" width="11" height="207"/>
   <object id="18" x="29.75" y="80" width="292" height="14.5"/>
  </objectgroup>
  <objectgroup id="7" name="Jail_Door_Collision">
   <object id="11" x="160" y="137.75" width="31.625" height="20.125"/>
+ </objectgroup>
+ <objectgroup id="9" name="SpawnPoints">
+  <object id="25" name="ritual_chamber.tmx" x="176.069" y="282.154">
+   <point/>
+  </object>
  </objectgroup>
 </map>
