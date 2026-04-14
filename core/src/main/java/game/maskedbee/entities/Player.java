@@ -1,4 +1,4 @@
-package game.maskedbee.entities;
+package entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -6,19 +6,24 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 public class Player {
-    // Tọa độ và tốc độ
+    // --- TỌA ĐỘ VÀ TỐC ĐỘ ---
     public float x, y;
     public float walkSpeed = 150f;
     public float creepSpeed = 70f;
+    public boolean isMoving = false;
 
-    // Các biến trạng thái
+    // --- VẬT LÝ VÀ VA CHẠM (HITBOX) ---
+    public Rectangle hitbox; // "Cái Hồn" (Khung vật lý thật sự)
+    private Rectangle futureHitbox = new Rectangle(); // Dùng để đi dò đường (Khắc phục lỗi tạo rác gây giật lag)
+
+    // --- TRẠNG THÁI ---
     private float stateTime = 0f;
     public boolean isCreeping = false;
-
-    // Quản lý hướng quay mặt
     public enum Direction { UP, DOWN, LEFT, RIGHT }
     private Direction currentDirection = Direction.DOWN; // Mới vào game cho quay mặt xuống
 
@@ -45,11 +50,12 @@ public class Player {
         this.x = startX;
         this.y = startY;
 
+        // Khởi tạo Khung vật lý (Giả sử nhân vật rộng 32px, cao 40px)
+        this.hitbox = new Rectangle(x, y, 32, 40);
+
         // ==========================================
         // 1. NẠP ẢNH ĐI BỘ (WALK)
         // ==========================================
-
-        // Đi ngang (Trái/Phải)
         Array<TextureRegion> walkSideFrames = new Array<>();
         walkSideFrames.add(new TextureRegion(new Texture("main/walk_1.png")));
         walkSideFrames.add(new TextureRegion(new Texture("main/walk_2.png")));
@@ -61,24 +67,21 @@ public class Player {
 
         // Đi lên (Tạm dùng hide_1.png đóng thế)
         Array<TextureRegion> walkUpFrames = new Array<>();
-        walkUpFrames.add(new TextureRegion(new Texture("main/hide_1.png")));
+        walkUpFrames.add(new TextureRegion(new Texture("main/hide_1.png"))); // Đóng thế
         walkUpFrames.add(new TextureRegion(new Texture("main/hide_1.png")));
         walkUpAnimation = new Animation<TextureRegion>(0.1f, walkUpFrames);
         idleUp = walkUpFrames.get(0);
 
         // Đi xuống (Tạm dùng walk_1.png đóng thế)
         Array<TextureRegion> walkDownFrames = new Array<>();
-        walkDownFrames.add(new TextureRegion(new Texture("main/walk_1.png")));
+        walkDownFrames.add(new TextureRegion(new Texture("main/walk_1.png"))); // Đóng thế
         walkDownFrames.add(new TextureRegion(new Texture("main/walk_1.png")));
         walkDownAnimation = new Animation<TextureRegion>(0.1f, walkDownFrames);
         idleDown = walkDownFrames.get(0);
 
-
         // ==========================================
         // 2. NẠP ẢNH RÓN RÉN (CREEP)
         // ==========================================
-
-        // Creep ngang (Trái/Phải)
         Array<TextureRegion> creepSideFrames = new Array<>();
         creepSideFrames.add(new TextureRegion(new Texture("main/creep_1.png")));
         creepSideFrames.add(new TextureRegion(new Texture("main/creep_2.png")));
@@ -90,38 +93,35 @@ public class Player {
 
         // Creep lên (Tạm dùng hide_1.png đóng thế - Chờ Thảo vẽ)
         Array<TextureRegion> creepUpFrames = new Array<>();
-        creepUpFrames.add(new TextureRegion(new Texture("main/hide_1.png")));
+        creepUpFrames.add(new TextureRegion(new Texture("main/hide_1.png"))); // Đóng thế
         creepUpFrames.add(new TextureRegion(new Texture("main/hide_1.png")));
         creepUpAnimation = new Animation<TextureRegion>(0.15f, creepUpFrames);
         idleCreepUp = creepUpFrames.get(0);
 
         // Creep xuống (Tạm dùng creep_1.png đóng thế - Chờ Thảo vẽ)
         Array<TextureRegion> creepDownFrames = new Array<>();
-        creepDownFrames.add(new TextureRegion(new Texture("main/creep_1.png")));
+        creepDownFrames.add(new TextureRegion(new Texture("main/creep_1.png"))); // Đóng thế
         creepDownFrames.add(new TextureRegion(new Texture("main/creep_1.png")));
         creepDownAnimation = new Animation<TextureRegion>(0.15f, creepDownFrames);
         idleCreepDown = creepDownFrames.get(0);
     }
 
-    public void update(float deltaTime) {
-        // Cập nhật đồng hồ thời gian cho Animation
+    public void update(float deltaTime, Array<Rectangle> walls) {
         stateTime += deltaTime;
 
-        // 1. Kiểm tra xem có đang giữ phím Ctrl không
+        // 1. Kiểm tra phím Rón rén
         isCreeping = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
-
-        // Chốt tốc độ hiện tại
         float currentSpeed = isCreeping ? creepSpeed : walkSpeed;
 
-        // 2. Kiểm tra phím bấm (Độc lập từng trục để đi chéo được)
+        // 2. Nhận lệnh di chuyển
         boolean isLeft = Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A);
         boolean isRight = Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D);
         boolean isUp = Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W);
         boolean isDown = Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S);
 
-        float moveX = 0;
-        float moveY = 0;
+        isMoving = isLeft || isRight || isUp || isDown; //Gán giá trị cho isMoving
 
+        float moveX = 0, moveY = 0;
         if (isLeft) moveX -= 1;
         if (isRight) moveX += 1;
         if (isUp) moveY += 1;
@@ -138,71 +138,81 @@ public class Player {
             currentDirection = Direction.DOWN;
         }
 
-        // 4. Công thức toán học: Ghìm tốc độ khi đi chéo
+        // 4. Chuẩn hóa tốc độ đi chéo
         if (moveX != 0 && moveY != 0) {
             moveX *= 0.707f;
             moveY *= 0.707f;
         }
 
-        // 5. Cập nhật tọa độ thật của nhân vật
-        x += moveX * currentSpeed * deltaTime;
-        y += moveY * currentSpeed * deltaTime;
+        // 5. VẬT LÝ VÀ VA CHẠM (Hitbox đi dò đường)
+        float stepX = moveX * currentSpeed * deltaTime;
+        float stepY = moveY * currentSpeed * deltaTime;
+
+        // --- CHECK TRỤC X (NGANG) ---
+        futureHitbox.set(hitbox.x + stepX, hitbox.y, hitbox.width, hitbox.height);
+        boolean canMoveX = true;
+        for (Rectangle wall : walls) {
+            if (futureHitbox.overlaps(wall)) {
+                canMoveX = false;
+                break;
+            }
+        }
+        if (canMoveX) {
+            x += stepX;         // Xác đi
+            hitbox.x = x;       // Hồn đi theo
+        }
+
+        // --- CHECK TRỤC Y (DỌC) ---
+        futureHitbox.set(hitbox.x, hitbox.y + stepY, hitbox.width, hitbox.height);
+        boolean canMoveY = true;
+        for (Rectangle wall : walls) {
+            if (futureHitbox.overlaps(wall)) {
+                canMoveY = false;
+                break;
+            }
+        }
+        if (canMoveY) {
+            y += stepY;         // Xác đi
+            hitbox.y = y;       // Hồn đi theo
+        }
+
+        // 6. GIỚI HẠN BẢN ĐỒ (Không cho lọt ra khỏi viền màn hình)
+        float mapWidth = 352f;
+        float mapHeight = 256f;
+
+        x = MathUtils.clamp(x, 0, mapWidth - hitbox.width);
+        y = MathUtils.clamp(y, 0, mapHeight - hitbox.height);
+
+        // Chốt vị trí cuối cùng để Xác và Hồn luôn khớp nhau 100%
+        hitbox.setPosition(x, y);
     }
 
     public void draw(SpriteBatch batch) {
         TextureRegion currentFrame = idleDown;
 
-        // Kiểm tra xem nhân vật có đang di chuyển không
-        boolean isMoving = Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)
-            || Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)
-            || Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)
-            || Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S);
-
-        // Quyết định vẽ bức ảnh nào dựa trên HƯỚNG MẶT
         switch (currentDirection) {
             case UP:
-                if (isMoving) {
-                    currentFrame = isCreeping ? creepUpAnimation.getKeyFrame(stateTime, true) : walkUpAnimation.getKeyFrame(stateTime, true);
-                } else {
-                    // NẾU ĐỨNG IM: Kiểm tra xem có đang giữ Ctrl không để chọn dáng đứng
-                    currentFrame = isCreeping ? idleCreepUp : idleUp;
-                }
+                if (isMoving) currentFrame = isCreeping ? creepUpAnimation.getKeyFrame(stateTime, true) : walkUpAnimation.getKeyFrame(stateTime, true);
+                else currentFrame = isCreeping ? idleCreepUp : idleUp;
                 break;
 
             case DOWN:
-                if (isMoving) {
-                    currentFrame = isCreeping ? creepDownAnimation.getKeyFrame(stateTime, true) : walkDownAnimation.getKeyFrame(stateTime, true);
-                } else {
-                    currentFrame = isCreeping ? idleCreepDown : idleDown;
-                }
+                if (isMoving) currentFrame = isCreeping ? creepDownAnimation.getKeyFrame(stateTime, true) : walkDownAnimation.getKeyFrame(stateTime, true);
+                else currentFrame = isCreeping ? idleCreepDown : idleDown;
                 break;
 
             case LEFT:
-                if (isMoving) {
-                    currentFrame = isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true);
-                } else {
-                    currentFrame = isCreeping ? idleCreepSide : idleSide;
-                }
-                // Lật ảnh nếu cần
-                if (!currentFrame.isFlipX()) {
-                    currentFrame.flip(true, false);
-                }
+                if (isMoving) currentFrame = isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true);
+                else currentFrame = isCreeping ? idleCreepSide : idleSide;
+                if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
                 break;
 
             case RIGHT:
-                if (isMoving) {
-                    currentFrame = isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true);
-                } else {
-                    currentFrame = isCreeping ? idleCreepSide : idleSide;
-                }
-                // Lật ảnh nếu cần
-                if (currentFrame.isFlipX()) {
-                    currentFrame.flip(true, false);
-                }
+                if (isMoving) currentFrame = isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true);
+                else currentFrame = isCreeping ? idleCreepSide : idleSide;
+                if (currentFrame.isFlipX()) currentFrame.flip(true, false);
                 break;
         }
-
-        // Vẽ ảnh ra màn hình
         batch.draw(currentFrame, x, y);
     }
 }

@@ -1,4 +1,4 @@
-package game.maskedbee.screens;
+package screens;
 
 public class EndingScreen {
 }

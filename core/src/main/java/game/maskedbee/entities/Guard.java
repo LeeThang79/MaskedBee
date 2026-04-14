@@ -1,4 +1,4 @@
-package game.maskedbee.entities;
+package entities;
 
 public class Guard {
 }

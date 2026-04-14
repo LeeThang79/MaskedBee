@@ -1,4 +1,4 @@
-package game.maskedbee.screens;
+package screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -9,20 +9,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import game.maskedbee.main.CORE;
+import main.CORE;
 
 public class FirstScreen implements Screen {
     private final CORE game;
-    public SpriteBatch batch;
     private Stage stage;
     private Viewport viewport;
     private OrthographicCamera camera;
-
     private Texture background;
     private Texture masked;
     private Texture newGame;
@@ -51,19 +48,18 @@ public class FirstScreen implements Screen {
         quit = new Texture("menu/quit.png");
         pointer = new Texture("menu/pointer.png");
         background = new Texture("menu/menu_background.png");
-        batch = new SpriteBatch();
 
         // 3. Tạo Table để sắp xếp và căn chỉnh giao diện
         Table mainTable = new Table();
         mainTable.setFillParent(true); // Table bao phủ toàn bộ màn hình
         mainTable.left(); // Căn chỉnh menu ở giữa chiều cao và bên trái
-        mainTable.padLeft(179); // Thêm lề trái lớn một chút để menu không dính mép
+        mainTable.padLeft(120); // Thêm lề trái lớn một chút để menu không dính mép
 
         // 4. Thêm nút tiêu đề (MASKED)
         Image maskedImage = new Image(masked);
-        maskedImage.setScale(2f);
+        maskedImage.setScale(2.5f);
         // Cách các nút dưới 60px, xuống dòng
-        mainTable.add(maskedImage).left().padBottom(60).row();
+        mainTable.add(maskedImage).left().padLeft(35).padBottom(50).row();
 
         mainTable.add(createMenuOption(newGame, "NEW GAME", new ClickListener() {
             @Override
@@ -98,11 +94,13 @@ public class FirstScreen implements Screen {
 
         final Image textImage = new Image(text);
         textImage.setName(name); // Thêm tên để dễ debug
-        textImage.setScale(1.2f);
+        //Set lại scale cho pointer
+        float scaledWidth = text.getWidth() * 1.9f;
+        float scaledHeight = text.getHeight() * 1.9f;
 
         // Thêm Mũi tên và Text vào Table nhỏ, cách nhau 15px
-        optionTable.add(pointerImage).size(20, 20).padRight(15); // Kích thước pointer pixel art
-        optionTable.add(textImage).left(); // Text căn trái
+        optionTable.add(pointerImage).size(20, 20).padRight(15).center(); // Kích thước pointer pixel art
+        optionTable.add(textImage).size(scaledWidth,scaledHeight).left().center(); // Text căn trái
 
         // Thêm tương tác di chuột (Hover) cho textImage
         textImage.addListener(new ClickListener() {
@@ -129,9 +127,9 @@ public class FirstScreen implements Screen {
     public void render(float delta) {
         ScreenUtils.clear(0, 0, 0, 1);
 
-        batch.begin();
-        batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.end();
+        game.batch.begin();
+        game.batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        game.batch.end();
 
         stage.act(delta);
         stage.draw();
