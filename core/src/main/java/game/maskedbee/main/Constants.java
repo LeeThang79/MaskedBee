@@ -1,4 +1,4 @@
-package game.maskedbee.main;
+package main;
 
 public class Constants {
 }

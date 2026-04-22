@@ -1,4 +1,4 @@
-package game.maskedbee.entities;
+package entities;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -8,13 +8,21 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 public class Player {
     // --- TỌA ĐỘ VÀ TỐC ĐỘ ---
+    // --- TỌA ĐỘ VÀ TỐC ĐỘ ---
     public float x, y;
     public float walkSpeed = 150f;
     public float creepSpeed = 70f;
+    public boolean isMoving = false;
+
+    // --- VẬT LÝ VÀ VA CHẠM (HITBOX) ---
+    public Rectangle hitbox; // "Cái Hồn" (Khung vật lý thật sự)
+    private Rectangle futureHitbox = new Rectangle(); // Dùng để đi dò đường (Khắc phục lỗi tạo rác gây giật lag)
 
     // --- VẬT LÝ VÀ VA CHẠM (HITBOX) ---
     public Rectangle hitbox; // "Cái Hồn" (Khung vật lý thật sự)
@@ -41,6 +49,9 @@ public class Player {
         // Khởi tạo Khung vật lý (Giả sử nhân vật rộng 32px, cao 40px)
         this.hitbox = new Rectangle(x, y, 32, 40);
 
+        // Khởi tạo Khung vật lý (Giả sử nhân vật rộng 32px, cao 40px)
+        this.hitbox = new Rectangle(x, y, 32, 40);
+
         // ==========================================
         // 1. NẠP ẢNH ĐI BỘ (WALK)
         // ==========================================
@@ -55,11 +66,13 @@ public class Player {
 
         Array<TextureRegion> walkUpFrames = new Array<>();
         walkUpFrames.add(new TextureRegion(new Texture("main/hide_1.png"))); // Đóng thế
+        walkUpFrames.add(new TextureRegion(new Texture("main/hide_1.png"))); // Đóng thế
         walkUpFrames.add(new TextureRegion(new Texture("main/hide_1.png")));
         walkUpAnimation = new Animation<TextureRegion>(0.1f, walkUpFrames);
         idleUp = walkUpFrames.get(0);
 
         Array<TextureRegion> walkDownFrames = new Array<>();
+        walkDownFrames.add(new TextureRegion(new Texture("main/walk_1.png"))); // Đóng thế
         walkDownFrames.add(new TextureRegion(new Texture("main/walk_1.png"))); // Đóng thế
         walkDownFrames.add(new TextureRegion(new Texture("main/walk_1.png")));
         walkDownAnimation = new Animation<TextureRegion>(0.1f, walkDownFrames);
@@ -79,11 +92,13 @@ public class Player {
 
         Array<TextureRegion> creepUpFrames = new Array<>();
         creepUpFrames.add(new TextureRegion(new Texture("main/hide_1.png"))); // Đóng thế
+        creepUpFrames.add(new TextureRegion(new Texture("main/hide_1.png"))); // Đóng thế
         creepUpFrames.add(new TextureRegion(new Texture("main/hide_1.png")));
         creepUpAnimation = new Animation<TextureRegion>(0.15f, creepUpFrames);
         idleCreepUp = creepUpFrames.get(0);
 
         Array<TextureRegion> creepDownFrames = new Array<>();
+        creepDownFrames.add(new TextureRegion(new Texture("main/creep_1.png"))); // Đóng thế
         creepDownFrames.add(new TextureRegion(new Texture("main/creep_1.png"))); // Đóng thế
         creepDownFrames.add(new TextureRegion(new Texture("main/creep_1.png")));
         creepDownAnimation = new Animation<TextureRegion>(0.15f, creepDownFrames);
@@ -91,12 +106,15 @@ public class Player {
     }
 
     public void update(float deltaTime, Array<Rectangle> walls) {
+    public void update(float deltaTime, Array<Rectangle> walls) {
         stateTime += deltaTime;
 
+        // 1. Kiểm tra phím Rón rén
         // 1. Kiểm tra phím Rón rén
         isCreeping = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
         float currentSpeed = isCreeping ? creepSpeed : walkSpeed;
 
+        // 2. Nhận lệnh di chuyển
         // 2. Nhận lệnh di chuyển
         boolean isLeft = Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A);
         boolean isRight = Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D);
@@ -115,6 +133,7 @@ public class Player {
         else if (moveY > 0) currentDirection = Direction.UP;
         else if (moveY < 0) currentDirection = Direction.DOWN;
 
+        // 4. Chuẩn hóa tốc độ đi chéo
         // 4. Chuẩn hóa tốc độ đi chéo
         if (moveX != 0 && moveY != 0) {
             moveX *= 0.707f;
@@ -173,9 +192,13 @@ public class Player {
             case UP:
                 if (isMoving) currentFrame = isCreeping ? creepUpAnimation.getKeyFrame(stateTime, true) : walkUpAnimation.getKeyFrame(stateTime, true);
                 else currentFrame = isCreeping ? idleCreepUp : idleUp;
+                if (isMoving) currentFrame = isCreeping ? creepUpAnimation.getKeyFrame(stateTime, true) : walkUpAnimation.getKeyFrame(stateTime, true);
+                else currentFrame = isCreeping ? idleCreepUp : idleUp;
                 break;
 
             case DOWN:
+                if (isMoving) currentFrame = isCreeping ? creepDownAnimation.getKeyFrame(stateTime, true) : walkDownAnimation.getKeyFrame(stateTime, true);
+                else currentFrame = isCreeping ? idleCreepDown : idleDown;
                 if (isMoving) currentFrame = isCreeping ? creepDownAnimation.getKeyFrame(stateTime, true) : walkDownAnimation.getKeyFrame(stateTime, true);
                 else currentFrame = isCreeping ? idleCreepDown : idleDown;
                 break;
@@ -184,9 +207,15 @@ public class Player {
                 if (isMoving) currentFrame = isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true);
                 else currentFrame = isCreeping ? idleCreepSide : idleSide;
                 if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
+                if (isMoving) currentFrame = isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true);
+                else currentFrame = isCreeping ? idleCreepSide : idleSide;
+                if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
                 break;
 
             case RIGHT:
+                if (isMoving) currentFrame = isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true);
+                else currentFrame = isCreeping ? idleCreepSide : idleSide;
+                if (currentFrame.isFlipX()) currentFrame.flip(true, false);
                 if (isMoving) currentFrame = isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true);
                 else currentFrame = isCreeping ? idleCreepSide : idleSide;
                 if (currentFrame.isFlipX()) currentFrame.flip(true, false);
