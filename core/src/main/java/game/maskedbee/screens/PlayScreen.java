@@ -1,4 +1,4 @@
-package screens;
+package game.maskedbee.screens;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -14,15 +14,14 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import entities.Player;
-import main.CORE;
+import game.maskedbee.entities.Player;
+import game.maskedbee.main.CORE;
 
 public class PlayScreen implements Screen {
     public final CORE game;
     public Player myPlayer;
     private OrthographicCamera camera;
     private Viewport viewport;
-
     public enum GameState {
         RUNNING, PAUSE
     }
@@ -38,8 +37,7 @@ public class PlayScreen implements Screen {
         this.camera = new OrthographicCamera();
 
         this.viewport = new FitViewport(352, 256, camera);
-
-        this.myPlayer = new Player(0,0);
+        this.myPlayer = new Player(0f, 0f);
 
         this.shapeRender = new ShapeRenderer();
         this.font = new BitmapFont();
@@ -56,7 +54,7 @@ public class PlayScreen implements Screen {
         if(spawn != null) {
             myPlayer.x = spawn.x;
             myPlayer.y = spawn.y;
-            myPlayer.hitbox.setPosition(spawn.x,spawn.y);
+            myPlayer.hitbox.setPosition(spawn.x, spawn.y);
         }
     }
 
@@ -67,11 +65,11 @@ public class PlayScreen implements Screen {
         }
 
         if (state == GameState.RUNNING) {
-            // Cập nhật nhân vật
-            myPlayer.update(delta, new Array<Rectangle>());
+            this.myPlayer.update(delta, game.map.getWallCollision());
             camera.position.set(myPlayer.x, myPlayer.y, 0);
             camera.update();
 
+            // 3. Xử lý chuyển Map (Portal)
             String nextMap = game.map.checkPortal(myPlayer.hitbox);
             if (nextMap != null) {
                 game.map.loadMap(nextMap);
@@ -86,100 +84,70 @@ public class PlayScreen implements Screen {
             }
 
         } else if (state == GameState.PAUSE) {
-            // Cập nhật tọa độ nút bấm theo vị trí hiện tại của camera
             float centerX = camera.position.x;
             float centerY = camera.position.y;
 
             continueBtn.setPosition(centerX - continueBtn.width / 2, centerY + 10);
             quitBtn.setPosition(centerX - quitBtn.width / 2, centerY - 30);
 
-            // Xử lý click chuột vào nút
             if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                // Lấy tọa độ chuột trên màn hình máy tính (Pixel)
                 Vector3 touchPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-                // Dịch tọa độ đó sang không gian 2D của game
                 camera.unproject(touchPoint);
 
-                // Kiểm tra xem tọa độ chuột có nằm gọn trong nút không
                 if (continueBtn.contains(touchPoint.x, touchPoint.y)) {
-                    state = GameState.RUNNING; // Tiếp tục game
+                    state = GameState.RUNNING;
                 } else if (quitBtn.contains(touchPoint.x, touchPoint.y)) {
-                    game.setScreen(new FirstScreen(game)); // Chuyển về màn hình đầu
+                    game.setScreen(new FirstScreen(game));
                 }
             }
         }
 
-        String nextMap = game.map.checkPortal(myPlayer.hitbox);
-        if (nextMap != null) {
-            // Nạp map mới
-            game.map.loadMap(nextMap);
-
-            // Tìm điểm spawn của Player ở map mới
-            // (Ở đây dùng "player_spawn" làm mặc định)
-            Rectangle spawn = game.map.getPlayerSpawn();
-            if(spawn != null) {
-                myPlayer.x = spawn.x;
-                myPlayer.y = spawn.y;
-                myPlayer.hitbox.setPosition(spawn.x, spawn.y);
-            }
-
-            // Reset camera để không bị giật lag khi sang map mới
-            camera.position.set(myPlayer.x, myPlayer.y, 0);
-            return; // Thoát render vòng này để vòng sau vẽ map mới
-        }
-
+        // Vẽ mọi thứ ra màn hình
         ScreenUtils.clear(0, 0, 0, 1);
-        game.map.render(camera); //Vẽ map
+
+        game.map.render(camera); // Vẽ map của Xuân
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         myPlayer.draw(game.batch);
         game.batch.end();
 
+        // Vẽ lớp phủ khi Pause
         if (state == GameState.PAUSE) {
-            // Bật blend để vẽ nền đen trong suốt
-            Gdx.gl.glEnable(GL20.GL_BLEND);
-            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-            shapeRender.setProjectionMatrix(camera.combined);
-            shapeRender.begin(ShapeRenderer.ShapeType.Filled);
-
-            // Vẽ lớp phủ màn hình màu đen, độ mờ 60%
-            shapeRender.setColor(0, 0, 0, 0.6f);
-            shapeRender.rect(
-                camera.position.x - viewport.getWorldWidth() / 2,
-                camera.position.y - viewport.getWorldHeight() / 2,
-                viewport.getWorldWidth(),
-                viewport.getWorldHeight()
-            );
-
-            // Vẽ màu nền cho 2 nút bấm (Màu xám đậm)
-            shapeRender.setColor(Color.DARK_GRAY);
-            shapeRender.rect(continueBtn.x, continueBtn.y, continueBtn.width, continueBtn.height);
-            shapeRender.rect(quitBtn.x, quitBtn.y, quitBtn.width, quitBtn.height);
-
-            shapeRender.end();
-            Gdx.gl.glDisable(GL20.GL_BLEND);
-
-            // Vẽ chữ lên trên nút bấm
-            game.batch.begin();
-            // Căn chỉnh chữ thủ công cho vào giữa nút
-            font.draw(game.batch, "Continue", continueBtn.x + 20, continueBtn.y + 20);
-            font.draw(game.batch, "Quit", quitBtn.x + 35, quitBtn.y + 20);
-            game.batch.end();
+            drawPauseOverlay();
         }
     }
 
+    // Tách riêng hàm vẽ Pause cho code của Thắng gọn gàng hơn
+    private void drawPauseOverlay() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRender.setProjectionMatrix(camera.combined);
+        shapeRender.begin(ShapeRenderer.ShapeType.Filled);
+        // Vẽ lớp phủ màn hình màu đen, độ mờ 60%
+        shapeRender.setColor(0, 0, 0, 0.6f);
+        shapeRender.rect(camera.position.x - viewport.getWorldWidth()/2, camera.position.y - viewport.getWorldHeight()/2, viewport.getWorldWidth(), viewport.getWorldHeight());
+        // Vẽ màu nền cho 2 nút bấm (Màu xám đậm)
+        shapeRender.setColor(Color.DARK_GRAY);
+        shapeRender.rect(continueBtn.x, continueBtn.y, continueBtn.width, continueBtn.height);
+        shapeRender.rect(quitBtn.x, quitBtn.y, quitBtn.width, quitBtn.height);
+        shapeRender.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+        // Vẽ chữ lên trên nút bấm
+        game.batch.begin();
+        // Căn chỉnh chữ thủ công cho vào giữa nút
+        font.draw(game.batch, "Continue", continueBtn.x + 20, continueBtn.y + 20);
+        font.draw(game.batch, "Quit", quitBtn.x + 35, quitBtn.y + 20);
+        game.batch.end();
+    }
 
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
     }
-    @Override
-    public void pause() {}
-    @Override
-    public void resume() {}
-    @Override
-    public void hide() {}
+    @Override public void pause() {}
+    @Override public void resume() {}
+    @Override public void hide() {}
     @Override
     public void dispose() {
         shapeRender.dispose();

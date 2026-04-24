@@ -1,4 +1,4 @@
-package screens;
+package game.maskedbee.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -13,7 +13,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import main.CORE;
+import game.maskedbee.screens.PlayScreen;
+import game.maskedbee.main.CORE;
 
 public class FirstScreen implements Screen {
     private final CORE game;

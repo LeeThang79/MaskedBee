@@ -1,4 +1,4 @@
-package map;
+package game.maskedbee.map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -48,12 +48,16 @@ public class MapManager {
             portalObjects.clear();
 
             for (MapLayer layer : map.getLayers()) {
-                String layerName = layer.getName();
+                String layerName = layer.getName().toLowerCase();
 
-                if (layerName.contains("Collision")) {
+                if (layerName.contains("collision")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
                             wallCollision.add(((RectangleMapObject) obj).getRectangle());
+                        }
+                        else if (obj instanceof com.badlogic.gdx.maps.objects.EllipseMapObject) {
+                            com.badlogic.gdx.math.Ellipse ellipse = ((com.badlogic.gdx.maps.objects.EllipseMapObject) obj).getEllipse();
+                            wallCollision.add(new Rectangle(ellipse.x, ellipse.y, ellipse.width, ellipse.height));
                         }
                     }
                 } else if (layerName.equals("Doors")) {

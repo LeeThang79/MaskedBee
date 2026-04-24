@@ -1,4 +1,4 @@
-package screens;
+package game.maskedbee.screens;
 
 public class PauseScreen {
 }
