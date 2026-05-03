@@ -1,10 +1,10 @@
-package main;
+package game.maskedbee.main;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import screens.FirstScreen;
-import map.MapManager;
+import game.maskedbee.screens.FirstScreen;
+import game.maskedbee.map.MapManager;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class CORE extends Game {

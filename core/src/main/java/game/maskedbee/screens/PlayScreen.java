@@ -1,4 +1,5 @@
-package screens;
+package game.maskedbee.screens;
+
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -14,8 +15,11 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import entities.Player;
-import main.CORE;
+import game.maskedbee.entities.Player;
+import game.maskedbee.main.CORE;
+import game.maskedbee.map.MapManager;
+import game.maskedbee.objects.Spike;
+import game.maskedbee.objects.Lever;
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -27,16 +31,15 @@ public class PlayScreen implements Screen {
         RUNNING, PAUSE
     }
     private GameState state = GameState.RUNNING;
+
     private ShapeRenderer shapeRender;
     private BitmapFont font;
-
     private Rectangle continueBtn;
     private Rectangle quitBtn;
 
     public PlayScreen(CORE game) {
         this.game = game;
         this.camera = new OrthographicCamera();
-
         this.viewport = new FitViewport(352, 256, camera);
 
         this.myPlayer = new Player(0,0);
@@ -47,17 +50,22 @@ public class PlayScreen implements Screen {
         continueBtn = new Rectangle(0,0,100,30);
         quitBtn = new Rectangle(0,0,100,30);
     }
-
-    @Override
-    public void show() {
-        game.map.loadMap("map/cocoon_chamber.tmx");
-
+    // Hàm tiện ích: Đưa người chơi về điểm Spawn trên Map
+    private void spawnPlayer() {
         Rectangle spawn = game.map.getPlayerSpawn();
         if(spawn != null) {
             myPlayer.x = spawn.x;
             myPlayer.y = spawn.y;
-            myPlayer.hitbox.setPosition(spawn.x,spawn.y);
+            myPlayer.hitbox.setPosition(spawn.x, spawn.y);
         }
+    }
+
+    @Override
+    public void show() {
+        game.map.loadMap("map/holding_chamber.tmx");
+        spawnPlayer();
+        camera.position.set(myPlayer.x, myPlayer.y, 0);
+        camera.update();
     }
 
     @Override
@@ -67,25 +75,57 @@ public class PlayScreen implements Screen {
         }
 
         if (state == GameState.RUNNING) {
-            // Cập nhật nhân vật
-            myPlayer.update(delta, new Array<Rectangle>());
+            // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
+            myPlayer.update(delta, game.map.getWallCollision());
+            // LOGIC PUZZLE: GẠT CẦN (Nhấn phím E)
+            if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+                for (Lever lever : game.map.levers) {
+                    if (myPlayer.hitbox.overlaps(lever.hitbox)) {
+
+                        lever.toggle(game.map.getMap()); // Lật hình cái cần gạt
+
+                        if ("lever".equals(lever.type)) {
+                            // Nếu là cần gạt đinh: Đảo trạng thái gai cùng màu và gai đen
+                            for (Spike spike : game.map.spikes) {
+                                if (lever.targetColor != null && lever.targetColor.equals(spike.type) || "black".equals(spike.type)) {
+                                    spike.toggle(game.map.getMap());
+                                }
+                            }
+                        }
+                        else if ("door_lever".equals(lever.type)) {
+                            // Nếu là cần mở cửa: Gọi hàm mở cửa
+                            game.map.openDoor(lever.targetName);
+                        }
+                        break;
+                    }
+                }
+            }
+            // LOGIC PUZZLE: CHẾT KHI ĐẠP TRÚNG GAI
+            // ------------------------------------------
+            for (Spike spike : game.map.spikes) {
+                if (spike.isUp && myPlayer.hitbox.overlaps(spike.hitbox)) {
+                    System.out.println("💀 Dap trung gai! Reset level!");
+                    game.map.loadMap("map/" + game.map.getCurrentMapName());
+                    spawnPlayer();
+                    break; // Thoát vòng lặp để tránh lỗi khi reset map
+                }
+            }
+            // CẬP NHẬT CAMERA & CHUYỂN MAP
+            // ------------------------------------------
             camera.position.set(myPlayer.x, myPlayer.y, 0);
             camera.update();
 
             String nextMap = game.map.checkPortal(myPlayer.hitbox);
             if (nextMap != null) {
                 game.map.loadMap(nextMap);
-                Rectangle spawn = game.map.getPlayerSpawn();
-                if(spawn != null) {
-                    myPlayer.x = spawn.x;
-                    myPlayer.y = spawn.y;
-                    myPlayer.hitbox.setPosition(spawn.x, spawn.y);
-                }
+                spawnPlayer();
                 camera.position.set(myPlayer.x, myPlayer.y, 0);
-                return;
+                return; // Thoát render vòng này để vẽ map mới
             }
 
-        } else if (state == GameState.PAUSE) {
+
+        }// TRẠNG THÁI: GAME ĐANG TẠM DỪNG
+        else if (state == GameState.PAUSE) {
             // Cập nhật tọa độ nút bấm theo vị trí hiện tại của camera
             float centerX = camera.position.x;
             float centerY = camera.position.y;
@@ -109,32 +149,14 @@ public class PlayScreen implements Screen {
             }
         }
 
-        String nextMap = game.map.checkPortal(myPlayer.hitbox);
-        if (nextMap != null) {
-            // Nạp map mới
-            game.map.loadMap(nextMap);
-
-            // Tìm điểm spawn của Player ở map mới
-            // (Ở đây dùng "player_spawn" làm mặc định)
-            Rectangle spawn = game.map.getPlayerSpawn();
-            if(spawn != null) {
-                myPlayer.x = spawn.x;
-                myPlayer.y = spawn.y;
-                myPlayer.hitbox.setPosition(spawn.x, spawn.y);
-            }
-
-            // Reset camera để không bị giật lag khi sang map mới
-            camera.position.set(myPlayer.x, myPlayer.y, 0);
-            return; // Thoát render vòng này để vòng sau vẽ map mới
-        }
-
+        // RENDER (VẼ LÊN MÀN HÌNH)
         ScreenUtils.clear(0, 0, 0, 1);
         game.map.render(camera); //Vẽ map
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         myPlayer.draw(game.batch);
         game.batch.end();
-
+        // Vẽ Menu Pause đè lên trên
         if (state == GameState.PAUSE) {
             // Bật blend để vẽ nền đen trong suốt
             Gdx.gl.glEnable(GL20.GL_BLEND);
