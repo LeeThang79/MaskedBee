@@ -76,7 +76,7 @@ public class PlayScreen implements Screen {
 
         if (state == GameState.RUNNING) {
             // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
-            myPlayer.update(delta, game.map.getWallCollision());
+            myPlayer.update(delta, game.map.getFullCollision());
             // LOGIC PUZZLE: GẠT CẦN (Nhấn phím E)
             if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
                 for (Lever lever : game.map.levers) {
@@ -151,11 +151,14 @@ public class PlayScreen implements Screen {
 
         // RENDER (VẼ LÊN MÀN HÌNH)
         ScreenUtils.clear(0, 0, 0, 1);
-        game.map.render(camera); //Vẽ map
+        game.map.renderBackground(camera); //Vẽ map
+
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         myPlayer.draw(game.batch);
         game.batch.end();
+
+        game.map.renderForeground(camera);
         // Vẽ Menu Pause đè lên trên
         if (state == GameState.PAUSE) {
             // Bật blend để vẽ nền đen trong suốt
