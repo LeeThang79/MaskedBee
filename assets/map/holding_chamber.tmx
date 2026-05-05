@@ -43,7 +43,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="16" name="Door">
+ <objectgroup id="16" name="Door" locked="1">
   <object id="80" name="jail_door" gid="210" x="256" y="128" width="32" height="32">
    <properties>
     <property name="isOpen" type="bool" value="false"/>
@@ -55,7 +55,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="15" name="Switch">
+ <objectgroup id="15" name="Switch" locked="1">
   <object id="77" gid="126" x="128" y="256" width="32" height="32">
    <properties>
     <property name="color" value="blue"/>
@@ -80,7 +80,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="14" name="Spikes">
+ <objectgroup id="14" name="Spikes" locked="1">
   <object id="34" gid="171" x="588.5" y="203.5" width="32" height="32"/>
   <object id="35" gid="171" x="583" y="246" width="32" height="32"/>
   <object id="41" gid="145" x="288.5" y="161.5" width="32" height="32">
@@ -204,10 +204,10 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="5" name="ritual_Chamber">
+ <objectgroup id="5" name="ritual_Chamber" locked="1">
   <object id="24" name="ritual_chamber.tmx" x="256" y="288" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="18" name="Player_spawn">
+ <objectgroup id="18" name="Player_spawn" locked="1">
   <object id="91" name="player_spawn" x="192" y="256">
    <point/>
   </object>
@@ -215,34 +215,34 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="6" name="Jail_Collision">
+ <objectgroup id="6" name="Jail_Collision" locked="1">
   <object id="9" x="128" y="152" width="128" height="8"/>
   <object id="90" x="288" y="152" width="128" height="8"/>
  </objectgroup>
- <objectgroup id="8" name="Wall_Collision">
+ <objectgroup id="8" name="Wall_Collision" locked="1">
   <object id="12" x="117" y="96" width="11" height="202"/>
   <object id="13" x="128" y="288" width="128" height="32"/>
   <object id="18" x="117" y="80" width="310" height="14.5"/>
-  <object id="84" x="256" y="315" width="32" height="5"/>
+  <object id="84" x="256" y="318" width="32" height="2"/>
   <object id="85" x="288" y="288" width="128" height="32"/>
   <object id="89" x="416" y="96" width="11" height="202"/>
   <object id="99" x="128" y="266" width="28" height="22"/>
   <object id="100" x="160" y="266" width="28" height="22"/>
   <object id="101" x="320" y="169" width="28" height="22"/>
  </objectgroup>
- <objectgroup id="7" name="Jail_Door_Collision">
+ <objectgroup id="7" name="Jail_Door_Collision" locked="1">
   <object id="11" name="jail_door_hitbox" x="256" y="140" width="32" height="20">
    <properties>
     <property name="Name" value="jail_door_hitbox"/>
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="9" name="SpawnPoints">
-  <object id="25" name="ritual_chamber.tmx" x="272.069" y="282.154">
+ <objectgroup id="9" name="SpawnPoints" locked="1">
+  <object id="25" name="ritual_chamber.tmx" x="266" y="311">
    <point/>
   </object>
  </objectgroup>
- <layer id="20" name="Overhead" width="16" height="10">
+ <layer id="20" name="Overhead" width="16" height="10" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

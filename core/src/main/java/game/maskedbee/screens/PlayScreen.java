@@ -40,7 +40,7 @@ public class PlayScreen implements Screen {
     public PlayScreen(CORE game) {
         this.game = game;
         this.camera = new OrthographicCamera();
-        this.viewport = new FitViewport(352, 256, camera);
+        this.viewport = new FitViewport(515, 290, camera);
 
         this.myPlayer = new Player(0,0);
 
@@ -51,8 +51,12 @@ public class PlayScreen implements Screen {
         quitBtn = new Rectangle(0,0,100,30);
     }
     // Hàm tiện ích: Đưa người chơi về điểm Spawn trên Map
-    private void spawnPlayer() {
-        Rectangle spawn = game.map.getPlayerSpawn();
+    private void spawnPlayer(String fromMap) {
+        Rectangle spawn = game.map.getSpawnPoint(fromMap);
+
+        if(spawn==null) {
+            spawn=game.map.getPlayerSpawn();
+        }
         if(spawn != null) {
             myPlayer.x = spawn.x;
             myPlayer.y = spawn.y;
@@ -60,10 +64,76 @@ public class PlayScreen implements Screen {
         }
     }
 
+    private void updateCamera() {
+        float mapWidth = game.map.getMapWidth();
+        float mapHeight = game.map.getMapHeight();
+
+        float halfViewportWidth = viewport.getWorldWidth() / 2f;
+        float halfViewportHeight = viewport.getWorldHeight() / 2f;
+
+        // Camera sẽ đi theo Player
+        float camX = myPlayer.x;
+        float camY = myPlayer.y;
+
+        // KIỂM TRA CHIỀU NGANG: Nếu map nhỏ hơn khung nhìn -> Cố định ở giữa map
+        if (mapWidth <= viewport.getWorldWidth()) {
+            camX = mapWidth / 2f;
+        } else {
+            // Nếu map to -> Giới hạn không cho camera lộ ra vùng đen bên ngoài map
+            camX = com.badlogic.gdx.math.MathUtils.clamp(camX, halfViewportWidth, mapWidth - halfViewportWidth);
+        }
+
+        // KIỂM TRA CHIỀU DỌC: Tương tự như chiều ngang
+        if (mapHeight <= viewport.getWorldHeight()) {
+            camY = mapHeight / 2f;
+        } else {
+            camY = com.badlogic.gdx.math.MathUtils.clamp(camY, halfViewportHeight, mapHeight - halfViewportHeight);
+        }
+
+        camera.position.set(camX, camY, 0);
+        camera.update();
+    }
+
+    private void handelInteractions() {
+        // LOGIC PUZZLE: GẠT CẦN (Nhấn phím E)
+        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            for (Lever lever : game.map.levers) {
+                if (myPlayer.hitbox.overlaps(lever.hitbox)) {
+
+                    lever.toggle(game.map.getMap()); // Lật hình cái cần gạt
+
+                    if ("lever".equals(lever.type)) {
+                        // Nếu là cần gạt đinh: Đảo trạng thái gai cùng màu và gai đen
+                        for (Spike spike : game.map.spikes) {
+                            if (lever.targetColor != null && lever.targetColor.equals(spike.type) || "black".equals(spike.type)) {
+                                spike.toggle(game.map.getMap());
+                            }
+                        }
+                    }
+                    else if ("door_lever".equals(lever.type)) {
+                        // Nếu là cần mở cửa: Gọi hàm mở cửa
+                        game.map.openDoor(lever.targetName);
+                    }
+                    break;
+                }
+            }
+        }
+        // LOGIC PUZZLE: CHẾT KHI ĐẠP TRÚNG GAI
+        // ------------------------------------------
+        for (Spike spike : game.map.spikes) {
+            if (spike.isUp && myPlayer.hitbox.overlaps(spike.hitbox)) {
+                System.out.println("💀 Dap trung gai! Reset level!");
+                game.map.loadMap("map/" + game.map.getCurrentMapName());
+                spawnPlayer(null);
+                break; // Thoát vòng lặp để tránh lỗi khi reset map
+            }
+        }
+    }
+
     @Override
     public void show() {
-        game.map.loadMap("map/holding_chamber.tmx");
-        spawnPlayer();
+        game.map.loadMap("map/cocoon_chamber.tmx");
+        spawnPlayer(null);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         camera.update();
     }
@@ -75,56 +145,25 @@ public class PlayScreen implements Screen {
         }
 
         if (state == GameState.RUNNING) {
-            // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
-            myPlayer.update(delta, game.map.getFullCollision());
-            // LOGIC PUZZLE: GẠT CẦN (Nhấn phím E)
-            if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-                for (Lever lever : game.map.levers) {
-                    if (myPlayer.hitbox.overlaps(lever.hitbox)) {
+            //PUZZLE
+            handelInteractions();
 
-                        lever.toggle(game.map.getMap()); // Lật hình cái cần gạt
-
-                        if ("lever".equals(lever.type)) {
-                            // Nếu là cần gạt đinh: Đảo trạng thái gai cùng màu và gai đen
-                            for (Spike spike : game.map.spikes) {
-                                if (lever.targetColor != null && lever.targetColor.equals(spike.type) || "black".equals(spike.type)) {
-                                    spike.toggle(game.map.getMap());
-                                }
-                            }
-                        }
-                        else if ("door_lever".equals(lever.type)) {
-                            // Nếu là cần mở cửa: Gọi hàm mở cửa
-                            game.map.openDoor(lever.targetName);
-                        }
-                        break;
-                    }
-                }
-            }
-            // LOGIC PUZZLE: CHẾT KHI ĐẠP TRÚNG GAI
-            // ------------------------------------------
-            for (Spike spike : game.map.spikes) {
-                if (spike.isUp && myPlayer.hitbox.overlaps(spike.hitbox)) {
-                    System.out.println("💀 Dap trung gai! Reset level!");
-                    game.map.loadMap("map/" + game.map.getCurrentMapName());
-                    spawnPlayer();
-                    break; // Thoát vòng lặp để tránh lỗi khi reset map
-                }
-            }
-            // CẬP NHẬT CAMERA & CHUYỂN MAP
-            // ------------------------------------------
-            camera.position.set(myPlayer.x, myPlayer.y, 0);
-            camera.update();
-
+            //Kiểm tra Portal
             String nextMap = game.map.checkPortal(myPlayer.hitbox);
             if (nextMap != null) {
+                String lastMap = game.map.getCurrentMapName();
                 game.map.loadMap(nextMap);
-                spawnPlayer();
-                camera.position.set(myPlayer.x, myPlayer.y, 0);
+                spawnPlayer(lastMap);
+                updateCamera();
                 return; // Thoát render vòng này để vẽ map mới
             }
+            // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
+            myPlayer.update(delta, game.map.getFullCollision());
 
-
-        }// TRẠNG THÁI: GAME ĐANG TẠM DỪNG
+            //Camera
+            updateCamera();
+        }
+        // TRẠNG THÁI: GAME ĐANG TẠM DỪNG
         else if (state == GameState.PAUSE) {
             // Cập nhật tọa độ nút bấm theo vị trí hiện tại của camera
             float centerX = camera.position.x;

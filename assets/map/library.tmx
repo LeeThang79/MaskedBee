@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="32" nextobjectid="80">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="32" nextobjectid="82">
  <tileset firstgid="1" source="bookself.tsx"/>
  <tileset firstgid="211" source="wall_paid.tsx"/>
  <tileset firstgid="407" source="floor_paid.tsx"/>
  <tileset firstgid="505" source="wallfloor.tsx"/>
  <tileset firstgid="805" source="candle.tsx"/>
- <layer id="1" name="Wall" width="16" height="14">
+ <layer id="1" name="Wall" width="16" height="14" locked="1">
   <data encoding="csv">
 226,226,226,215,216,216,216,216,216,216,216,216,216,217,226,226,
 226,226,226,229,251,220,220,220,220,220,220,220,260,231,226,226,
@@ -23,7 +23,7 @@
 226,226,226,243,244,244,244,244,244,244,244,244,244,245,226,226
 </data>
  </layer>
- <layer id="3" name="Floor" width="16" height="14">
+ <layer id="3" name="Floor" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -41,7 +41,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="15" name="Hide_Floor" width="16" height="14">
+ <layer id="15" name="Hide_Floor" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -59,7 +59,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="2" name="Bookself" width="16" height="14">
+ <layer id="2" name="Bookself" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -77,7 +77,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="24" name="Chest_Close" width="16" height="14">
+ <layer id="24" name="Chest_Close" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -95,7 +95,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="31" name="Chest_Open" width="16" height="14" visible="0">
+ <layer id="31" name="Chest_Open" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -113,7 +113,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="25" name="Table" width="16" height="14">
+ <layer id="25" name="Table" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -131,35 +131,36 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="11" name="Corridor_Chamber">
-  <object id="75" name="corridor.tmx" x="415.258" y="321.566" width="32.3105" height="31.5412"/>
+ <objectgroup id="11" name="Corridor_Chamber" locked="1">
+  <object id="75" name="corridor.tmx" x="416" y="320" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="12" name="Wall_Collision">
-  <object id="45" x="116.667" y="26.6667" width="9.33333" height="396"/>
-  <object id="46" x="116" y="417.333" width="310.667" height="16"/>
+ <objectgroup id="12" name="Wall_Collision" locked="1">
+  <object id="45" x="117" y="21" width="11" height="406"/>
+  <object id="46" x="128" y="416" width="288" height="11"/>
   <object id="48" x="416.667" y="23.3333" width="30.6667" height="297.333"/>
-  <object id="50" x="416" y="353.5" width="32.125" height="71.625"/>
+  <object id="50" x="416" y="352" width="32" height="75"/>
+  <object id="81" x="445" y="320" width="3" height="32"/>
  </objectgroup>
- <objectgroup id="13" name="Self_Collision">
-  <object id="56" x="120.667" y="110.667" width="301.333" height="17.3333"/>
-  <object id="57" x="121.5" y="205" width="196.5" height="19"/>
-  <object id="60" x="355" y="209" width="65" height="14.5"/>
-  <object id="62" x="116.5" y="301.5" width="75" height="19"/>
-  <object id="63" x="226" y="304" width="195.5" height="15.5"/>
-  <object id="67" x="319.333" y="393" width="64" height="27"/>
+ <objectgroup id="13" name="Self_Collision" locked="1">
+  <object id="56" x="128" y="96" width="288" height="32"/>
+  <object id="57" x="128" y="192" width="192" height="32"/>
+  <object id="60" x="352" y="192" width="64" height="32"/>
+  <object id="62" x="128" y="288" width="64" height="32"/>
+  <object id="63" x="224" y="288" width="192" height="32"/>
+  <object id="67" x="320" y="384" width="64" height="32"/>
  </objectgroup>
- <objectgroup id="26" name="Hidden_room_Chamber">
-  <object id="79" name="hidden_room.tmx" x="95.2307" y="126.165" width="33.0798" height="36.157"/>
+ <objectgroup id="26" name="Hidden_room_Chamber" locked="1">
+  <object id="79" name="hidden_room.tmx" x="96" y="128" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="14" name="SpawnPoints">
-  <object id="76" name="corridor.tmx" x="408.335" y="337.721">
+ <objectgroup id="14" name="SpawnPoints" locked="1">
+  <object id="76" name="corridor.tmx" x="423" y="341">
    <point/>
   </object>
   <object id="78" name="hidden_room.tmx" x="132.926" y="144.628">
    <point/>
   </object>
  </objectgroup>
- <layer id="27" name="Interact_Point" width="16" height="14">
+ <layer id="27" name="Interact_Point" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -177,7 +178,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="28" name="Candle_Off" width="16" height="14">
+ <layer id="28" name="Candle_Off" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,805,806,807,808,809,810,811,0,0,0,0,
@@ -195,7 +196,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="29" name="Candle_On_1" width="16" height="14">
+ <layer id="29" name="Candle_On_1" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,840,0,842,0,844,0,846,0,0,0,0,
@@ -213,7 +214,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="30" name="Candle_On_2" width="16" height="14" visible="0">
+ <layer id="30" name="Candle_On_2" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,842,0,840,0,846,0,844,0,0,0,0,

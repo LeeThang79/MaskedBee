@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="20" nextobjectid="163">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="20" nextobjectid="168">
  <tileset firstgid="1" name="wallfloor" tilewidth="32" tileheight="32" tilecount="300" columns="20" objectalignment="bottom">
   <image source="real_tileset.png" width="640" height="480"/>
  </tileset>
  <tileset firstgid="301" source="wax_texture.tsx"/>
  <tileset firstgid="319" source="wallfloor.tsx"/>
- <layer id="4" name="Wall" width="16" height="9">
+ <layer id="4" name="Wall" width="16" height="9" locked="1">
   <data encoding="csv">
 362,362,28,23,23,23,23,23,23,23,23,23,341,345,362,362,
 362,362,6,42,42,42,42,42,42,42,42,42,360,344,362,362,
@@ -18,7 +18,7 @@
 362,362,326,320,320,320,320,320,320,320,320,320,320,325,362,362
 </data>
  </layer>
- <layer id="5" name="Floor" width="16" height="9">
+ <layer id="5" name="Floor" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -31,7 +31,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="16" name="Wax_Texture" width="16" height="9">
+ <layer id="16" name="Wax_Texture" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,301,302,303,304,305,306,307,308,309,308,0,0,0,
@@ -44,7 +44,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="18" name="Cocoon1" width="16" height="9">
+ <layer id="18" name="Cocoon1" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -57,7 +57,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="19" name="Cocoon2" width="16" height="9">
+ <layer id="19" name="Cocoon2" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -70,7 +70,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="12" name="Cocoon_Collision">
+ <objectgroup id="12" name="Cocoon_Collision" locked="1">
   <object id="129" name="cocoon_collision" x="227.75" y="123.083" width="38.25" height="21.5">
    <capsule/>
   </object>
@@ -81,25 +81,26 @@
    <capsule/>
   </object>
  </objectgroup>
- <objectgroup id="15" name="Wall_collision">
-  <object id="141" x="416.625" y="192.75" width="9.875" height="72.875"/>
-  <object id="143" x="86.0455" y="256.697" width="341.5" height="10.5"/>
-  <object id="145" x="86.75" y="22.3333" width="9" height="239.917"/>
-  <object id="150" x="416.667" y="23.3333" width="10.3333" height="133.167"/>
-  <object id="151" x="89.5" y="52.5" width="334.667" height="40"/>
-  <object id="153" x="416.875" y="192.25" width="30.7917" height="8.75"/>
-  <object id="154" x="416.625" y="150.875" width="31.2917" height="8.5"/>
+ <objectgroup id="15" name="Wall_Collision" locked="1">
+  <object id="141" x="416" y="192" width="11" height="64"/>
+  <object id="143" x="85" y="256" width="342" height="11"/>
+  <object id="145" x="85" y="32" width="11" height="224"/>
+  <object id="150" x="416" y="32" width="11" height="128"/>
+  <object id="151" x="96" y="64" width="320" height="32"/>
+  <object id="154" x="416" y="149" width="32" height="11"/>
+  <object id="166" x="446" y="160" width="2" height="32"/>
+  <object id="167" x="416" y="192" width="32" height="11"/>
  </objectgroup>
- <objectgroup id="13" name="Player_spawn">
-  <object id="132" name="player_spawn" x="247.81" y="182.81">
+ <objectgroup id="13" name="Player_spawn" locked="1">
+  <object id="132" name="player_spawn" x="245" y="180">
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="14" name="ritual_Chamber">
-  <object id="156" name="ritual_chamber.tmx" x="416.516" y="160.638" width="31.3746" height="31.1405"/>
+ <objectgroup id="14" name="ritual_Chamber" locked="1">
+  <object id="156" name="ritual_chamber.tmx" x="416" y="160" width="31.3746" height="31.1405"/>
  </objectgroup>
- <objectgroup id="17" name="SpawnPoints">
-  <object id="158" name="ritual_chamber.tmx" x="408.261" y="180.794">
+ <objectgroup id="17" name="SpawnPoints" locked="1">
+  <object id="158" name="ritual_chamber.tmx" x="426" y="181">
    <point/>
   </object>
  </objectgroup>

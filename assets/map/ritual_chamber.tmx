@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="37">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="46">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
  <layer id="1" name="Ground" width="16" height="9" locked="1">
@@ -68,40 +68,43 @@
 </data>
  </layer>
  <objectgroup id="5" name="Stone_Collision" locked="1">
-  <object id="1" x="164.364" y="201.273" width="22.9091" height="18.9091"/>
-  <object id="2" x="356.545" y="138.045" width="22.9091" height="18.9091"/>
-  <object id="3" x="233.545" y="157.045" width="76.9091" height="24.4091"/>
+  <object id="1" x="160" y="197" width="32" height="27"/>
+  <object id="3" x="224" y="160" width="96" height="32"/>
+  <object id="45" x="352" y="133" width="32" height="27"/>
  </objectgroup>
  <objectgroup id="9" name="Wall_Collision" locked="1">
-  <object id="12" x="122" y="72" width="133.5" height="19.5"/>
-  <object id="15" x="289.25" y="71.25" width="129.5" height="19.5"/>
-  <object id="16" x="124.742" y="256.136" width="131.167" height="7.5"/>
-  <object id="17" x="288.159" y="256.114" width="129" height="7.5"/>
-  <object id="19" x="416.25" y="71.25" width="6" height="194.5"/>
-  <object id="20" x="121.909" y="192.205" width="6" height="70.5"/>
-  <object id="21" x="121.909" y="89.4773" width="6" height="70.5"/>
-  <object id="22" x="247.125" y="258.625" width="8.75" height="29.125"/>
-  <object id="24" x="288" y="261" width="8.75" height="27.125"/>
-  <object id="25" x="96.3636" y="192.182" width="27.3636" height="10.5455"/>
-  <object id="26" x="96.0909" y="149.455" width="28.7273" height="10.4545"/>
+  <object id="12" x="128" y="64" width="127.5" height="32"/>
+  <object id="15" x="288" y="64" width="128" height="32"/>
+  <object id="16" x="128" y="256" width="128" height="11.136"/>
+  <object id="19" x="416" y="64" width="11" height="192"/>
+  <object id="20" x="117" y="192" width="11" height="75"/>
+  <object id="22" x="247" y="256" width="9" height="32"/>
+  <object id="25" x="96" y="192" width="32" height="11"/>
+  <object id="37" x="96" y="149" width="32" height="11"/>
+  <object id="38" x="288" y="256" width="9" height="32"/>
+  <object id="40" x="288" y="256" width="139" height="11"/>
+  <object id="41" x="117" y="64" width="11" height="96"/>
+  <object id="42" x="96" y="160" width="2" height="32"/>
+  <object id="43" x="256" y="286" width="32" height="2"/>
+  <object id="44" x="256" y="75" width="32" height="5"/>
  </objectgroup>
  <objectgroup id="6" name="cocoon_Chamber" locked="1">
-  <object id="30" name="cocoon_chamber.tmx" x="96" y="159.951" width="31.2362" height="31.7748"/>
+  <object id="30" name="cocoon_chamber.tmx" x="96" y="160" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="7" name="Corridor_Chamber" locked="1">
-  <object id="29" name="corridor.tmx" x="255.951" y="257.43" width="31.7748" height="29.6206"/>
+  <object id="29" name="corridor.tmx" x="256" y="256" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="8" name="holding_Chamber" locked="1">
-  <object id="28" name="holding_chamber.tmx" x="259.721" y="71.6279" width="23.6965" height="24.7736"/>
+  <object id="28" name="holding_chamber.tmx" x="256" y="80" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="10" name="SpawnPoints" locked="1">
-  <object id="31" name="holding_chamber.tmx" x="271.031" y="100.171">
+  <object id="31" name="holding_chamber.tmx" x="272" y="121">
    <point/>
   </object>
-  <object id="33" name="corridor.tmx" x="271.569" y="250.428">
+  <object id="33" name="corridor.tmx" x="266" y="277">
    <point/>
   </object>
-  <object id="36" name="cocoon_chamber.tmx" x="131.545" y="172.338">
+  <object id="36" name="cocoon_chamber.tmx" x="112" y="181">
    <point/>
   </object>
  </objectgroup>
