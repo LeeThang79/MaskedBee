@@ -34,10 +34,10 @@
   <object id="31" name="wax_pumb.tmx" x="353.697" y="72.5" width="28" height="24"/>
  </objectgroup>
  <objectgroup id="9" name="SpawnPoints">
-  <object id="29" name="corridor.tmx" x="40.8761" y="211.029">
+  <object id="29" name="corridor.tmx" x="65.1398" y="220.955">
    <point/>
   </object>
-  <object id="30" name="wax_pumb.tmx" x="368.667" y="101.333">
+  <object id="30" name="wax_pumb.tmx" x="366.461" y="124.494">
    <point/>
   </object>
  </objectgroup>
