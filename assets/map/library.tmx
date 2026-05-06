@@ -153,10 +153,10 @@
   <object id="79" name="hidden_room.tmx" x="95.2307" y="126.165" width="33.0798" height="36.157"/>
  </objectgroup>
  <objectgroup id="14" name="SpawnPoints">
-  <object id="76" name="corridor.tmx" x="408.335" y="337.721">
+  <object id="76" name="corridor.tmx" x="394.374" y="347.028">
    <point/>
   </object>
-  <object id="78" name="hidden_room.tmx" x="132.926" y="144.628">
+  <object id="78" name="hidden_room.tmx" x="150.765" y="152.384">
    <point/>
   </object>
  </objectgroup>

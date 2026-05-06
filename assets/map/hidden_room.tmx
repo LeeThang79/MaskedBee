@@ -44,7 +44,7 @@
   <object id="9" name="library.tmx" x="264" y="35.3333" width="16.6667" height="16.6667"/>
  </objectgroup>
  <objectgroup id="6" name="SpawnPoints">
-  <object id="11" name="library.tmx" x="272.667" y="56">
+  <object id="11" name="library.tmx" x="271.334" y="85.6667">
    <point/>
   </object>
  </objectgroup>

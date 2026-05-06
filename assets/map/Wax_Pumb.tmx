@@ -31,7 +31,7 @@
 </data>
  </layer>
  <objectgroup id="4" name="SpawnPoints">
-  <object id="2" name="queen_chamber.tmx" x="272.773" y="218.469">
+  <object id="2" name="queen_chamber.tmx" x="271.805" y="213.142">
    <point/>
   </object>
  </objectgroup>

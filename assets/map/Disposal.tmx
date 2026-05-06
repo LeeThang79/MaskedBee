@@ -188,7 +188,7 @@
   <object id="30" name="corridor.tmx" x="258.596" y="68.3026" width="25.3868" height="26.5957"/>
  </objectgroup>
  <objectgroup id="9" name="SpawnPoints">
-  <object id="29" name="corridor.tmx" x="270.685" y="98.5249">
+  <object id="29" name="corridor.tmx" x="270.685" y="120.8">
    <point/>
   </object>
  </objectgroup>
