@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="11" height="11" tilewidth="32" tileheight="32" infinite="0" nextlayerid="17" nextobjectid="51">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="11" height="11" tilewidth="32" tileheight="32" infinite="0" nextlayerid="17" nextobjectid="51">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="wax_texture.tsx"/>
  <tileset firstgid="319" source="bookself.tsx"/>
@@ -133,7 +133,7 @@
   <object id="46" x="36.8713" y="99.1294" width="51.378" height="19.3423">
    <capsule/>
   </object>
-  <object id="47" x="101.547" y="127.538" width="50.7736" height="22.969">
+  <object id="47" x="102.852" y="127.538" width="50.7736" height="22.969">
    <capsule/>
   </object>
   <object id="48" x="36.8713" y="224.854" width="47.1469" height="21.7601">
@@ -187,7 +187,7 @@
   <object id="30" name="corridor.tmx" x="162.596" y="68.3026" width="25.3868" height="26.5957"/>
  </objectgroup>
  <objectgroup id="9" name="SpawnPoints">
-  <object id="29" name="corridor.tmx" x="174.685" y="98.5249">
+  <object id="29" name="corridor.tmx" x="175.555" y="100.699">
    <point/>
   </object>
  </objectgroup>

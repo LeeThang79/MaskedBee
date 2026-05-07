@@ -93,7 +93,7 @@
   <object id="156" name="ritual_chamber.tmx" x="321.518" y="127.638" width="29.6206" height="33.3905"/>
  </objectgroup>
  <objectgroup id="17" name="SpawnPoints">
-  <object id="158" name="ritual_chamber.tmx" x="315.594" y="143.794">
+  <object id="158" name="ritual_chamber.tmx" x="314.094" y="148.794">
    <point/>
   </object>
  </objectgroup>
