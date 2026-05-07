@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="20" nextobjectid="168">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="21" nextobjectid="176">
  <tileset firstgid="1" name="wallfloor" tilewidth="32" tileheight="32" tilecount="300" columns="20" objectalignment="bottom">
   <image source="real_tileset.png" width="640" height="480"/>
  </tileset>
@@ -48,11 +48,11 @@
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,121,122,123,124,0,0,0,0,0,0,
-0,0,0,0,0,0,141,142,143,144,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,124,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,144,0,0,0,0,0,0,
 0,0,0,0,0,0,161,162,163,164,0,0,0,0,0,0,
-0,0,0,0,121,122,123,0,121,122,123,0,0,0,0,0,
-0,0,0,0,141,142,143,0,141,142,143,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,161,162,163,164,161,162,163,164,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
@@ -71,13 +71,13 @@
 </data>
  </layer>
  <objectgroup id="12" name="Cocoon_Collision" locked="1">
-  <object id="129" name="cocoon_collision" x="227.75" y="123.083" width="38.25" height="21.5">
+  <object id="173" name="cocoon_collision" x="212" y="128" width="76" height="22">
    <capsule/>
   </object>
-  <object id="130" name="cocoon_collision" x="293.125" y="219.167" width="38.25" height="21.5">
+  <object id="174" name="cocoon_collision" x="148" y="224" width="76" height="22">
    <capsule/>
   </object>
-  <object id="131" name="cocoon_collision" x="163.959" y="219.167" width="38.25" height="21.5">
+  <object id="175" name="cocoon_collision" x="276" y="224" width="76" height="22">
    <capsule/>
   </object>
  </objectgroup>
@@ -104,4 +104,17 @@
    <point/>
   </object>
  </objectgroup>
+ <layer id="20" name="Overhead" width="16" height="9" locked="1">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,439,440,441,442,0,0,0,0,0,0,
+0,0,0,0,0,0,459,460,461,462,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,439,440,441,442,439,440,441,442,0,0,0,0,
+0,0,0,0,459,460,461,462,459,460,461,462,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
 </map>
