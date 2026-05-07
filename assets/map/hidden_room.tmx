@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="15">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="16">
  <tileset firstgid="1" source="floor_paid.tsx"/>
  <tileset firstgid="99" source="wall_paid.tsx"/>
  <tileset firstgid="295" source="wallfloor.tsx"/>
  <tileset firstgid="595" source="bookself.tsx"/>
- <layer id="1" name="Wall" width="16" height="9">
+ <layer id="1" name="Wall" width="16" height="9" locked="1">
   <data encoding="csv">
 114,114,114,114,114,114,114,114,114,114,114,114,114,114,114,114,
 114,114,114,114,103,104,104,104,104,104,104,105,114,114,114,114,
@@ -17,7 +17,7 @@
 114,114,114,114,114,114,114,114,114,114,114,114,114,114,114,114
 </data>
  </layer>
- <layer id="4" name="Ladder" width="16" height="9">
+ <layer id="4" name="Ladder" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,364,0,0,0,0,0,0,0,
@@ -31,19 +31,20 @@
 </data>
  </layer>
  <objectgroup id="3" name="Wall_Collision">
-  <object id="1" x="147.722" y="103.855" width="111.392" height="22.6603"/>
-  <object id="3" x="350.928" y="102.431" width="25.11" height="130.576"/>
-  <object id="4" x="140.664" y="106.264" width="17.7608" height="126.181"/>
-  <object id="5" x="150.772" y="226.48" width="211.573" height="21.4354"/>
-  <object id="6" x="283.167" y="104.667" width="73.3333" height="23.0833"/>
-  <object id="7" x="283.083" y="32.6667" width="26.9167" height="94.6667"/>
-  <object id="8" x="235.333" y="31.3333" width="26" height="94.6667"/>
+  <object id="1" x="160" y="96" width="96" height="32"/>
+  <object id="3" x="352" y="96" width="9.928" height="139"/>
+  <object id="4" x="149" y="96" width="11" height="139"/>
+  <object id="5" x="149" y="224" width="213" height="11"/>
+  <object id="6" x="288" y="96" width="64" height="32"/>
+  <object id="7" x="288" y="32" width="20" height="96"/>
+  <object id="8" x="236" y="32" width="20" height="96"/>
+  <object id="15" x="236" y="29" width="72" height="3"/>
  </objectgroup>
  <objectgroup id="5" name="Library_Chamber">
-  <object id="9" name="library.tmx" x="264" y="35.3333" width="16.6667" height="16.6667"/>
+  <object id="9" name="library.tmx" x="261" y="32" width="22" height="20"/>
  </objectgroup>
  <objectgroup id="6" name="SpawnPoints">
-  <object id="11" name="library.tmx" x="271.334" y="85.6667">
+  <object id="11" name="library.tmx" x="266" y="53">
    <point/>
   </object>
  </objectgroup>
@@ -74,7 +75,7 @@
 </data>
  </layer>
  <objectgroup id="11" name="Coffin_Collision">
-  <object id="12" x="228.182" y="164" width="39.2727" height="27.6364"/>
+  <object id="12" x="228.182" y="160" width="39.2727" height="31.6364"/>
  </objectgroup>
  <layer id="10" name="Item" width="16" height="9">
   <data encoding="csv">

@@ -155,14 +155,12 @@ public class PlayScreen implements Screen {
                 updateCamera();
                 return; // Thoát render vòng này để vẽ map mới
             }
-
             // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
-            myPlayer.update(delta, game.map.getWallCollision());
+            myPlayer.update(delta, game.map.getFullCollision());
 
             //Camera
             updateCamera();
         }
-
         // TRẠNG THÁI: GAME ĐANG TẠM DỪNG
         else if (state == GameState.PAUSE) {
             // Cập nhật tọa độ nút bấm theo vị trí hiện tại của camera
@@ -190,11 +188,14 @@ public class PlayScreen implements Screen {
 
         // RENDER (VẼ LÊN MÀN HÌNH)
         ScreenUtils.clear(0, 0, 0, 1);
-        game.map.render(camera); //Vẽ map
+        game.map.renderBackground(camera); //Vẽ map
+
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         myPlayer.draw(game.batch);
         game.batch.end();
+
+        game.map.renderForeground(camera);
         // Vẽ Menu Pause đè lên trên
         if (state == GameState.PAUSE) {
             // Bật blend để vẽ nền đen trong suốt

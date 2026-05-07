@@ -37,6 +37,19 @@ public class MapManager {
     public Array<Rectangle> getWallCollision() {
         return wallCollision;
     }
+    public Array<Rectangle> getFullCollision() {
+        Array<Rectangle> allHitboxes = new Array<>();
+
+        // 1. Thêm tường cố định
+        allHitboxes.addAll(wallCollision);
+
+        // 2. Thêm các cánh cửa đang đóng
+        for (RectangleMapObject door : doorObjects) {
+            allHitboxes.add(door.getRectangle());
+        }
+
+        return allHitboxes;
+    }
 
     public void loadMap(String fileName) {
         try {
@@ -146,32 +159,54 @@ public class MapManager {
     // =========================
     // RENDER MAP
     // =========================
-    public void render(OrthographicCamera camera) {
-        if (renderer == null) return;
+    // 1. Hàm vẽ lớp nền (Sàn, tường dưới, gai, cần gạt)
+    public void renderBackground(OrthographicCamera camera) {
+        if (renderer == null || map == null) return;
         renderer.setView(camera);
-        renderer.render();
+
+        // Vẽ các Tile Layer trước (Sàn, tường...)
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
-            // Chỉ quét các lớp Object
-            if (layer != null && !(layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer)) {
-                for (MapObject obj : layer.getObjects()) {
-                    // Kiểm tra xem Object đó có chứa hình ảnh từ Tileset không (TiledMapTileMapObject)
-                    if (obj.isVisible() && obj instanceof com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject) {
-                        com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject tileObj = (com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject) obj;
+            // Bỏ qua lớp che đầu và các lớp Object
+            if (layer.getName().equals("Overhead") || !(layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer)) continue;
+            renderer.renderTileLayer((com.badlogic.gdx.maps.tiled.TiledMapTileLayer) layer);
+        }
+        renderer.getBatch().end();
 
-                        // Vẽ hình ảnh tại đúng tọa độ x, y, giữ nguyên kích thước scale từ Tiled
-                        renderer.getBatch().draw(
-                            tileObj.getTile().getTextureRegion(),
-                            tileObj.getX(), tileObj.getY() - 32,
-                            tileObj.getOriginX(), tileObj.getOriginY(),
-                            tileObj.getTextureRegion().getRegionWidth(), tileObj.getTextureRegion().getRegionHeight(),
-                            tileObj.getScaleX(), tileObj.getScaleY(), tileObj.getRotation()
-                        );
-                    }
-                }
+        // Vẽ các Object (Gai, Cần gạt)
+        renderer.getBatch().begin();
+        for (MapLayer layer : map.getLayers()) {
+            if (layer.getName().equals("Spikes") || layer.getName().equals("Switch") || layer.getName().equals("Door")) {
+                renderObjectLayer(layer);
             }
         }
         renderer.getBatch().end();
+    }
+
+    // 2. Hàm vẽ lớp che đầu (Thanh sắt lồng)
+    public void renderForeground(OrthographicCamera camera) {
+        if (renderer == null || map == null) return;
+        MapLayer overhead = map.getLayers().get("Overhead");
+        if (overhead != null && overhead instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer) {
+            renderer.getBatch().begin();
+            renderer.renderTileLayer((com.badlogic.gdx.maps.tiled.TiledMapTileLayer) overhead);
+            renderer.getBatch().end();
+        }
+    }
+    // Hàm phụ để vẽ Object (Copy từ code cũ của Xuân sang)
+    private void renderObjectLayer(MapLayer layer) {
+        for (MapObject obj : layer.getObjects()) {
+            if (obj.isVisible() && obj instanceof TiledMapTileMapObject) {
+                TiledMapTileMapObject tileObj = (TiledMapTileMapObject) obj;
+                renderer.getBatch().draw(
+                    tileObj.getTile().getTextureRegion(),
+                    tileObj.getX(), tileObj.getY() - 32,
+                    tileObj.getOriginX(), tileObj.getOriginY(),
+                    tileObj.getTextureRegion().getRegionWidth(), tileObj.getTextureRegion().getRegionHeight(),
+                    tileObj.getScaleX(), tileObj.getScaleY(), tileObj.getRotation()
+                );
+            }
+        }
     }
 
     // =========================

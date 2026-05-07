@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="24" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="19" nextobjectid="80">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="24" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="19" nextobjectid="83">
  <tileset firstgid="1" source="wallfloor.tsx"/>
- <layer id="1" name="Wall" width="24" height="9">
+ <layer id="1" name="Wall" width="24" height="9" locked="1">
   <data encoding="csv">
 66,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,86,
 103,63,63,63,63,63,63,63,63,63,63,65,63,63,63,63,63,63,63,63,63,63,63,83,
@@ -14,7 +14,7 @@
 105,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,106
 </data>
  </layer>
- <layer id="2" name="Floor" width="24" height="9">
+ <layer id="2" name="Floor" width="24" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -27,21 +27,21 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="8" name="Corridor_Chamber">
-  <object id="27" name="corridor.tmx" x="-0.0871212" y="192.203" width="31.7258" height="31.7258"/>
+ <objectgroup id="8" name="Corridor_Chamber" locked="1">
+  <object id="27" name="corridor.tmx" x="0" y="192" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="10" name="Wax_Chamber">
-  <object id="31" name="wax_pumb.tmx" x="353.697" y="72.5" width="28" height="24"/>
+ <objectgroup id="10" name="Wax_Chamber" locked="1">
+  <object id="31" name="wax_pumb.tmx" x="352" y="64" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="9" name="SpawnPoints">
-  <object id="29" name="corridor.tmx" x="65.1398" y="220.955">
+ <objectgroup id="9" name="SpawnPoints" locked="1">
+  <object id="29" name="corridor.tmx" x="14" y="213">
    <point/>
   </object>
-  <object id="30" name="wax_pumb.tmx" x="366.461" y="124.494">
+  <object id="30" name="wax_pumb.tmx" x="364" y="88">
    <point/>
   </object>
  </objectgroup>
- <layer id="13" name="Cocoon2" width="24" height="9">
+ <layer id="13" name="Cocoon2" width="24" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -54,7 +54,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="15" name="Cocoon1" width="24" height="9">
+ <layer id="15" name="Cocoon1" width="24" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -67,7 +67,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="16" name="Cocoon_Collision">
+ <objectgroup id="16" name="Cocoon_Collision" locked="1">
   <object id="67" x="107" y="127" width="41" height="22">
    <capsule/>
   </object>
@@ -84,7 +84,7 @@
    <capsule/>
   </object>
  </objectgroup>
- <layer id="11" name="Decorate2" width="24" height="9">
+ <layer id="11" name="Decorate2" width="24" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -97,7 +97,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="12" name="Decorate1" width="24" height="9">
+ <layer id="12" name="Decorate1" width="24" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -110,7 +110,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="17" name="Decorate_Collision">
+ <objectgroup id="17" name="Decorate_Collision" locked="1">
   <object id="72" x="623" y="136" width="36" height="16">
    <capsule/>
   </object>
@@ -127,7 +127,7 @@
    <capsule/>
   </object>
  </objectgroup>
- <layer id="3" name="Cocoon_Throne" width="24" height="9">
+ <layer id="3" name="Cocoon_Throne" width="24" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -140,7 +140,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="18" name="Cocoon_Throne_Collision">
+ <objectgroup id="18" name="Cocoon_Throne_Collision" locked="1">
   <object id="77" x="597" y="181" width="86" height="33">
    <capsule/>
   </object>
@@ -148,12 +148,14 @@
    <capsule/>
   </object>
  </objectgroup>
- <objectgroup id="4" name="Wall_Collision">
-  <object id="1" x="382.403" y="72.1178" width="361.712" height="23.8852"/>
-  <object id="2" x="20.2105" y="73.4928" width="332.545" height="22.0478"/>
-  <object id="5" x="736.766" y="85.2983" width="16.5359" height="176.74"/>
-  <object id="6" x="23.8453" y="256.649" width="719.813" height="22.7304"/>
-  <object id="13" x="16" y="86" width="15" height="105"/>
-  <object id="14" x="11.6667" y="225" width="18" height="52.6667"/>
+ <objectgroup id="4" name="Wall_Collision" locked="1">
+  <object id="1" x="384" y="64" width="352" height="32"/>
+  <object id="2" x="32" y="64" width="320.756" height="31.5406"/>
+  <object id="5" x="736" y="64" width="12" height="204"/>
+  <object id="6" x="32" y="256" width="704" height="12"/>
+  <object id="14" x="0" y="224" width="32" height="44"/>
+  <object id="80" x="0" y="64" width="32" height="128"/>
+  <object id="81" x="0" y="192" width="3" height="32"/>
+  <object id="82" x="352" y="64" width="32" height="3"/>
  </objectgroup>
 </map>
