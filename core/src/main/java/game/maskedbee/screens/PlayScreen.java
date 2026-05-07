@@ -1,6 +1,5 @@
 package game.maskedbee.screens;
 
-
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -17,7 +16,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
-import game.maskedbee.map.MapManager;
 import game.maskedbee.objects.Spike;
 import game.maskedbee.objects.Lever;
 

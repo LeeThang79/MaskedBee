@@ -283,6 +283,7 @@ public class MapManager {
     public TiledMap getMap() {
         return map;
     }
+
     public float getMapWidth() {
         int width = map.getProperties().get("width", Integer.class);
         int tileWidth = map.getProperties().get("tilewidth", Integer.class);
@@ -294,6 +295,7 @@ public class MapManager {
         int tileHeight = map.getProperties().get("tileheight", Integer.class);
         return height * tileHeight;
     }
+
     // =========================
     // DISPOSE
     // =========================
