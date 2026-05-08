@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.objects.PointMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -13,6 +14,10 @@ import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.maps.objects.PolygonMapObject;
+import com.badlogic.gdx.math.Polyline;
+import com.badlogic.gdx.math.Vector2;
+import game.maskedbee.entities.Guard;
 
 import game.maskedbee.objects.Spike;
 import game.maskedbee.objects.Lever;
@@ -29,6 +34,9 @@ public class MapManager {
     // THÊM: Danh sách Gai và Cần gạt
     public final Array<Spike> spikes = new Array<>();
     public final Array<Lever> levers = new Array<>();
+
+    //Thêm Guards
+    public final Array<Guard> guards = new Array<>();
 
     private String currentMapName = "";
     private String lastMapName = "";
@@ -54,6 +62,7 @@ public class MapManager {
             portalObjects.clear();
             spikes.clear(); // tai them
             levers.clear();
+            guards.clear();
 
             for (MapLayer layer : map.getLayers()) {
                 String layerName = layer.getName();
@@ -97,6 +106,37 @@ public class MapManager {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof TiledMapTileMapObject) {
                             levers.add(new Lever((TiledMapTileMapObject) obj));
+                        }
+                    }
+                }
+
+                //Quái
+                else if (layerName.equals("Guards")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        Array<Vector2> path = new Array<>();
+
+                        // TRƯỜNG HỢP 1: Nếu bạn vẽ bằng công cụ Polyline (Đường zíc zắc/Đường thẳng hở)
+                        if (obj instanceof PolylineMapObject) {
+                            Polyline polyline = ((PolylineMapObject) obj).getPolyline();
+                            float[] vertices = polyline.getTransformedVertices();
+                            for (int i = 0; i < vertices.length; i += 2) {
+                                path.add(new Vector2(vertices[i], vertices[i + 1]));
+                            }
+                        }
+                        // TRƯỜNG HỢP 2: Nếu bạn vẽ bằng công cụ Polygon (Hình đa giác, vuông khép kín)
+                        else if (obj instanceof PolygonMapObject) {
+                            com.badlogic.gdx.math.Polygon polygon = ((PolygonMapObject) obj).getPolygon();
+                            float[] vertices = polygon.getTransformedVertices();
+                            for (int i = 0; i < vertices.length; i += 2) {
+                                path.add(new Vector2(vertices[i], vertices[i + 1]));
+                            }
+                        }
+
+                        // Sinh ra Guard nếu đọc được tọa độ
+                        if (path.size > 0) {
+                            float startX = path.get(0).x - 16;
+                            float startY = path.get(0).y - 20;
+                            guards.add(new Guard(startX, startY, path));
                         }
                     }
                 }

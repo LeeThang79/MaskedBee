@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.Array;
 
 public class Guard extends Entity {
     public float patrolSpeed = 60f;
-    public float chaseSpeed = 150f;
+    public float chaseSpeed = 10f;
 
     public enum State { PATROL, SUSPICIOUS, INVESTIGATE, CHASE, RETURN }
     public State currentState = State.PATROL;
@@ -32,7 +32,7 @@ public class Guard extends Entity {
     private boolean isFacingRight = true;
 
     public Guard(float startX, float startY, Array<Vector2> path) {
-        super(startX, startY, 32, 40, 60f);
+        super(startX, startY, 16, 20, 60f);
         this.startX = startX;
         this.startY = startY;
         this.patrolPath = path;
@@ -116,19 +116,22 @@ public class Guard extends Entity {
         float moveX = 0, moveY = 0;
         float currentMoveSpeed = patrolSpeed;
 
+        float centerX = this.x + 16;
+        float centerY = this.y + 20;
+
         if (currentState == State.CHASE) {
             currentMoveSpeed = chaseSpeed;
-            if (this.x < lastKnownPos.x) moveX = 1; else if (this.x > lastKnownPos.x) moveX = -1;
-            if (this.y < lastKnownPos.y) moveY = 1; else if (this.y > lastKnownPos.y) moveY = -1;
+            if (centerX < lastKnownPos.x) moveX = 1; else if (centerX > lastKnownPos.x) moveX = -1;
+            if (centerY < lastKnownPos.y) moveY = 1; else if (centerY > lastKnownPos.y) moveY = -1;
         }
         else if (currentState == State.SUSPICIOUS) {
-            rotation = MathUtils.atan2(lastKnownPos.y - (y+20), lastKnownPos.x - (x+16)) * MathUtils.radiansToDegrees;
+            rotation = MathUtils.atan2(lastKnownPos.y - (centerY), lastKnownPos.x - (centerX)) * MathUtils.radiansToDegrees;
             if (alertLevel > 60f) currentState = State.INVESTIGATE;
         }
         else if (currentState == State.INVESTIGATE) {
-            if (this.x < lastKnownPos.x - 2) moveX = 1; else if (this.x > lastKnownPos.x + 2) moveX = -1;
-            if (this.y < lastKnownPos.y - 2) moveY = 1; else if (this.y > lastKnownPos.y + 2) moveY = -1;
-            if (Vector2.dst(x, y, lastKnownPos.x, lastKnownPos.y) < 10) {
+            if (centerX < lastKnownPos.x - 2) moveX = 1; else if (centerX > lastKnownPos.x + 2) moveX = -1;
+            if (centerY < lastKnownPos.y - 2) moveY = 1; else if (centerY > lastKnownPos.y + 2) moveY = -1;
+            if (Vector2.dst(centerX, centerY, lastKnownPos.x, lastKnownPos.y) < 10) {
                 moveX = 0; moveY = 0;
                 rotation += 100f * deltaTime;
             }
@@ -136,10 +139,10 @@ public class Guard extends Entity {
         else if (currentState == State.RETURN || currentState == State.PATROL) {
             if (patrolPath != null && patrolPath.size > 0) {
                 Vector2 target = patrolPath.get(targetWaypointIndex);
-                if (this.x < target.x - 2) moveX = 1; else if (this.x > target.x + 2) moveX = -1;
-                if (this.y < target.y - 2) moveY = 1; else if (this.y > target.y + 2) moveY = -1;
+                if (centerX < target.x - 2) moveX = 1; else if (centerX > target.x + 2) moveX = -1;
+                if (centerY < target.y - 2) moveY = 1; else if (centerY > target.y + 2) moveY = -1;
 
-                if (Math.abs(x - target.x) < 6 && Math.abs(y - target.y) < 6) {
+                if (Math.abs(centerX - target.x) < 6 && Math.abs(centerY - target.y) < 6) {
                     currentState = State.PATROL;
                     targetWaypointIndex = (targetWaypointIndex + 1) % patrolPath.size;
                 }
