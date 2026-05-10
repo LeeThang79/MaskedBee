@@ -8,10 +8,17 @@ import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.objects.PointMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import game.maskedbee.entities.Player;
+import game.maskedbee.objects.Door;
+import game.maskedbee.objects.Key;
+import game.maskedbee.objects.PushableBlock;
+import game.maskedbee.objects.*;
 
 public class MapManager {
 
@@ -21,16 +28,55 @@ public class MapManager {
     private final Array<Rectangle> wallCollision = new Array<>();
     private final Array<RectangleMapObject> doorObjects = new Array<>();
     private final Array<MapObject> portalObjects = new Array<>();
+    // PushableBlock
+    private final Array<PushableBlock> pushables = new Array<>();
+    public Array<PushableBlock> getPushables() {
+        return pushables;
+    }
+    private Rectangle hideTrigger;
+    public Rectangle getHideTrigger() {
+        return hideTrigger;
+    }
+    public void resetPushables() {
+        for (PushableBlock block : pushables) {
+            block.resetPosition();
+        }
+    }
+    // Keys
+    private final Array<Key> keys = new Array<>();
+    public Array<Key> getKeys() {
+        return keys;
+    }
+
+    //door
+    private final Array<Door> doors = new Array<>();
+    private TiledMapTileLayer doorCloseLayer;
+    private TiledMapTileLayer doorOpenLayer;
+
+    // THÊM: Danh sách Gai và Cần gạt
+    public final Array<Spike> spikes = new Array<>();
+    public final Array<Lever> levers = new Array<>();
 
     private String currentMapName = "";
     private String lastMapName = "";
 
-    // =========================
     // LOAD MAP
-    // =========================
     public Array<Rectangle> getWallCollision() {
         return wallCollision;
-    }// code test nen can xoa
+    }
+    public Array<Rectangle> getFullCollision() {
+        Array<Rectangle> allHitboxes = new Array<>();
+
+        // 1. Thêm tường cố định
+        allHitboxes.addAll(wallCollision);
+
+        // 2. Thêm các cánh cửa đang đóng
+        for (RectangleMapObject door : doorObjects) {
+            allHitboxes.add(door.getRectangle());
+        }
+
+        return allHitboxes;
+    }
 
     public void loadMap(String fileName) {
         try {
@@ -44,27 +90,99 @@ public class MapManager {
             renderer = new OrthogonalTiledMapRenderer(map);
 
             wallCollision.clear();
+            pushables.clear();
+            keys.clear();
+            doors.clear();
             doorObjects.clear();
             portalObjects.clear();
+            spikes.clear(); // tai them
+            levers.clear();
+
+            doorCloseLayer = (TiledMapTileLayer) map.getLayers().get("Door_Close");
+            doorOpenLayer = (TiledMapTileLayer) map.getLayers().get("Door_Open");
 
             for (MapLayer layer : map.getLayers()) {
                 String layerName = layer.getName();
 
+                //   XỬ LÝ VA CHẠM TƯỜNG
                 if (layerName.contains("Collision")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
-                            wallCollision.add(((RectangleMapObject) obj).getRectangle());
+                            // Tách cửa ra khỏi tường
+                            if (obj.getName() != null && obj.getName().contains("jail_door")) {
+                                doorObjects.add((RectangleMapObject) obj);
+                            } else {
+                                wallCollision.add(((RectangleMapObject) obj).getRectangle());
+                            }
                         }
                     }
-                } else if (layerName.equals("Doors")) {
+                }
+                //   XỬ LÝ VA CHẠM CỬA
+                else if (layerName.equals("Doors")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
-                            doorObjects.add((RectangleMapObject) obj);
+                            RectangleMapObject rectObj = (RectangleMapObject) obj;
+                            // collision
+                            doorObjects.add(rectObj);
+                            // logic door
+                            doors.add(new Door(rectObj));
                         }
                     }
-                } else if (layerName.equals("Exit") || layerName.contains("_Chamber") || layerName.equals("Corridor")) {
+                }
+                // PushableBlock
+                else if (layerName.equals("Pushable")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject) {
+                            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                            // FIX tọa độ (QUAN TRỌNG)
+                            rect = new Rectangle(
+                                (float) Math.floor(rect.x / 32) * 32,
+                                (float) Math.floor(rect.y / 32) * 32,
+                                32,
+                                32
+                            );
+                            pushables.add(new PushableBlock(rect));
+                        }
+                    }
+                }
+                else if (layerName.equals("Hide_Trigger")) {
+
+                    for (MapObject obj : layer.getObjects()) {
+
+                        if (obj instanceof RectangleMapObject) {
+
+                            hideTrigger =
+                                ((RectangleMapObject) obj).getRectangle();
+                        }
+                    }
+                }
+                // KEY
+                else if (layerName.equals("Keys")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject) {
+                            keys.add(new Key((RectangleMapObject) obj));
+                        }
+                    }
+                }
+                //    XỬ LÝ PORTAL CHUYỂN MAP CỦA XUÂN
+                else if (layerName.equals("Exit") || layerName.contains("_Chamber") || layerName.equals("Corridor")) {
                     for (MapObject obj : layer.getObjects()) {
                         portalObjects.add(obj);
+                    }
+                }
+                // Quét tìm gai và cần gạt
+                else if (layerName.equals("Spikes")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof TiledMapTileMapObject) {
+                            spikes.add(new Spike((TiledMapTileMapObject) obj));
+                        }
+                    }
+                }
+                else if (layerName.equals("Switch")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof TiledMapTileMapObject) {
+                            levers.add(new Lever((TiledMapTileMapObject) obj));
+                        }
                     }
                 }
             }
@@ -76,19 +194,13 @@ public class MapManager {
         }
     }
 
-    // điểm xuất hiện của player
+    // GET SPAWN POINTS
     public Rectangle getSpawnPoint(String fromMap) {
         MapLayer spawnLayer = map.getLayers().get("SpawnPoints");
-
         if (spawnLayer == null || fromMap == null) return null;
-
         for (MapObject obj : spawnLayer.getObjects()) {
             if (fromMap.equals(obj.getName())) {
-
-                if (obj instanceof RectangleMapObject) {
-                    return ((RectangleMapObject) obj).getRectangle();
-                }
-
+                if (obj instanceof RectangleMapObject) return ((RectangleMapObject) obj).getRectangle();
                 if (obj instanceof PointMapObject) {
                     float x = ((PointMapObject) obj).getPoint().x;
                     float y = ((PointMapObject) obj).getPoint().y;
@@ -96,22 +208,17 @@ public class MapManager {
                 }
             }
         }
-
         return null;
     }
     public Rectangle getPlayerSpawn() {
         if (map == null) return null;
-
-        MapLayer layer = map.getLayers().get("Player_spawn");
+        MapLayer layer = map.getLayers().get("Player_Spawn");
         if (layer == null) return null;
-
         for (MapObject obj : layer.getObjects()) {
-            if ("player_spawn".equals(obj.getName())) {
-
+            if ("Player_Spawn".equals(obj.getName())) {
                 if (obj instanceof RectangleMapObject) {
                     return ((RectangleMapObject) obj).getRectangle();
                 }
-
                 if (obj instanceof PointMapObject) {
                     float x = ((PointMapObject) obj).getPoint().x;
                     float y = ((PointMapObject) obj).getPoint().y;
@@ -119,43 +226,62 @@ public class MapManager {
                 }
             }
         }
-
         return null;
     }
     // =========================
     // RENDER MAP
     // =========================
-    public void render(OrthographicCamera camera) {
-        if (renderer == null) return;
+    // 1. Hàm vẽ lớp nền (Sàn, tường dưới, gai, cần gạt)
+    public void renderBackground(OrthographicCamera camera) {
+        if (renderer == null || map == null) return;
         renderer.setView(camera);
-        renderer.render();
+
+        // Vẽ các Tile Layer trước (Sàn, tường...)
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
-            // Chỉ quét các lớp Object (như cái màu tím trong ảnh của bạn)
-            if (layer != null && !(layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer)) {
-                for (MapObject obj : layer.getObjects()) {
-                    // Kiểm tra xem Object đó có chứa hình ảnh từ Tileset không (TiledMapTileMapObject)
-                    if (obj instanceof com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject) {
-                        com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject tileObj = (com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject) obj;
+            // QUAN TRỌNG: Nếu layer bị tắt trong Tiled, bỏ qua không vẽ
+            if (!layer.isVisible()) continue;
+            // Bỏ qua lớp che đầu và các lớp Object
+            if (layer.getName().equals("Overhead") || layer.getName().equals("Pushable") || !(layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer))
+                continue;
+            renderer.renderTileLayer((com.badlogic.gdx.maps.tiled.TiledMapTileLayer) layer);
+        }
+        renderer.getBatch().end();
 
-                        // Vẽ hình ảnh tại đúng tọa độ x, y, giữ nguyên kích thước scale từ Tiled
-                        renderer.getBatch().draw(
-                            tileObj.getTile().getTextureRegion(),
-                            tileObj.getX(),
-                            tileObj.getY(),
-                            tileObj.getOriginX(),
-                            tileObj.getOriginY(),
-                            tileObj.getTextureRegion().getRegionWidth(),
-                            tileObj.getTextureRegion().getRegionHeight(),
-                            tileObj.getScaleX(),
-                            tileObj.getScaleY(),
-                            tileObj.getRotation()
-                        );
-                    }
-                }
+        // Vẽ các Object (Gai, Cần gạt)
+        renderer.getBatch().begin();
+        for (MapLayer layer : map.getLayers()) {
+            if (layer.getName().equals("Spikes") || layer.getName().equals("Switch") || layer.getName().equals("Door")) {
+                renderObjectLayer(layer);
             }
         }
         renderer.getBatch().end();
+    }
+
+    // 2. Hàm vẽ lớp che đầu (Thanh sắt lồng)
+    public void renderForeground(OrthographicCamera camera) {
+        if (renderer == null || map == null) return;
+        MapLayer overhead = map.getLayers().get("Overhead");
+        if (overhead != null && overhead.isVisible() && overhead instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer) {
+            renderer.getBatch().begin();
+            renderer.renderTileLayer((com.badlogic.gdx.maps.tiled.TiledMapTileLayer) overhead);
+            renderer.getBatch().end();
+        }
+    }
+    // Hàm phụ để vẽ Object (Copy từ code cũ của Xuân sang)
+    private void renderObjectLayer(MapLayer layer) {
+        for (MapObject obj : layer.getObjects()) {
+            if (obj.isVisible() && obj instanceof TiledMapTileMapObject) {
+                TiledMapTileMapObject tileObj = (TiledMapTileMapObject) obj;
+                renderer.getBatch().draw(
+                    tileObj.getTile().getTextureRegion(),
+                    tileObj.getX(), tileObj.getY() - 32,
+                    tileObj.getOriginX(), tileObj.getOriginY(),
+                    tileObj.getTextureRegion().getRegionWidth(), tileObj.getTextureRegion().getRegionHeight(),
+                    tileObj.getScaleX(), tileObj.getScaleY(), tileObj.getRotation()
+                );
+            }
+        }
     }
 
     // =========================
@@ -172,6 +298,15 @@ public class MapManager {
 
         return false;
     }
+    //pushable
+    public PushableBlock getCollidingPushable(Rectangle rect) {
+        for (PushableBlock block : pushables) {
+            if (rect.overlaps(block.getBounds())) {
+                return block;
+            }
+        }
+        return null;
+    }
 
     // =========================
     // PORTAL (CHUYỂN MAP)
@@ -187,7 +322,7 @@ public class MapManager {
 
                         String destination = portal.getName();
                         if (destination != null && destination.endsWith(".tmx")) {
-                            // Thêm "map/" vì bạn để file trong assets/map/
+                            // Thêm "map/" vì để file trong assets/map/
                             return "map/" + destination;
                         }
                     }
@@ -197,32 +332,103 @@ public class MapManager {
         return null;
     }
 
-    // =========================
-    // DOOR
-    // =========================
     public void openDoor(String doorName) {
-        for (int i = 0; i < doorObjects.size; i++) {
-            if (doorObjects.get(i).getName().equals(doorName)) {
+        //  XÓA VA CHẠM (Collision)
+        for (int i = doorObjects.size - 1; i >= 0; i--) {
+            MapObject obj = doorObjects.get(i);
+            String objName = obj.getName();
+            if (objName != null && objName.contains(doorName)) {
                 doorObjects.removeIndex(i);
-                System.out.println("🚪 Door opened: " + doorName);
-                return;
             }
         }
-    }
+        //  ẨN OBJECT CỬA (Object Layer)
+        MapLayer visualDoorLayer = map.getLayers().get("Door");
+        if (visualDoorLayer != null) {
+            for (MapObject obj : visualDoorLayer.getObjects()) {
+                if (doorName.equals(obj.getName())) {
+                    obj.setVisible(false);
+                    System.out.println("✅ Hidden door object: " + doorName);
+                }
+            }
+        }
+        //  XỬ LÝ TILE DOOR (Door_Close / Door_Open)
+        for (Door door : doors) {
 
+            if (door.getName().equals(doorName)) {
+
+                door.open();
+
+                Rectangle b = door.getBounds();
+
+                int tileX = Math.round(b.x / 32f);
+                int tileY = Math.round(b.y / 32f);
+                // TẮT TILE CỬA ĐÓNG
+                if (doorCloseLayer != null) {
+                    for (int i = 0; i < 2; i++) {
+                        doorCloseLayer.setCell(tileX, tileY + i, null);
+                    }
+                }
+                // BẬT TILE CỬA MỞ
+                if (doorOpenLayer != null) {
+                    for (int i = 0; i < 2; i++) {
+                        TiledMapTileLayer.Cell cell =
+                            doorOpenLayer.getCell(tileX, tileY + i);
+                        if (cell != null) {
+                            doorOpenLayer.setCell(tileX, tileY + i, cell);
+                        }
+                    }
+                }
+                System.out.println("🚪 Tile door opened: " + doorName);
+                break;
+            }
+        }
+        System.out.println("🚪 Door opened: " + doorName);
+    }
+    // GET DOORS
+    public Array<Door> getDoors() {
+        return doors;
+    }
+    public void updateFloorHide(Player player) {
+        MapLayer hideLayer = map.getLayers().get("Floor_Hide");
+        if (hideLayer == null || hideTrigger == null) return;
+        boolean triggered = false;
+        // Player đứng lên trigger
+        if (player.hitbox.overlaps(hideTrigger)) {
+            triggered = true;
+        }
+        // Block đứng lên trigger
+        for (PushableBlock block : pushables) {
+            if (block.getBounds().overlaps(hideTrigger)) {
+                triggered = true;
+                break;
+            }
+        }
+
+        hideLayer.setVisible(!triggered);
+    }
     // =========================
     // GETTER
     // =========================
     public String getCurrentMapName() {
         return currentMapName;
     }
-
     public String getLastMapName() {
         return lastMapName;
     }
-
     public TiledMap getMap() {
         return map;
+    }
+
+    public float getMapWidth() {
+        int width = map.getProperties().get("width", Integer.class);
+        int tileWidth = map.getProperties().get("tilewidth", Integer.class);
+        return width * tileWidth;
+    }
+
+    public float getMapHeight() {
+        int height = map.getProperties().get("height", Integer.class);
+        int tileHeight = map.getProperties().get("tileheight", Integer.class);
+        return height * tileHeight;
     }
 
     // =========================

@@ -1,17 +1,24 @@
 package game.maskedbee.main;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import game.maskedbee.entities.Player;
 import game.maskedbee.screens.FirstScreen;
+import game.maskedbee.map.MapManager;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class CORE extends Game {
     public SpriteBatch batch;
-
+    public MapManager map;
+    private MapManager mapManager;
+    private Player player;
     @Override
     public void create() {
         batch = new SpriteBatch();
-        this.setScreen(new FirstScreen(this)); // Chuyển sang màn hình FirstScreen của Thắng
+        map = new MapManager();
+
+        this.setScreen(new FirstScreen(this)); // Chuyển sang màn hình FirstScreen của
     }
 
     @Override
@@ -22,5 +29,6 @@ public class CORE extends Game {
     @Override
     public void dispose() {
         batch.dispose();
+        map.dispose();
     }
 }
