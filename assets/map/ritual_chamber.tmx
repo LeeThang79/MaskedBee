@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="34">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="40">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
  <layer id="1" name="Ground" width="16" height="9">
@@ -69,10 +69,10 @@
  </layer>
  <objectgroup id="5" name="Stone_Collision">
   <object id="1" x="164.364" y="201.273" width="22.9091" height="18.9091"/>
-  <object id="2" x="356.545" y="138.045" width="22.9091" height="18.9091"/>
+  <object id="2" x="355.345" y="143.245" width="20.5091" height="15.3091"/>
   <object id="3" x="233.545" y="157.045" width="76.9091" height="24.4091"/>
  </objectgroup>
- <objectgroup id="9" name="Wall_Collision">
+ <objectgroup id="9" name="Wall_Collision" visible="0">
   <object id="12" x="122" y="72" width="133.5" height="19.5"/>
   <object id="15" x="289.25" y="71.25" width="129.5" height="19.5"/>
   <object id="16" x="124.742" y="256.136" width="131.167" height="7.5"/>
@@ -85,16 +85,16 @@
   <object id="25" x="96.3636" y="192.182" width="27.3636" height="10.5455"/>
   <object id="26" x="96.0909" y="149.455" width="28.7273" height="10.4545"/>
  </objectgroup>
- <objectgroup id="6" name="cocoon_Chamber">
+ <objectgroup id="6" name="cocoon_Chamber" visible="0">
   <object id="30" name="cocoon_chamber.tmx" x="96" y="159.951" width="31.2362" height="31.7748"/>
  </objectgroup>
- <objectgroup id="7" name="Corridor_Chamber">
+ <objectgroup id="7" name="Corridor_Chamber" visible="0">
   <object id="29" name="corridor.tmx" x="255.951" y="257.43" width="31.7748" height="29.6206"/>
  </objectgroup>
- <objectgroup id="8" name="holding_Chamber">
+ <objectgroup id="8" name="holding_Chamber" visible="0">
   <object id="28" name="holding_chamber.tmx" x="259.721" y="71.6279" width="23.6965" height="24.7736"/>
  </objectgroup>
- <objectgroup id="10" name="SpawnPoints">
+ <objectgroup id="10" name="SpawnPoints" visible="0">
   <object id="31" name="holding_chamber.tmx" x="271.031" y="116.347">
    <point/>
   </object>
@@ -103,6 +103,14 @@
   </object>
   <object id="33" name="corridor.tmx" x="271.064" y="243.857">
    <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="12" name="Guards">
+  <object id="38" name="guard_1" x="152.269" y="115.037">
+   <polygon points="0,0 247.414,-1.43626 249.331,121.363 -3.0687,121.363"/>
+  </object>
+  <object id="39" name="guard_2" x="220.8" y="133.6">
+   <polygon points="0,0 -1.25581,58.4325 110,58.8 111.628,1.47 36.0866,0.475215"/>
   </object>
  </objectgroup>
 </map>
