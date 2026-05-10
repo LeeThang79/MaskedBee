@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
 import game.maskedbee.objects.Spike;
@@ -159,6 +160,11 @@ public class PlayScreen implements Screen {
             // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
             myPlayer.update(delta, game.map.getWallCollision());
 
+            // Cập nhật tất cả quái vật trên bản đồ hiện tại
+            for (Guard guard : game.map.guards) {
+                guard.update(delta, myPlayer, game.map.getWallCollision());
+            }
+
             //Camera
             updateCamera();
         }
@@ -194,6 +200,10 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         myPlayer.draw(game.batch);
+        // Vẽ quái vật
+        for (Guard guard : game.map.guards) {
+            guard.draw(game.batch);
+        }
         game.batch.end();
         // Vẽ Menu Pause đè lên trên
         if (state == GameState.PAUSE) {
