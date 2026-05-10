@@ -30,6 +30,7 @@ public class MapManager {
     private final Array<Rectangle> wallCollision = new Array<>();
     private final Array<RectangleMapObject> doorObjects = new Array<>();
     private final Array<MapObject> portalObjects = new Array<>();
+    private final Array<RectangleMapObject> interactPoints = new Array<>();
 
     // THÊM: Danh sách Gai và Cần gạt
     public final Array<Spike> spikes = new Array<>();
@@ -63,6 +64,8 @@ public class MapManager {
             spikes.clear(); // tai them
             levers.clear();
             guards.clear();
+
+            interactPoints.clear();
 
             for (MapLayer layer : map.getLayers()) {
                 String layerName = layer.getName();
@@ -192,6 +195,10 @@ public class MapManager {
         renderer.render();
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
+            // BỎ QUA layer đang invisible
+            if (layer == null || !layer.isVisible()) {
+                continue;
+            }
             // Chỉ quét các lớp Object
             if (layer != null && !(layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer)) {
                 for (MapObject obj : layer.getObjects()) {
