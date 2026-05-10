@@ -19,6 +19,7 @@ import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
 import game.maskedbee.objects.Spike;
 import game.maskedbee.objects.Lever;
+import game.maskedbee.map.PuzzleLibrary;
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -35,6 +36,7 @@ public class PlayScreen implements Screen {
     private BitmapFont font;
     private Rectangle continueBtn;
     private Rectangle quitBtn;
+    private PuzzleLibrary puzzleLibrary;
 
     public PlayScreen(CORE game) {
         this.game = game;
@@ -127,11 +129,13 @@ public class PlayScreen implements Screen {
                 break; // Thoát vòng lặp để tránh lỗi khi reset map
             }
         }
+
     }
 
     @Override
     public void show() {
         game.map.loadMap("map/cocoon_chamber.tmx");
+        puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getWallCollision());
         spawnPlayer(null);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         camera.update();
@@ -144,6 +148,7 @@ public class PlayScreen implements Screen {
         }
 
         if (state == GameState.RUNNING) {
+            puzzleLibrary.update(myPlayer.hitbox, delta);
             //PUZZLE
             handelInteractions();
 
@@ -152,6 +157,7 @@ public class PlayScreen implements Screen {
             if (nextMap != null) {
                 String lastMap = game.map.getCurrentMapName();
                 game.map.loadMap(nextMap);
+                puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getWallCollision());
                 spawnPlayer(lastMap);
                 updateCamera();
                 return; // Thoát render vòng này để vẽ map mới
