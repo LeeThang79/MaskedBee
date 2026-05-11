@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="33" nextobjectid="82">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="33" nextobjectid="83">
  <tileset firstgid="1" source="bookself.tsx"/>
  <tileset firstgid="211" source="wall_paid.tsx"/>
  <tileset firstgid="407" source="floor_paid.tsx"/>
@@ -134,12 +134,13 @@
  <objectgroup id="11" name="Corridor_Chamber" locked="1">
   <object id="75" name="corridor.tmx" x="416" y="320" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="12" name="Wall_Collision" locked="1">
-  <object id="45" x="117" y="21" width="11" height="406"/>
+ <objectgroup id="12" name="Wall_Collision">
+  <object id="45" x="117" y="21" width="11" height="107"/>
   <object id="46" x="128" y="416" width="288" height="11"/>
   <object id="48" x="416.667" y="23.3333" width="30.6667" height="297.333"/>
   <object id="50" x="416" y="352" width="32" height="75"/>
   <object id="81" x="445" y="320" width="3" height="32"/>
+  <object id="82" x="117" y="160" width="11" height="256"/>
  </objectgroup>
  <objectgroup id="13" name="Self_Collision" locked="1">
   <object id="56" x="128" y="96" width="288" height="32"/>

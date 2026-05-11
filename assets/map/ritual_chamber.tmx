@@ -67,10 +67,10 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="5" name="Stone_Collision" locked="1">
-  <object id="1" x="160" y="197" width="32" height="27"/>
+ <objectgroup id="5" name="Stone_Collision">
+  <object id="1" x="160" y="192" width="32" height="32"/>
   <object id="3" x="224" y="160" width="96" height="32"/>
-  <object id="45" x="352" y="133" width="32" height="27"/>
+  <object id="45" x="352" y="128" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="9" name="Wall_Collision" locked="1">
   <object id="12" x="128" y="64" width="127.5" height="32"/>
