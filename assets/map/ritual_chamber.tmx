@@ -54,7 +54,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="4" name="Stone" width="16" height="9">
+ <layer id="4" name="Stone" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -67,7 +67,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="5" name="Stone_Collision">
+ <objectgroup id="5" name="Stone_Collision" locked="1">
   <object id="1" x="160" y="192" width="32" height="32"/>
   <object id="3" x="224" y="160" width="96" height="32"/>
   <object id="45" x="352" y="128" width="32" height="32"/>
@@ -108,7 +108,15 @@
    <point/>
   </object>
  </objectgroup>
- <layer id="12" name="Overhead" width="16" height="9">
+ <objectgroup id="12" name="Guards" locked="1">
+  <object id="38" name="guard_1" x="152.269" y="115.037">
+   <polygon points="0,0 247.414,-1.43626 249.331,121.363 -3.0687,121.363"/>
+  </object>
+  <object id="39" name="guard_2" x="220.8" y="133.6">
+   <polygon points="0,0 -1.25581,58.4325 110,58.8 111.628,1.47 36.0866,0.475215"/>
+  </object>
+ </objectgroup>
+ <layer id="12" name="Overhead" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
