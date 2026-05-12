@@ -14,10 +14,12 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
 import game.maskedbee.objects.Spike;
 import game.maskedbee.objects.Lever;
+import game.maskedbee.map.PuzzleLibrary;
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -34,6 +36,7 @@ public class PlayScreen implements Screen {
     private BitmapFont font;
     private Rectangle continueBtn;
     private Rectangle quitBtn;
+    private PuzzleLibrary puzzleLibrary;
 
     public PlayScreen(CORE game) {
         this.game = game;
@@ -126,11 +129,13 @@ public class PlayScreen implements Screen {
                 break; // Thoát vòng lặp để tránh lỗi khi reset map
             }
         }
+
     }
 
     @Override
     public void show() {
         game.map.loadMap("map/cocoon_chamber.tmx");
+        puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getWallCollision());
         spawnPlayer(null);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         camera.update();
@@ -143,6 +148,7 @@ public class PlayScreen implements Screen {
         }
 
         if (state == GameState.RUNNING) {
+            puzzleLibrary.update(myPlayer.hitbox, delta);
             //PUZZLE
             handelInteractions();
 
@@ -151,12 +157,18 @@ public class PlayScreen implements Screen {
             if (nextMap != null) {
                 String lastMap = game.map.getCurrentMapName();
                 game.map.loadMap(nextMap);
+                puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getWallCollision());
                 spawnPlayer(lastMap);
                 updateCamera();
                 return; // Thoát render vòng này để vẽ map mới
             }
             // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
             myPlayer.update(delta, game.map.getFullCollision());
+
+            // Cập nhật tất cả quái vật trên bản đồ hiện tại
+            for (Guard guard : game.map.guards) {
+                guard.update(delta, myPlayer, game.map.getWallCollision());
+            }
 
             //Camera
             updateCamera();
@@ -193,6 +205,10 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
         myPlayer.draw(game.batch);
+        // Vẽ quái vật
+        for (Guard guard : game.map.guards) {
+            guard.draw(game.batch);
+        }
         game.batch.end();
 
         game.map.renderForeground(camera);

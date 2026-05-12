@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="22" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="28" nextobjectid="76">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="22" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="29" nextobjectid="71">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
- <layer id="1" name="Wall" width="22" height="9" locked="1">
+ <layer id="1" name="Wall" width="22" height="9">
   <data encoding="csv">
 66,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,86,
 103,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,63,83,
@@ -15,7 +15,7 @@
 105,82,82,82,82,82,82,82,82,84,0,81,82,82,82,82,82,82,82,82,82,106
 </data>
  </layer>
- <layer id="2" name="Ground" width="22" height="9" locked="1">
+ <layer id="2" name="Ground" width="22" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -28,7 +28,7 @@
 0,0,0,0,0,0,0,0,0,0,61,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="3" name="Door" width="22" height="9" locked="1">
+ <layer id="3" name="Door" width="22" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,65,0,0,0,0,0,
@@ -41,7 +41,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="27" name="Pillars" width="22" height="9" locked="1">
+ <layer id="27" name="Pillars" width="22" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -54,48 +54,55 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="5" name="Wall_Collision" locked="1">
-  <object id="23" x="352" y="256" width="352" height="32"/>
-  <object id="25" x="672" y="160" width="32" height="96"/>
-  <object id="26" x="672" y="32" width="32" height="96"/>
-  <object id="28" x="32" y="256" width="288" height="32"/>
-  <object id="29" x="0" y="192" width="32" height="76"/>
-  <object id="30" x="0" y="20" width="32" height="140"/>
-  <object id="33" x="32" y="64" width="480" height="32"/>
-  <object id="34" x="544" y="64" width="128" height="32"/>
-  <object id="67" x="699" y="128" width="5" height="32"/>
-  <object id="68" x="0" y="160" width="5" height="32"/>
-  <object id="69" x="320" y="283" width="32" height="5"/>
-  <object id="70" x="480" y="32" width="96" height="32"/>
+ <objectgroup id="5" name="Wall_Collision">
+  <object id="23" x="352.909" y="257" width="349.591" height="30.75"/>
+  <object id="25" x="672.333" y="160.667" width="30.6667" height="100.333"/>
+  <object id="26" x="672.333" y="18.6667" width="31.3333" height="108.667"/>
+  <object id="28" x="14" y="256.5" width="305.091" height="28.75"/>
+  <object id="29" x="1.75" y="192.25" width="29.75" height="65.5"/>
+  <object id="30" x="0.25" y="13.75" width="31.25" height="145.75"/>
+  <object id="33" x="19" y="65" width="493" height="29"/>
+  <object id="34" x="543.333" y="66.6667" width="132.667" height="28.6667"/>
  </objectgroup>
- <objectgroup id="6" name="Pillars_Collision" locked="1">
-  <object id="42" x="64" y="132" width="32" height="27" rotation="1.0564"/>
-  <object id="71" x="256" y="132" width="32" height="27" rotation="1.0564"/>
-  <object id="72" x="160" y="196" width="32" height="27" rotation="1.0564"/>
-  <object id="73" x="384" y="196" width="32" height="27" rotation="1.0564"/>
-  <object id="74" x="448" y="132" width="32" height="27" rotation="1.0564"/>
-  <object id="75" x="576" y="164" width="32" height="27" rotation="1.0564"/>
+ <objectgroup id="28" name="Guards">
+  <object id="67" name="guard_1" x="98" y="183.5">
+   <polyline points="7,8 111.502,-22.4842 190.97,15.1125 288.994,-22.6058 439.5,16.5"/>
+  </object>
+  <object id="69" name="guard_2" x="246.5" y="111.5" visible="0">
+   <polygon points="-10.5,-3 -2.5,115 -72.5036,127.946 -135,112 -106,27.5 10.7992,81.257 153.999,61.171 266,75 265,0.5 187.54,0.170485"/>
+  </object>
+  <object id="70" name="guard_3" x="612" y="127" visible="0">
+   <polygon points="20,-10.5 -146.494,-20.3569 -250,-9 -247,114 -151.5,111.5 -168.782,66.0429 -196,-4 -144.955,-21.5898 -95,-3.5 -108,83.5 19.5,83"/>
+  </object>
  </objectgroup>
- <objectgroup id="26" name="Ritual_Chamber" locked="1">
-  <object id="66" name="ritual_chamber.tmx" x="512" y="64" width="32" height="32"/>
+ <objectgroup id="6" name="Pillars_Collision">
+  <object id="37" x="455.385" y="137.101" width="18.0548" height="16.9488" rotation="1.0564"/>
+  <object id="38" x="391.223" y="201.776" width="18.0548" height="16.9488" rotation="1.0564"/>
+  <object id="39" x="583.723" y="169.276" width="18.0548" height="16.9488" rotation="1.0564"/>
+  <object id="40" x="168.473" y="196.526" width="17.0548" height="14.9488" rotation="0.0564"/>
+  <object id="41" x="263.723" y="137.776" width="18.0548" height="16.9488" rotation="1.0564"/>
+  <object id="42" x="71.7226" y="137.276" width="18.0548" height="16.9488" rotation="1.0564"/>
  </objectgroup>
- <objectgroup id="7" name="Disposal_Chamber" locked="1">
-  <object id="56" name="disposal.tmx" x="320" y="256" width="32" height="32"/>
+ <objectgroup id="26" name="Ritual_Chamber" visible="0">
+  <object id="66" name="ritual_chamber.tmx" x="513.782" y="64.6267" width="30.1591" height="32.3133"/>
  </objectgroup>
- <objectgroup id="8" name="Queen_Chamber" locked="1">
-  <object id="54" name="queen_chamber.tmx" x="672" y="128" width="32" height="32"/>
+ <objectgroup id="7" name="Disposal_Chamber" visible="0">
+  <object id="56" name="disposal.tmx" x="319.902" y="255.275" width="32.3133" height="31.2362"/>
  </objectgroup>
- <objectgroup id="9" name="Library_Chamber" locked="1">
-  <object id="57" name="library.tmx" x="0" y="160" width="32" height="32"/>
+ <objectgroup id="8" name="Queen_Chamber" visible="0">
+  <object id="54" name="queen_chamber.tmx" x="673.195" y="128.176" width="30.1591" height="31.2362"/>
  </objectgroup>
- <objectgroup id="10" name="SpawnPoints" locked="1">
-  <object id="60" name="ritual_chamber.tmx" x="528" y="112">
+ <objectgroup id="9" name="Library_Chamber" visible="0">
+  <object id="57" name="library.tmx" x="1.07711" y="159.412" width="31.2362" height="31.2362"/>
+ </objectgroup>
+ <objectgroup id="10" name="SpawnPoints" visible="0">
+  <object id="60" name="ritual_chamber.tmx" x="527.785" y="119.696">
    <point/>
   </object>
-  <object id="63" name="library.tmx" x="15" y="181">
+  <object id="63" name="library.tmx" x="49.3313" y="181.816">
    <point/>
   </object>
-  <object id="64" name="disposal.tmx" x="330" y="272">
+  <object id="64" name="disposal.tmx" x="334.571" y="233.596">
    <point/>
   </object>
   <object id="65" name="queen_chamber.tmx" x="658.331" y="150.737">
