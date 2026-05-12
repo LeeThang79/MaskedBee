@@ -109,7 +109,7 @@
   <object id="28" name="holding_chamber.tmx" x="259.721" y="71.6279" width="23.6965" height="24.7736"/>
  </objectgroup>
  <objectgroup id="10" name="SpawnPoints">
-  <object id="31" name="holding_chamber.tmx" x="271.031" y="100.171">
+  <object id="31" name="holding_chamber.tmx" x="269.531" y="105.671">
    <point/>
   </object>
   <object id="32" name="cocoon_chamber.tmx" x="131.545" y="172.338">

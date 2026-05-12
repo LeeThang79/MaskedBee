@@ -4,6 +4,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -17,13 +19,11 @@ import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
 import game.maskedbee.objects.Spike;
 import game.maskedbee.objects.Lever;
-import com.badlogic.gdx.graphics.OrthographicCamera;
+import game.maskedbee.map.PuzzleLibrary;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import game.maskedbee.objects.Door;
 import game.maskedbee.objects.Key;
 import game.maskedbee.objects.PushableBlock;
-import game.maskedbee.map.PuzzleLibrary;
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -134,171 +134,113 @@ public class PlayScreen implements Screen {
                 break; // Thoát vòng lặp để tránh lỗi khi reset map
             }
         }
-
-    // ======================================
-    // OPEN DOOR WITH KEY
-    // ======================================
+        // OPEN DOOR WITH KEY
+        // ======================================
         if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-        for (Door door : game.map.getDoors()) {
-            Rectangle player = myPlayer.hitbox;
-            Rectangle doorRect = door.getBounds();
-            float distanceX = Math.abs(player.x - doorRect.x);
-            float distanceY = Math.abs(player.y - doorRect.y);
-            // Đứng gần cửa
-            if (distanceX <= 40 && distanceY <= 40) {
-                System.out.println("Player key = " + myPlayer.currentKey);
-                System.out.println("Door needs = " + door.getRequiredKeyName());
-                if (door.canOpen(myPlayer.currentKey)) {
-                    game.map.openDoor(door.getName());
-                    System.out.println("🚪 Opened: " + door.getName());
-                } else {
-                    System.out.println("❌ Need key: " + door.getRequiredKeyName());
+            for (Door door : game.map.getDoors()) {
+                Rectangle player = myPlayer.hitbox;
+                Rectangle doorRect = door.getBounds();
+                float distanceX = Math.abs(player.x - doorRect.x);
+                float distanceY = Math.abs(player.y - doorRect.y);
+                // Đứng gần cửa
+                if (distanceX <= 40 && distanceY <= 40) {
+                    System.out.println("Player key = " + myPlayer.currentKey);
+                    System.out.println("Door needs = " + door.getRequiredKeyName());
+                    if (door.canOpen(myPlayer.currentKey)) {
+                        game.map.openDoor(door.getName());
+                        System.out.println("🚪 Opened: " + door.getName());
+                    } else {
+                        System.out.println("❌ Need key: " + door.getRequiredKeyName());
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
-}
-
-private void checkKeyPickup() {
-    for (Key key : game.map.getKeys()) {
-        if (!key.isCollected() && myPlayer.hitbox.overlaps(key.getBounds())) {
-            key.collect();
-            myPlayer.currentKey = key.getName();
-            System.out.println("🔑 Picked key: " + myPlayer.currentKey);
-        }
-    }
-}
-private void handlePushables() {
-
-    float pushDistance = 32f;
-
-    float dx = 0;
-    float dy = 0;
-
-    // Hướng đẩy
-    if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)
-        || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
-
-        dx = -pushDistance;
-    }
-
-    else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)
-        || Gdx.input.isKeyJustPressed(Input.Keys.D)) {
-
-        dx = pushDistance;
-    }
-
-    else if (Gdx.input.isKeyJustPressed(Input.Keys.UP)
-        || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-
-        dy = pushDistance;
-    }
-
-    else if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)
-        || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-
-        dy = -pushDistance;
-    }
-
-    if (dx == 0 && dy == 0) return;
-
-    for (PushableBlock block : game.map.getPushables()) {
-
-        Rectangle b = block.getBounds();
-        Rectangle p = myPlayer.hitbox;
-
-        boolean touching = false;
-
-        // =========================
-        // CHECK THEO HƯỚNG
-        // =========================
-
-        // PUSH RIGHT
-        float tolerance = 2f;
-
-        // PUSH RIGHT
-        if (dx > 0) {
-
-            touching =
-                p.x < b.x &&
-                    (p.x + p.width) >= b.x - tolerance &&
-                    Math.abs(p.y - b.y) < 12;
-        }
-
-        // PUSH LEFT
-        else if (dx < 0) {
-
-            touching =
-                p.x > b.x &&
-                    p.x <= (b.x + b.width) + tolerance &&
-                    Math.abs(p.y - b.y) < 12;
-        }
-
-        // PUSH UP
-        else if (dy > 0) {
-
-            touching =
-                p.y < b.y &&
-                    (p.y + p.height) >= b.y - tolerance &&
-                    Math.abs(p.x - b.x) < 12;
-        }
-
-        // PUSH DOWN
-        else if (dy < 0) {
-
-            touching =
-                p.y > b.y &&
-                    p.y <= (b.y + b.height) + tolerance &&
-                    Math.abs(p.x - b.x) < 12;
-        }
-
-        // Không đứng đúng cạnh block
-        if (!touching) continue;
-
-        // =========================
-        // BLOCK TƯƠNG LAI
-        // =========================
-
-        Rectangle future = new Rectangle(
-            b.x + dx,
-            b.y + dy,
-            b.width,
-            b.height
-        );
-
-        boolean blocked = false;
-
-        // WALL
-        for (Rectangle wall : game.map.getFullCollision()) {
-
-            if (future.overlaps(wall)) {
-                blocked = true;
-                break;
+    private void checkKeyPickup() {
+        for (Key key : game.map.getKeys()) {
+            if (!key.isCollected() && myPlayer.hitbox.overlaps(key.getBounds())) {
+                key.collect();
+                myPlayer.currentKey = key.getName();
+                System.out.println("🔑 Picked key: " + myPlayer.currentKey);
             }
         }
-
-        // BLOCK KHÁC
-        for (PushableBlock other : game.map.getPushables()) {
-
-            if (other != block &&
-                future.overlaps(other.getBounds())) {
-
-                blocked = true;
-                break;
-            }
-        }
-
-        // PUSH
-        if (!blocked) {
-
-            b.x += dx;
-            b.y += dy;
-        }
-
-        break;
     }
-}
+    private void handlePushables() {
+        float pushDistance = 32f;
+        float dx = 0;
+        float dy = 0;
+        // Hướng đẩy
+        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)
+            || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
+            dx = -pushDistance;
+        }
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D)) {
+            dx = pushDistance;
+        }
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.UP)
+            || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            dy = pushDistance;
+        }
+        else if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)
+            || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            dy = -pushDistance;
+        }
+        if (dx == 0 && dy == 0) return;
+        for (PushableBlock block : game.map.getPushables()) {
+            Rectangle b = block.getBounds();
+            Rectangle p = myPlayer.hitbox;
+            boolean touching = false;
+            // =========================
+            // CHECK THEO HƯỚNG
+            // PUSH RIGHT
+            float tolerance = 2f;
+            // PUSH RIGHT
+            if (dx > 0) {
+                touching = p.x < b.x && (p.x + p.width) >= b.x - tolerance && Math.abs(p.y - b.y) < 12;
+            }
+            // PUSH LEFT
+            else if (dx < 0) {
+                touching = p.x > b.x && p.x <= (b.x + b.width) + tolerance && Math.abs(p.y - b.y) < 12;
+            }
+            // PUSH UP
+            else if (dy > 0) {
+                touching = p.y < b.y && (p.y + p.height) >= b.y - tolerance && Math.abs(p.x - b.x) < 12;
+            }
+            // PUSH DOWN
+            else if (dy < 0) {
+                touching = p.y > b.y && p.y <= (b.y + b.height) + tolerance && Math.abs(p.x - b.x) < 12;
+            }
+            // Không đứng đúng cạnh block
+            if (!touching) continue;
+            // BLOCK TƯƠNG LAI
+            // =========================
+            Rectangle future = new Rectangle(b.x + dx, b.y + dy, b.width, b.height);
+            boolean blocked = false;
+            // WALL
+            for (Rectangle wall : game.map.getWallCollision()) {
+                if (future.overlaps(wall)) {
+                    blocked = true;
+                    break;
+                }
+            }
+            // BLOCK KHÁC
+            for (PushableBlock other : game.map.getPushables()) {
+                if (other != block &&
+                    future.overlaps(other.getBounds())) {
+                    blocked = true;
+                    break;
+                }
+            }
+            // PUSH
+            if (!blocked) {
+                b.x += dx;
+                b.y += dy;
+            }
+            break;
+        }
+    }
+
     @Override
     public void show() {
         game.map.loadMap("map/cocoon_chamber.tmx");
@@ -319,7 +261,6 @@ private void handlePushables() {
             //PUZZLE
             handelInteractions();
             checkKeyPickup();
-
             //Kiểm tra Portal
             String nextMap = game.map.checkPortal(myPlayer.hitbox);
             if (nextMap != null) {
@@ -386,13 +327,10 @@ private void handlePushables() {
         game.map.render(camera); //Vẽ map
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-
-        // Vẽ block trước player
+        myPlayer.draw(game.batch);
         for (PushableBlock block : game.map.getPushables()) {
             block.render(game.batch);
         }
-        // Vẽ player
-        myPlayer.draw(game.batch);
         // Vẽ quái vật
         for (Guard guard : game.map.guards) {
             guard.draw(game.batch);
@@ -433,8 +371,11 @@ private void handlePushables() {
         }
     }
 
+
     @Override
-    public void resize(int width, int height) {}
+    public void resize(int width, int height) {
+        viewport.update(width, height);
+    }
     @Override
     public void pause() {}
     @Override
@@ -443,6 +384,7 @@ private void handlePushables() {
     public void hide() {}
     @Override
     public void dispose() {
-        if (background != null) background.dispose();
+        shapeRender.dispose();
+        font.dispose();
     }
 }

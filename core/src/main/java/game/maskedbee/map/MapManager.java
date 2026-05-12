@@ -19,13 +19,13 @@ import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Vector2;
 import game.maskedbee.entities.Guard;
+
 import game.maskedbee.entities.Player;
+import game.maskedbee.objects.Spike;
+import game.maskedbee.objects.Lever;
 import game.maskedbee.objects.Door;
 import game.maskedbee.objects.Key;
 import game.maskedbee.objects.PushableBlock;
-import game.maskedbee.objects.Spike;
-import game.maskedbee.objects.Lever;
-import game.maskedbee.objects.*;
 
 public class MapManager {
 
@@ -36,6 +36,7 @@ public class MapManager {
     private final Array<RectangleMapObject> doorObjects = new Array<>();
     private final Array<MapObject> portalObjects = new Array<>();
     private final Array<RectangleMapObject> interactPoints = new Array<>();
+
     // PushableBlock
     private final Array<PushableBlock> pushables = new Array<>();
     public Array<PushableBlock> getPushables() {
@@ -55,12 +56,10 @@ public class MapManager {
     public Array<Key> getKeys() {
         return keys;
     }
-
     //door
     private final Array<Door> doors = new Array<>();
     private TiledMapTileLayer doorCloseLayer;
     private TiledMapTileLayer doorOpenLayer;
-
     // THÊM: Danh sách Gai và Cần gạt
     public final Array<Spike> spikes = new Array<>();
     public final Array<Lever> levers = new Array<>();
@@ -74,19 +73,6 @@ public class MapManager {
     // LOAD MAP
     public Array<Rectangle> getWallCollision() {
         return wallCollision;
-    }
-    public Array<Rectangle> getFullCollision() {
-        Array<Rectangle> allHitboxes = new Array<>();
-
-        // 1. Thêm tường cố định
-        allHitboxes.addAll(wallCollision);
-
-        // 2. Thêm các cánh cửa đang đóng
-        for (RectangleMapObject door : doorObjects) {
-            allHitboxes.add(door.getRectangle());
-        }
-
-        return allHitboxes;
     }
 
     public void loadMap(String fileName) {
@@ -109,6 +95,7 @@ public class MapManager {
             spikes.clear(); // tai them
             levers.clear();
             guards.clear();
+
             interactPoints.clear();
             doorCloseLayer = (TiledMapTileLayer) map.getLayers().get("Door_Close");
             doorOpenLayer = (TiledMapTileLayer) map.getLayers().get("Door_Open");
@@ -280,47 +267,27 @@ public class MapManager {
         renderer.render();
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
-            // QUAN TRỌNG: Nếu layer bị tắt trong Tiled, bỏ qua không vẽ
-            if (!layer.isVisible()) continue;
-            // Bỏ qua lớp che đầu và các lớp Object
-            if (layer.getName().equals("Overhead") || layer.getName().equals("Pushable") || !(layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer))
+            // BỎ QUA layer đang invisible
+            if (layer == null || !layer.isVisible()) {
                 continue;
-            renderer.renderTileLayer((com.badlogic.gdx.maps.tiled.TiledMapTileLayer) layer);
-        }
-        renderer.getBatch().end();
-
-        // Vẽ các Object (Gai, Cần gạt)
-        renderer.getBatch().begin();
-        for (MapLayer layer : map.getLayers()) {
-            if (layer.getName().equals("Spikes") || layer.getName().equals("Switch") || layer.getName().equals("Door")) {
-                renderObjectLayer(layer);
             }
-        }
-        renderer.getBatch().end();
-    }
+            // Chỉ quét các lớp Object
+            if (layer != null && !(layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer)) {
+                for (MapObject obj : layer.getObjects()) {
+                    // Kiểm tra xem Object đó có chứa hình ảnh từ Tileset không (TiledMapTileMapObject)
+                    if (obj.isVisible() && obj instanceof com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject) {
+                        com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject tileObj = (com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject) obj;
 
-    // 2. Hàm vẽ lớp che đầu (Thanh sắt lồng)
-    public void renderForeground(OrthographicCamera camera) {
-        if (renderer == null || map == null) return;
-        MapLayer overhead = map.getLayers().get("Overhead");
-        if (overhead != null && overhead.isVisible() && overhead instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer) {
-            renderer.getBatch().begin();
-            renderer.renderTileLayer((com.badlogic.gdx.maps.tiled.TiledMapTileLayer) overhead);
-            renderer.getBatch().end();
-        }
-    }
-    // Hàm phụ để vẽ Object (Copy từ code cũ của Xuân sang)
-    private void renderObjectLayer(MapLayer layer) {
-        for (MapObject obj : layer.getObjects()) {
-            if (obj.isVisible() && obj instanceof TiledMapTileMapObject) {
-                TiledMapTileMapObject tileObj = (TiledMapTileMapObject) obj;
-                renderer.getBatch().draw(
-                    tileObj.getTile().getTextureRegion(),
-                    tileObj.getX(), tileObj.getY() - 32,
-                    tileObj.getOriginX(), tileObj.getOriginY(),
-                    tileObj.getTextureRegion().getRegionWidth(), tileObj.getTextureRegion().getRegionHeight(),
-                    tileObj.getScaleX(), tileObj.getScaleY(), tileObj.getRotation()
-                );
+                        // Vẽ hình ảnh tại đúng tọa độ x, y, giữ nguyên kích thước scale từ Tiled
+                        renderer.getBatch().draw(
+                            tileObj.getTile().getTextureRegion(),
+                            tileObj.getX(), tileObj.getY() - 32,
+                            tileObj.getOriginX(), tileObj.getOriginY(),
+                            tileObj.getTextureRegion().getRegionWidth(), tileObj.getTextureRegion().getRegionHeight(),
+                            tileObj.getScaleX(), tileObj.getScaleY(), tileObj.getRotation()
+                        );
+                    }
+                }
             }
         }
         renderer.getBatch().end();
@@ -364,7 +331,7 @@ public class MapManager {
 
                         String destination = portal.getName();
                         if (destination != null && destination.endsWith(".tmx")) {
-                            // Thêm "map/" vì để file trong assets/map/
+                            // Thêm "map/" vì bạn để file trong assets/map/
                             return "map/" + destination;
                         }
                     }
@@ -378,56 +345,56 @@ public class MapManager {
     // DOOR
     // =========================
     public void openDoor(String doorName) {
-        //  XÓA VA CHẠM (Collision)
+        // Xóa vùng va chạm
         for (int i = doorObjects.size - 1; i >= 0; i--) {
-            MapObject obj = doorObjects.get(i);
-            String objName = obj.getName();
+            String objName = doorObjects.get(i).getName();
             if (objName != null && objName.contains(doorName)) {
                 doorObjects.removeIndex(i);
             }
         }
-        //  ẨN OBJECT CỬA (Object Layer)
-        MapLayer visualDoorLayer = map.getLayers().get("Door");
+        // Xóa hình ảnh cái cửa
+        MapLayer visualDoorLayer = map.getLayers().get("Doors");
         if (visualDoorLayer != null) {
             for (MapObject obj : visualDoorLayer.getObjects()) {
                 if (doorName.equals(obj.getName())) {
-                    obj.setVisible(false);
-                    System.out.println("✅ Hidden door object: " + doorName);
+                    obj.setVisible(false); // Ra lệnh "Tàng hình" cực kỳ an toàn
+                    System.out.println("✅ Đã ẩn hình ảnh cửa: " + doorName);
                 }
             }
-        }
-        //  XỬ LÝ TILE DOOR (Door_Close / Door_Open)
-        for (Door door : doors) {
+            //  XỬ LÝ TILE DOOR (Door_Close / Door_Open)
+            for (Door door : doors) {
 
-            if (door.getName().equals(doorName)) {
+                if (door.getName().equals(doorName)) {
 
-                door.open();
+                    door.open();
 
-                Rectangle b = door.getBounds();
+                    Rectangle b = door.getBounds();
 
-                int tileX = Math.round(b.x / 32f);
-                int tileY = Math.round(b.y / 32f);
-                // TẮT TILE CỬA ĐÓNG
-                if (doorCloseLayer != null) {
-                    for (int i = 0; i < 2; i++) {
-                        doorCloseLayer.setCell(tileX, tileY + i, null);
-                    }
-                }
-                // BẬT TILE CỬA MỞ
-                if (doorOpenLayer != null) {
-                    for (int i = 0; i < 2; i++) {
-                        TiledMapTileLayer.Cell cell =
-                            doorOpenLayer.getCell(tileX, tileY + i);
-                        if (cell != null) {
-                            doorOpenLayer.setCell(tileX, tileY + i, cell);
+                    int tileX = Math.round(b.x / 32f);
+                    int tileY = Math.round(b.y / 32f);
+                    // TẮT TILE CỬA ĐÓNG
+                    if (doorCloseLayer != null) {
+                        for (int i = 0; i < 2; i++) {
+                            doorCloseLayer.setCell(tileX, tileY + i, null);
                         }
                     }
+                    // BẬT TILE CỬA MỞ
+                    if (doorOpenLayer != null) {
+                        doorOpenLayer.setVisible(true);
+                        for (int i = 0; i < 2; i++) {
+                            TiledMapTileLayer.Cell cell =
+                                doorOpenLayer.getCell(tileX, tileY + i);
+                            if (cell != null) {
+                                doorOpenLayer.setCell(tileX, tileY + i, cell);
+                            }
+                        }
+                    }
+                    System.out.println("🚪 Tile door opened: " + doorName);
+                    break;
                 }
-                System.out.println("🚪 Tile door opened: " + doorName);
-                break;
             }
         }
-        System.out.println("🚪 Door opened: " + doorName);
+        System.out.println("🚪 TỔNG KẾT: Door opened: " + doorName);
     }
     // GET DOORS
     public Array<Door> getDoors() {
