@@ -2,10 +2,11 @@ package game.maskedbee.screens;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.Gdx;
@@ -14,11 +15,14 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
+import game.maskedbee.objects.Spike;
+import game.maskedbee.objects.Lever;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import game.maskedbee.objects.Door;
 import game.maskedbee.objects.Key;
 import game.maskedbee.objects.PushableBlock;
-import game.maskedbee.objects.Spike;
-import game.maskedbee.objects.Lever;
 import game.maskedbee.map.PuzzleLibrary;
 
 public class PlayScreen implements Screen {
@@ -26,6 +30,7 @@ public class PlayScreen implements Screen {
     public Player myPlayer;
     private OrthographicCamera camera;
     private Viewport viewport;
+    private Texture background;
 
     public enum GameState {
         RUNNING, PAUSE
@@ -130,7 +135,6 @@ public class PlayScreen implements Screen {
             }
         }
 
-    }
     // ======================================
     // OPEN DOOR WITH KEY
     // ======================================
@@ -429,8 +433,6 @@ private void handlePushables() {
         }
     }
 
-    @Override
-    public void show() {}
     @Override
     public void resize(int width, int height) {}
     @Override

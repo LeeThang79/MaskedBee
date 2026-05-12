@@ -441,7 +441,6 @@ public class MapManager {
         if (player.hitbox.overlaps(hideTrigger)) {
             triggered = true;
         }
-        System.out.println("🚪 TỔNG KẾT: Door opened: " + doorName);
         // Block đứng lên trigger
         for (PushableBlock block : pushables) {
             if (block.getBounds().overlaps(hideTrigger)) {
