@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.objects.PointMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -14,10 +15,16 @@ import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.maps.objects.PolygonMapObject;
+import com.badlogic.gdx.math.Polyline;
+import com.badlogic.gdx.math.Vector2;
+import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.objects.Door;
 import game.maskedbee.objects.Key;
 import game.maskedbee.objects.PushableBlock;
+import game.maskedbee.objects.Spike;
+import game.maskedbee.objects.Lever;
 import game.maskedbee.objects.*;
 
 public class MapManager {
@@ -28,6 +35,7 @@ public class MapManager {
     private final Array<Rectangle> wallCollision = new Array<>();
     private final Array<RectangleMapObject> doorObjects = new Array<>();
     private final Array<MapObject> portalObjects = new Array<>();
+    private final Array<RectangleMapObject> interactPoints = new Array<>();
     // PushableBlock
     private final Array<PushableBlock> pushables = new Array<>();
     public Array<PushableBlock> getPushables() {
@@ -56,6 +64,9 @@ public class MapManager {
     // THÊM: Danh sách Gai và Cần gạt
     public final Array<Spike> spikes = new Array<>();
     public final Array<Lever> levers = new Array<>();
+
+    //Thêm Guards
+    public final Array<Guard> guards = new Array<>();
 
     private String currentMapName = "";
     private String lastMapName = "";
@@ -97,7 +108,8 @@ public class MapManager {
             portalObjects.clear();
             spikes.clear(); // tai them
             levers.clear();
-
+            guards.clear();
+            interactPoints.clear();
             doorCloseLayer = (TiledMapTileLayer) map.getLayers().get("Door_Close");
             doorOpenLayer = (TiledMapTileLayer) map.getLayers().get("Door_Open");
 
@@ -185,6 +197,37 @@ public class MapManager {
                         }
                     }
                 }
+
+                //Quái
+                else if (layerName.equals("Guards")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        Array<Vector2> path = new Array<>();
+
+                        // TRƯỜNG HỢP 1: Nếu bạn vẽ bằng công cụ Polyline (Đường zíc zắc/Đường thẳng hở)
+                        if (obj instanceof PolylineMapObject) {
+                            Polyline polyline = ((PolylineMapObject) obj).getPolyline();
+                            float[] vertices = polyline.getTransformedVertices();
+                            for (int i = 0; i < vertices.length; i += 2) {
+                                path.add(new Vector2(vertices[i], vertices[i + 1]));
+                            }
+                        }
+                        // TRƯỜNG HỢP 2: Nếu bạn vẽ bằng công cụ Polygon (Hình đa giác, vuông khép kín)
+                        else if (obj instanceof PolygonMapObject) {
+                            com.badlogic.gdx.math.Polygon polygon = ((PolygonMapObject) obj).getPolygon();
+                            float[] vertices = polygon.getTransformedVertices();
+                            for (int i = 0; i < vertices.length; i += 2) {
+                                path.add(new Vector2(vertices[i], vertices[i + 1]));
+                            }
+                        }
+
+                        // Sinh ra Guard nếu đọc được tọa độ
+                        if (path.size > 0) {
+                            float startX = path.get(0).x - 16;
+                            float startY = path.get(0).y - 20;
+                            guards.add(new Guard(startX, startY, path));
+                        }
+                    }
+                }
             }
 
             System.out.println("✅ Loaded map: " + fileName);
@@ -231,12 +274,10 @@ public class MapManager {
     // =========================
     // RENDER MAP
     // =========================
-    // 1. Hàm vẽ lớp nền (Sàn, tường dưới, gai, cần gạt)
-    public void renderBackground(OrthographicCamera camera) {
-        if (renderer == null || map == null) return;
+    public void render(OrthographicCamera camera) {
+        if (renderer == null) return;
         renderer.setView(camera);
-
-        // Vẽ các Tile Layer trước (Sàn, tường...)
+        renderer.render();
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
             // QUAN TRỌNG: Nếu layer bị tắt trong Tiled, bỏ qua không vẽ
@@ -282,6 +323,7 @@ public class MapManager {
                 );
             }
         }
+        renderer.getBatch().end();
     }
 
     // =========================
@@ -332,6 +374,9 @@ public class MapManager {
         return null;
     }
 
+    // =========================
+    // DOOR
+    // =========================
     public void openDoor(String doorName) {
         //  XÓA VA CHẠM (Collision)
         for (int i = doorObjects.size - 1; i >= 0; i--) {
@@ -396,6 +441,7 @@ public class MapManager {
         if (player.hitbox.overlaps(hideTrigger)) {
             triggered = true;
         }
+        System.out.println("🚪 TỔNG KẾT: Door opened: " + doorName);
         // Block đứng lên trigger
         for (PushableBlock block : pushables) {
             if (block.getBounds().overlaps(hideTrigger)) {

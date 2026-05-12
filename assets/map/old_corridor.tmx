@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="18">
+ <tileset firstgid="1" source="wall_paid.tsx"/>
+ <tileset firstgid="197" source="floor_paid.tsx"/>
+ <layer id="2" name="Floor" width="16" height="9">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,283,278,278,278,278,278,278,280,0,0,0,0,
+0,0,0,283,268,268,268,268,268,268,268,268,282,0,0,0,
+0,0,0,0,281,268,268,268,268,268,268,282,0,0,0,0,
+0,0,0,0,285,287,287,287,287,287,287,287,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="1" name="Wall" width="16" height="9">
+  <data encoding="csv">
+16,16,16,5,140,6,6,6,6,6,6,6,7,16,16,16,
+16,16,16,19,154,52,10,109,110,120,121,10,21,16,16,16,
+16,16,16,19,154,66,95,96,120,121,95,96,21,16,16,16,
+16,16,16,88,154,0,0,0,0,0,0,0,85,16,16,16,
+16,16,16,0,0,0,0,0,0,0,0,0,0,16,16,16,
+16,16,16,46,0,0,0,0,0,0,0,0,43,16,16,16,
+16,16,16,19,0,0,0,0,0,0,0,0,21,16,16,16,
+16,16,16,33,34,34,34,34,34,34,34,34,35,16,16,16,
+16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16
+</data>
+ </layer>
+ <objectgroup id="6" name="Wall_Collision">
+  <object id="1" x="95" y="75.5" width="31.3333" height="52.8333"/>
+  <object id="2" x="94.25" y="162" width="31.75" height="76.5"/>
+  <object id="3" x="100.667" y="226" width="304" height="21.3333"/>
+  <object id="4" x="385.75" y="161.75" width="33.7045" height="79.5"/>
+  <object id="5" x="384.667" y="75.1667" width="35.3333" height="52.8333"/>
+  <object id="6" x="416.667" y="103" width="12.5" height="77.8333"/>
+  <object id="7" x="111" y="75.5" width="288" height="18"/>
+  <object id="9" x="75.3333" y="100" width="20.6667" height="88"/>
+  <object id="13" x="120.75" y="80.5" width="38" height="47"/>
+ </objectgroup>
+ <objectgroup id="7" name="SpawnPoints">
+  <object id="15" name="Old_Chapel.tmx" x="136" y="147.25">
+   <point/>
+  </object>
+  <object id="17" name="Exit.tmx" x="375.667" y="146.333">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="8" name="Old_Chapel_Chamber">
+  <object id="14" name="Old_Chapel.tmx" x="95.75" y="128.5" width="30" height="33.5"/>
+ </objectgroup>
+ <objectgroup id="9" name="Exit_Chamber">
+  <object id="16" name="Exit.tmx" x="384.182" y="128.182" width="32.3636" height="33.6364"/>
+ </objectgroup>
+</map>
