@@ -5,7 +5,7 @@
  <tileset firstgid="407" source="floor_paid.tsx"/>
  <tileset firstgid="505" source="wallfloor.tsx"/>
  <tileset firstgid="805" source="candle.tsx"/>
- <layer id="1" name="Wall" width="16" height="14">
+ <layer id="1" name="Wall" width="16" height="14" locked="1">
   <data encoding="csv">
 226,226,226,215,216,216,216,216,216,216,216,216,216,217,226,226,
 226,226,226,229,251,220,220,220,220,220,220,220,260,231,226,226,
@@ -23,7 +23,7 @@
 226,226,226,243,244,244,244,244,244,244,244,244,244,245,226,226
 </data>
  </layer>
- <layer id="3" name="Floor" width="16" height="14">
+ <layer id="3" name="Floor" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -41,7 +41,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="15" name="Hide_Floor" width="16" height="14">
+ <layer id="15" name="HiddenRoomWall" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -59,17 +59,17 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="2" name="Bookself" width="16" height="14">
+ <layer id="2" name="Bookself" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,45,46,47,48,0,45,46,49,50,0,0,0,
 0,0,0,0,59,60,61,62,0,59,60,63,64,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,47,48,49,50,51,52,0,51,52,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,61,62,63,64,65,66,0,65,66,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,49,50,0,47,48,49,50,45,46,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,63,64,0,61,62,63,64,59,60,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -90,12 +90,12 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,15,16,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,29,30,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="11" name="Corridor_Chamber">
+ <objectgroup id="11" name="Corridor_Chamber" locked="1">
   <object id="75" name="corridor.tmx" x="416" y="320" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="12" name="Wall_Collision">
@@ -114,16 +114,16 @@
   <object id="60" x="352" y="192" width="64" height="31.5"/>
   <object id="62" x="128" y="288" width="64" height="32.5"/>
   <object id="63" x="224" y="288" width="192" height="31.5"/>
-  <object id="67" x="320" y="393" width="64" height="23"/>
+  <object id="67" x="320" y="384" width="64" height="32"/>
   <object id="120" x="128" y="96" width="288" height="32.3815"/>
  </objectgroup>
  <objectgroup id="38" name="hidden_room_Collision">
-  <object id="84" x="115.67" y="128" width="12.33" height="32"/>
+  <object id="84" x="116" y="128" width="12" height="32"/>
  </objectgroup>
- <objectgroup id="26" name="Hidden_room_Chamber">
+ <objectgroup id="26" name="Hidden_room_Chamber" locked="1">
   <object id="118" name="hidden_room.tmx" x="96" y="128" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="14" name="SpawnPoints">
+ <objectgroup id="14" name="SpawnPoints" locked="1">
   <object id="76" name="corridor.tmx" x="395" y="347">
    <point/>
   </object>
@@ -131,7 +131,7 @@
    <point/>
   </object>
  </objectgroup>
- <layer id="31" name="Chest_Open" width="16" height="14">
+ <layer id="31" name="Chest_Open" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -205,20 +205,20 @@
   <object id="140" name="candle_3" gid="2" x="288" y="33.3333" width="32" height="32"/>
   <object id="142" name="candle_4" gid="2" x="354" y="32.6667" width="32" height="32"/>
  </objectgroup>
- <layer id="58" name="Overhead" width="16" height="14">
+ <layer id="58" name="Overhead" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,47,48,49,50,51,52,0,51,52,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,49,50,0,47,48,49,50,47,48,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,15,16,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>

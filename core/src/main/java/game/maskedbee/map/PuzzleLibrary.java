@@ -392,46 +392,36 @@ public class PuzzleLibrary {
         setLayerVisible("Chest_Open", true);
     }
 
+    // =====================================================
+    // MỞ PHÒNG BÍ MẬT
+    // =====================================================
     private void openHiddenRoom() {
-
-        MapLayer hiddenLayer =
-            map.getLayers().get("HiddenRoomWall");
-
+        MapLayer hiddenLayer = map.getLayers().get("HiddenRoomWall");
         if (hiddenLayer != null) {
             hiddenLayer.setVisible(false);
         }
-        // =====================================
-        // XÓA COLLISION
-        // =====================================
 
-        MapLayer collisionLayer =
-            map.getLayers().get("hidden_room_Collision");
-
+        // 2. XÓA VÙNG VA CHẠM
+        MapLayer collisionLayer = map.getLayers().get("hidden_room_Collision");
         if (collisionLayer != null) {
-
             for (MapObject obj : collisionLayer.getObjects()) {
-
                 if (obj instanceof RectangleMapObject) {
-
-                    Rectangle rect =
-                        ((RectangleMapObject) obj).getRectangle();
-
-                    wallCollision.removeValue(rect, true);
+                    Rectangle rectToRemove = ((RectangleMapObject) obj).getRectangle();
+                    // Xóa từ wallCollision
+                    for (int i = wallCollision.size - 1; i >= 0; i--) {
+                        if (wallCollision.get(i).overlaps(rectToRemove)) {
+                            wallCollision.removeIndex(i);
+                        }
+                    }
                 }
             }
         }
-
-        System.out.println("Hidden room opened");
     }
 
-    private void setLayerVisible(String layerName,
-                                 boolean visible) {
+    private void setLayerVisible(String layerName, boolean visible) {
 
-        MapLayer layer =
-            map.getLayers().get(layerName);
+        MapLayer layer = map.getLayers().get(layerName);
 
-        if (layer != null) {
-            layer.setVisible(visible);
-        }
+        if (layer != null) layer.setVisible(visible);
     }
 }

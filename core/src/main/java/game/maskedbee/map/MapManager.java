@@ -201,6 +201,7 @@ public class MapManager {
     public void renderBackground(OrthographicCamera camera) {
         if (renderer == null || map == null) return;
         renderer.setView(camera);
+        // 1. Vẽ các lớp gạch tĩnh (Sàn, tường...) trừ lớp Overhead
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
             if (layer.isVisible() && layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer) {
@@ -210,12 +211,16 @@ public class MapManager {
             }
         }
         renderer.getBatch().end();
-        // 2. Vẽ các Object Puzzle (Gai, Cần gạt, Cửa)
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
-            String n = layer.getName();
-            if (layer.isVisible() && (n.equals("Spikes") || n.equals("Switch") || n.equals("Door") || n.contains("Interact"))) {
-                renderObjectLayer(layer);
+            // Lọc ra các Object Layer (Màu tím) và đang được bật Visible
+            if (layer.isVisible() && !(layer instanceof com.badlogic.gdx.maps.tiled.TiledMapTileLayer)) {
+                String n = layer.getName();
+                // CHỈ BỎ QUA các layer vô hình (Va chạm, Spawn) và lớp che đầu
+                // CÒN LẠI (Nến, Rương, Gai, Cần gạt, Ngôi sao...) VẼ HẾT!
+                if (!n.contains("Collision") && !n.contains("spawn") && !n.equals("SpawnPoints") && !n.equals("Overhead")) {
+                    renderObjectLayer(layer);
+                }
             }
         }
         renderer.getBatch().end();

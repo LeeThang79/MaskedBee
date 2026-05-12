@@ -129,7 +129,7 @@ public class PlayScreen implements Screen {
     @Override
     public void show() {
         game.map.loadMap("map/cocoon_chamber.tmx");
-        puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getFullCollision(), game.map.getInteractPoints());        spawnPlayer(null);
+        puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getWallCollision(), game.map.getInteractPoints());        spawnPlayer(null);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         updateCamera();
     }
@@ -150,7 +150,7 @@ public class PlayScreen implements Screen {
             if (nextMap != null) {
                 String lastMap = game.map.getCurrentMapName();
                 game.map.loadMap(nextMap);
-                puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getFullCollision(), game.map.getInteractPoints());
+                puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getWallCollision(), game.map.getInteractPoints());
                 spawnPlayer(lastMap);
                 updateCamera();
                 return; // Thoát render vòng này để vẽ map mới
