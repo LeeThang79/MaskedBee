@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import game.maskedbee.objects.PushableBlock;
 
 public abstract class Entity {
     public float x, y;
@@ -53,6 +54,79 @@ public abstract class Entity {
         y = MathUtils.clamp(y, 0, Gdx.graphics.getHeight() - hitbox.height);
 
         hitbox.setPosition(x, y);
+    }
+    public void moveWithCollision(
+        float stepX,
+        float stepY,
+        Array<Rectangle> walls,
+        Array<PushableBlock> blocks
+    ) {
+
+        // X AXIS
+        futureHitbox.set(
+            hitbox.x + stepX,
+            hitbox.y,
+            hitbox.width,
+            hitbox.height
+        );
+
+        boolean canMoveX = true;
+
+        // WALL
+        for (Rectangle wall : walls) {
+            if (futureHitbox.overlaps(wall)) {
+                canMoveX = false;
+                break;
+            }
+        }
+
+        // BLOCK
+        if (canMoveX) {
+            for (PushableBlock block : blocks) {
+                if (futureHitbox.overlaps(block.getBounds())) {
+                    canMoveX = false;
+                    break;
+                }
+            }
+        }
+
+        if (canMoveX) {
+            x += stepX;
+            hitbox.x = x;
+        }
+
+        // Y AXIS
+        futureHitbox.set(
+            hitbox.x,
+            hitbox.y + stepY,
+            hitbox.width,
+            hitbox.height
+        );
+
+        boolean canMoveY = true;
+
+        // WALL
+        for (Rectangle wall : walls) {
+            if (futureHitbox.overlaps(wall)) {
+                canMoveY = false;
+                break;
+            }
+        }
+
+        // BLOCK
+        if (canMoveY) {
+            for (PushableBlock block : blocks) {
+                if (futureHitbox.overlaps(block.getBounds())) {
+                    canMoveY = false;
+                    break;
+                }
+            }
+        }
+
+        if (canMoveY) {
+            y += stepY;
+            hitbox.y = y;
+        }
     }
     public abstract void draw(SpriteBatch batch);
 }

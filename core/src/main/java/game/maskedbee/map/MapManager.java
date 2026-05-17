@@ -326,6 +326,18 @@ public class MapManager {
                 Rectangle rect = ((RectangleMapObject) portal).getRectangle();
 
                 if (entityRect.overlaps(rect)) {
+                    boolean blockedByDoor = false;
+                    for (RectangleMapObject door : doorObjects) {
+                        if (rect.overlaps(door.getRectangle())) {
+                            blockedByDoor = true;
+                            break;
+                        }
+                    }
+                    // Nếu portal đang bị cửa đóng chặn
+                    if (blockedByDoor) {
+                        return null;
+                    }
+
                     if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
                         || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
 

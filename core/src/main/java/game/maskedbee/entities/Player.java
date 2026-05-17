@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import game.maskedbee.objects.PushableBlock;
 
 public class Player extends Entity {
     public String currentKey = null;
@@ -58,7 +59,7 @@ public class Player extends Entity {
         idleCreepSide = creepFrames.get(0);
     }
 
-    public void update(float deltaTime, Array<Rectangle> walls) {
+    public void update(float deltaTime, Array<Rectangle> walls, Array<PushableBlock> blocks) {
         stateTime += deltaTime;
 
         isCreeping = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
@@ -84,7 +85,7 @@ public class Player extends Entity {
         }
 
         if (moveX != 0 && moveY != 0) { moveX *= 0.707f; moveY *= 0.707f; }
-        moveWithCollision(moveX * currentSpeed * deltaTime, moveY * currentSpeed * deltaTime, walls);
+        moveWithCollision(moveX * currentSpeed * deltaTime, moveY * currentSpeed * deltaTime, walls, blocks);
     }
 
     @Override

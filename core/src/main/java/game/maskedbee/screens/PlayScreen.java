@@ -285,7 +285,7 @@ public class PlayScreen implements Screen {
             handlePushables();
 
             // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
-            myPlayer.update(delta, game.map.getWallCollision());
+            myPlayer.update(delta, game.map.getWallCollision(), game.map.getPushables());
             game.map.updateFloorHide(myPlayer);
 
             // Cập nhật tất cả quái vật trên bản đồ hiện tại
