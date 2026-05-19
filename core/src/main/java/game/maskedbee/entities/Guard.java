@@ -10,10 +10,11 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.math.Intersector;
 
 public class Guard extends Entity {
-    public float patrolSpeed = 60f;
-    public float chaseSpeed = 10f;
+    public float patrolSpeed = 40f;
+    public float chaseSpeed = 60f;
 
     public enum State { PATROL, SUSPICIOUS, INVESTIGATE, CHASE, RETURN }
     public State currentState = State.PATROL;
@@ -21,8 +22,8 @@ public class Guard extends Entity {
     public float alertLevel = 0f;
     private Vector2 lastKnownPos;
 
-    public float visionRadius = 400f;
-    public float viewAngle = 80f;
+    public float visionRadius = 150f; // do xa 150
+    public float viewAngle = 60f; // goc do mo cua mat
     private float rotation = 0f;
     private float startX, startY;
 
@@ -177,6 +178,22 @@ public class Guard extends Entity {
             this.alertLevel = 0f;
             this.lastKnownPos.set(this.x, this.y); // Quên sạch vị trí cũ
         }
+        if (distToPlayer <= currentVisionRadius) {
+            if (currentState == State.CHASE) {
+                // Kể cả lúc đang rượt, nếu Player nấp sau cột thì cũng sẽ bị mất dấu
+                seeingPlayer = hasLineOfSight(player, walls);
+            } else {
+                float angleToPlayer = MathUtils.atan2(player.y - (y+20), player.x - (x+16)) * MathUtils.radiansToDegrees;
+                float angleDiff = Math.abs(angleToPlayer - rotation);
+                if (angleDiff > 180) angleDiff = 360 - angleDiff;
+
+                // Nếu Player nằm trong góc quét của đèn pin
+                if (angleDiff <= viewAngle / 2f) {
+                    // KIỂM TRA QUYẾT ĐỊNH: Có bị cột/tường che không?
+                    seeingPlayer = hasLineOfSight(player, walls);
+                }
+            }
+        }
     }
 
     private int findNearestWaypointIndex() {
@@ -189,6 +206,28 @@ public class Guard extends Entity {
         return nearest;
     }
 
+    private boolean hasLineOfSight(Player player, Array<Rectangle> walls) {
+        float guardBaseX = this.x + 16;
+
+        // SỬA Ở ĐÂY: Hạ thấp tia nhìn xuống sát chân (từ +20 xuống +8)
+        float guardBaseY = this.y + 8;
+
+        float playerBaseX = player.x + 16;
+
+        // SỬA Ở ĐÂY: Hạ thấp tâm nhận diện của Player (từ +16 xuống +8)
+        float playerBaseY = player.y + 8;
+
+        Vector2 guardBase = new Vector2(guardBaseX, guardBaseY);
+        Vector2 playerBase = new Vector2(playerBaseX, playerBaseY);
+
+        for (Rectangle wall : walls) {
+            // Kiểm tra xem đoạn thẳng nối từ Guard đến Player có bị hình chữ nhật (Tường/Cột) nào cắt ngang không
+            if (com.badlogic.gdx.math.Intersector.intersectSegmentRectangle(guardBase, playerBase, wall)) {
+                return false; // Bị che rồi, tàng hình thành công!
+            }
+        }
+        return true; // Không có gì che cả, bắt nó!
+    }
     @Override
     public void draw(SpriteBatch batch) {
         TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);

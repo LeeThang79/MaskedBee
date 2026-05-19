@@ -201,6 +201,15 @@ public class PlayScreen implements Screen {
             guard.draw(game.batch);
         }
         game.batch.end();
+        shapeRender.setProjectionMatrix(camera.combined);
+        shapeRender.begin(ShapeRenderer.ShapeType.Line);
+        for (Guard guard : game.map.guards) {
+            guard.drawDebug(shapeRender, myPlayer); // Vẽ nón tầm nhìn và thanh báo động
+        }
+        shapeRender.end();
+        // ===============================================
+
+        game.map.renderForeground(camera); // Vẽ lồng sắt đè lên
     }
 
     private void handlePauseMenuLogic() {
