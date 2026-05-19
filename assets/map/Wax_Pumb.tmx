@@ -3,6 +3,7 @@
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="sewer.tsx"/>
  <tileset firstgid="371" source="wall_paid.tsx"/>
+ <tileset firstgid="567" source="wallfloor.tsx"/>
  <layer id="1" name="Wall" width="16" height="9">
   <data encoding="csv">
 44,44,44,28,22,22,22,22,22,22,22,22,27,44,44,44,
@@ -30,12 +31,12 @@
 </data>
  </layer>
  <objectgroup id="4" name="SpawnPoints">
-  <object id="2" name="queen_chamber.tmx" x="272.773" y="218.469">
+  <object id="2" name="Queen_Chamber.tmx" x="272.773" y="218.469">
    <point/>
   </object>
  </objectgroup>
  <objectgroup id="5" name="Queen_Chamber">
-  <object id="1" name="queen_chamber.tmx" x="256.065" y="224.175" width="32.1246" height="31.7748"/>
+  <object id="1" name="Queen_Chamber.tmx" x="256.065" y="224.175" width="32.1246" height="31.7748"/>
  </objectgroup>
  <layer id="8" name="Pipe1" width="16" height="9">
   <data encoding="csv">
@@ -133,7 +134,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,52,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,618,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

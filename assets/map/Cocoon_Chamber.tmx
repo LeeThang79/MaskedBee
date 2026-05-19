@@ -97,10 +97,10 @@
   </object>
  </objectgroup>
  <objectgroup id="14" name="Ritual_Chamber">
-  <object id="156" name="ritual_chamber.tmx" x="416.516" y="160.638" width="31.3746" height="31.1405"/>
+  <object id="156" name="Ritual_Chamber.tmx" x="416.516" y="160.638" width="31.3746" height="31.1405"/>
  </objectgroup>
  <objectgroup id="17" name="SpawnPoints">
-  <object id="158" name="ritual_chamber.tmx" x="408.261" y="180.794">
+  <object id="158" name="Ritual_Chamber.tmx" x="408.261" y="180.794">
    <point/>
   </object>
  </objectgroup>

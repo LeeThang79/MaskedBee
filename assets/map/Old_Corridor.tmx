@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="18">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="11" nextobjectid="22">
  <tileset firstgid="1" source="wall_paid.tsx"/>
  <tileset firstgid="197" source="floor_paid.tsx"/>
  <layer id="2" name="Floor" width="16" height="9">
@@ -37,13 +37,19 @@
   <object id="6" x="416.667" y="103" width="12.5" height="77.8333"/>
   <object id="7" x="111" y="75.5" width="288" height="18"/>
   <object id="9" x="75.3333" y="100" width="20.6667" height="88"/>
-  <object id="13" x="120.75" y="80.5" width="38" height="47"/>
+  <object id="13" x="159.295" y="84.6818" width="2" height="43"/>
+ </objectgroup>
+ <objectgroup id="10" name="Disposal_Chamber">
+  <object id="18" name="Disposal.tmx" x="126.182" y="93.6364" width="32.5455" height="35.6364"/>
  </objectgroup>
  <objectgroup id="7" name="SpawnPoints">
   <object id="15" name="Old_Chapel.tmx" x="136" y="147.25">
    <point/>
   </object>
-  <object id="17" name="Exit.tmx" x="375.667" y="146.333">
+  <object id="17" name="Exit_Chamber.tmx" x="375.667" y="146.333">
+   <point/>
+  </object>
+  <object id="20" name="Disposal.tmx" x="143.818" y="133.455">
    <point/>
   </object>
  </objectgroup>
@@ -51,6 +57,6 @@
   <object id="14" name="Old_Chapel.tmx" x="95.75" y="128.5" width="30" height="33.5"/>
  </objectgroup>
  <objectgroup id="9" name="Exit_Chamber">
-  <object id="16" name="Exit.tmx" x="384.182" y="128.182" width="32.3636" height="33.6364"/>
+  <object id="16" name="Exit_Chamber.tmx" x="384.182" y="128.182" width="32.3636" height="33.6364"/>
  </objectgroup>
 </map>

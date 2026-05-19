@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="30">
+ <tileset firstgid="1" source="wall_paid.tsx"/>
+ <tileset firstgid="197" source="floor_paid.tsx"/>
+ <tileset firstgid="295" source="wallfloor.tsx"/>
+ <tileset firstgid="595" source="bookself.tsx"/>
+ <layer id="2" name="Floor" width="16" height="9">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,277,279,279,279,279,279,279,279,279,279,279,279,0,0,
+0,283,246,254,254,254,254,254,254,254,254,254,254,282,280,0,
+0,0,281,254,254,254,254,254,254,254,254,254,254,254,287,0,
+0,0,281,254,254,254,254,254,254,254,254,254,254,282,0,0,
+0,0,285,286,286,286,286,286,286,286,286,286,286,287,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="1" name="Wall" width="16" height="9">
+  <data encoding="csv">
+16,5,141,142,141,142,141,142,141,142,141,142,141,142,7,16,
+16,17,106,107,94,109,110,122,122,109,110,94,106,107,15,16,
+16,17,94,109,110,120,121,109,110,120,121,109,110,94,15,16,
+16,88,0,0,0,0,0,0,0,0,0,0,0,0,85,16,
+16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,
+16,46,0,0,0,0,0,0,0,0,0,0,0,0,0,16,
+16,17,0,0,0,0,0,0,0,0,0,0,0,0,43,16,
+16,17,0,0,0,0,0,0,0,0,0,0,0,0,15,16,
+16,33,143,144,143,144,143,144,143,144,143,144,143,144,35,16
+</data>
+ </layer>
+ <layer id="6" name="Skull" width="16" height="9">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,767,767,0,0,0,0,0,0,0,0,0,0,
+0,0,781,0,767,763,764,0,779,0,0,0,763,764,0,0,
+0,0,0,0,0,777,778,0,0,0,780,0,777,778,0,0,
+0,0,0,0,0,780,0,763,764,0,0,763,764,0,0,0,
+0,0,0,763,764,0,0,777,778,0,0,777,778,0,0,0,
+0,0,0,777,778,0,780,0,0,0,0,0,0,779,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="11" name="Skull_Collision">
+  <object id="17" x="105.75" y="217.75" width="41" height="22">
+   <ellipse/>
+  </object>
+  <object id="18" x="169.833" y="122.25" width="42" height="22">
+   <ellipse/>
+  </object>
+  <object id="19" x="233.167" y="186.333" width="42.5" height="22">
+   <ellipse/>
+  </object>
+  <object id="20" x="361" y="186" width="42" height="22">
+   <ellipse/>
+  </object>
+  <object id="21" x="393.5" y="122" width="42.5" height="22">
+   <ellipse/>
+  </object>
+  <object id="23" x="163.333" y="178" width="25.6667" height="14">
+   <capsule/>
+  </object>
+  <object id="24" x="194.833" y="243" width="25.6667" height="14">
+   <capsule/>
+  </object>
+  <object id="25" x="67.1667" y="114" width="25.6667" height="14">
+   <capsule/>
+  </object>
+  <object id="27" x="258.833" y="114.667" width="25.6667" height="14">
+   <capsule/>
+  </object>
+  <object id="28" x="322.833" y="146.333" width="25.6667" height="14">
+   <capsule/>
+  </object>
+  <object id="29" x="419.5" y="242.667" width="25.6667" height="14">
+   <capsule/>
+  </object>
+ </objectgroup>
+ <objectgroup id="7" name="Wall_Collision">
+  <object id="1" x="29.5" y="161.75" width="34" height="104.25"/>
+  <object id="2" x="36" y="256" width="424.5" height="13"/>
+  <object id="4" x="448.989" y="194" width="33.2614" height="75"/>
+  <object id="6" x="448.75" y="65.75" width="34" height="63"/>
+  <object id="7" x="480.25" y="107" width="16" height="106.5"/>
+  <object id="8" x="19.5" y="90.5" width="11" height="96.5"/>
+  <object id="9" x="28.3333" y="69.5833" width="34.3333" height="59.75"/>
+  <object id="10" x="48.0833" y="62" width="413.917" height="32.6667"/>
+ </objectgroup>
+ <objectgroup id="8" name="SpawnPoints">
+  <object id="11" name="Old_Corridor.tmx" x="70" y="146.667">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="9" name="Old_Corridor_Chamber">
+  <object id="15" name="Old_Corridor.tmx" x="30.5455" y="129.273" width="32" height="32.3636"/>
+ </objectgroup>
+ <objectgroup id="10" name="Exit">
+  <object id="16" name="Exit.tmx" x="448.909" y="128.727" width="31.2727" height="65.2727"/>
+ </objectgroup>
+</map>

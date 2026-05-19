@@ -28,16 +28,16 @@
 </data>
  </layer>
  <objectgroup id="8" name="Corridor_Chamber">
-  <object id="27" name="corridor.tmx" x="-0.0871212" y="192.203" width="31.7258" height="31.7258"/>
+  <object id="27" name="Corridor.tmx" x="-0.0871212" y="192.203" width="31.7258" height="31.7258"/>
  </objectgroup>
  <objectgroup id="10" name="Wax_Chamber">
-  <object id="31" name="wax_pumb.tmx" x="353.697" y="72.5" width="28" height="24"/>
+  <object id="31" name="Wax_Pumb.tmx" x="353.697" y="72.5" width="28" height="24"/>
  </objectgroup>
  <objectgroup id="9" name="SpawnPoints">
-  <object id="29" name="corridor.tmx" x="40.8761" y="211.029">
+  <object id="29" name="Corridor.tmx" x="40.8761" y="211.029">
    <point/>
   </object>
-  <object id="30" name="wax_pumb.tmx" x="368.667" y="101.333">
+  <object id="30" name="Wax_Pumb.tmx" x="368.667" y="101.333">
    <point/>
   </object>
  </objectgroup>
