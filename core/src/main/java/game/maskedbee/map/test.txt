@@ -1,0 +1,65 @@
+package game.maskedbee.main;
+
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.ScreenUtils;
+import game.maskedbee.map.MapManager;
+import game.maskedbee.entities.Player;
+
+public class CORE extends Game {
+    public SpriteBatch batch;
+    private MapManager mapManager;
+    private OrthographicCamera camera;
+
+    private Player player;
+
+    @Override
+    public void create() {
+        batch = new SpriteBatch();
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, 800, 600);
+
+        // Load map đúng đường dẫn trong assets/map/
+        mapManager = new MapManager();
+        mapManager.loadMap("map/cocoon_chamber.tmx");
+
+        // Tạo player tại vị trí start (x, y)
+        player = new Player(100, 100);
+    }
+
+    @Override
+    public void render() {
+        ScreenUtils.clear(0, 0, 0, 1);
+
+        float deltaTime = com.badlogic.gdx.Gdx.graphics.getDeltaTime();
+
+        // Cập nhật player với danh sách wall từ mapManager để check va chạm
+        player.update(deltaTime, mapManager.getWallCollision());
+
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+
+        batch.begin();
+        // Vẽ map trước
+        mapManager.render(camera);
+
+        // Vẽ player lên trên
+        player.draw(batch);
+        batch.end();
+
+        // Kiểm tra portal (cổng dịch chuyển)
+        String nextMap = mapManager.checkPortal(player.hitbox);
+        if (nextMap != null) {
+            mapManager.loadMap(nextMap);
+            // Có thể reset vị trí player nếu muốn
+        }
+    }
+
+    @Override
+    public void dispose() {
+        batch.dispose();
+        if (mapManager != null) mapManager.dispose();
+    }
+}

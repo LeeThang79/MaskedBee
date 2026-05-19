@@ -63,6 +63,21 @@
   <object id="30" x="0.25" y="71.0833" width="31.25" height="88.4167"/>
   <object id="33" x="19" y="65" width="493" height="29"/>
   <object id="34" x="543.333" y="66.6667" width="132.667" height="28.6667"/>
+  </objectgroup>
+ <objectgroup id="28" name="Guards">
+  <object id="67" name="guard_1" x="98" y="183.5">
+   <polyline points="7,8 111.502,-22.4842 190.97,15.1125 288.994,-22.6058 439.5,16.5"/>
+  </object>
+  <object id="69" name="guard_2" x="246.5" y="111.5" visible="0">
+   <polygon points="-10.5,-3 -2.5,115 -72.5036,127.946 -135,112 -106,27.5 10.7992,81.257 153.999,61.171 266,75 265,0.5 187.54,0.170485"/>
+  </object>
+  <object id="70" name="guard_3" x="612" y="127" visible="0">
+   <polygon points="20,-10.5 -146.494,-20.3569 -250,-9 -247,114 -151.5,111.5 -168.782,66.0429 -196,-4 -144.955,-21.5898 -95,-3.5 -108,83.5 19.5,83"/>
+  </object>
+  <object id="67" x="692.667" y="110.667" width="11.6667" height="59.6667"/>
+  <object id="68" x="307.667" y="274" width="56.5" height="14"/>
+  <object id="69" x="-0.333333" y="145.667" width="16" height="54"/>
+  <object id="70" x="499" y="55" width="61" height="23.6667"/>
   <object id="67" x="692.667" y="110.667" width="11.6667" height="59.6667"/>
   <object id="68" x="307.667" y="274" width="56.5" height="14"/>
   <object id="69" x="-0.333333" y="145.667" width="16" height="54"/>
