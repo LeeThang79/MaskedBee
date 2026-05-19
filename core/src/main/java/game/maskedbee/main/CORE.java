@@ -1,16 +1,17 @@
 package game.maskedbee.main;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import game.maskedbee.screens.FirstScreen;
+import game.maskedbee.entities.Player;
 import game.maskedbee.map.MapManager;
+import game.maskedbee.screens.FirstScreen;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class CORE extends Game {
     public SpriteBatch batch;
     public MapManager map;
-
+    private MapManager mapManager;
+    private Player player;
     @Override
     public void create() {
         batch = new SpriteBatch();

@@ -9,6 +9,7 @@ import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.objects.PointMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -19,8 +20,12 @@ import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Vector2;
 import game.maskedbee.entities.Guard;
 
+import game.maskedbee.entities.Player;
 import game.maskedbee.objects.Spike;
 import game.maskedbee.objects.Lever;
+import game.maskedbee.objects.Door;
+import game.maskedbee.objects.Key;
+import game.maskedbee.objects.PushableBlock;
 
 public class MapManager {
 
@@ -32,6 +37,29 @@ public class MapManager {
     private final Array<MapObject> portalObjects = new Array<>();
     private final Array<RectangleMapObject> interactPoints = new Array<>();
 
+    // PushableBlock
+    private final Array<PushableBlock> pushables = new Array<>();
+    public Array<PushableBlock> getPushables() {
+        return pushables;
+    }
+    private Rectangle hideTrigger;
+    public Rectangle getHideTrigger() {
+        return hideTrigger;
+    }
+    public void resetPushables() {
+        for (PushableBlock block : pushables) {
+            block.resetPosition();
+        }
+    }
+    // Keys
+    private final Array<Key> keys = new Array<>();
+    public Array<Key> getKeys() {
+        return keys;
+    }
+    //door
+    private final Array<Door> doors = new Array<>();
+    private TiledMapTileLayer doorCloseLayer;
+    private TiledMapTileLayer doorOpenLayer;
     // THÊM: Danh sách Gai và Cần gạt
     public final Array<Spike> spikes = new Array<>();
     public final Array<Lever> levers = new Array<>();
@@ -59,6 +87,9 @@ public class MapManager {
             renderer = new OrthogonalTiledMapRenderer(map);
 
             wallCollision.clear();
+            pushables.clear();
+            keys.clear();
+            doors.clear();
             doorObjects.clear();
             portalObjects.clear();
             spikes.clear(); // tai them
@@ -66,6 +97,8 @@ public class MapManager {
             guards.clear();
 
             interactPoints.clear();
+            doorCloseLayer = (TiledMapTileLayer) map.getLayers().get("Door_Close");
+            doorOpenLayer = (TiledMapTileLayer) map.getLayers().get("Door_Open");
 
             for (MapLayer layer : map.getLayers()) {
                 String layerName = layer.getName();
@@ -87,7 +120,46 @@ public class MapManager {
                 else if (layerName.equals("Doors")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
-                            doorObjects.add((RectangleMapObject) obj);
+                            RectangleMapObject rectObj = (RectangleMapObject) obj;
+                            // collision
+                            doorObjects.add(rectObj);
+                            // logic door
+                            doors.add(new Door(rectObj));
+                        }
+                    }
+                }
+                // PushableBlock
+                else if (layerName.equals("Pushable")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject) {
+                            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                            // FIX tọa độ (QUAN TRỌNG)
+                            rect = new Rectangle(
+                                (float) Math.floor(rect.x / 32) * 32,
+                                (float) Math.floor(rect.y / 32) * 32,
+                                32,
+                                32
+                            );
+                            pushables.add(new PushableBlock(rect));
+                        }
+                    }
+                }
+                else if (layerName.equals("Hide_Trigger")) {
+
+                    for (MapObject obj : layer.getObjects()) {
+
+                        if (obj instanceof RectangleMapObject) {
+
+                            hideTrigger =
+                                ((RectangleMapObject) obj).getRectangle();
+                        }
+                    }
+                }
+                // KEY
+                else if (layerName.equals("Keys")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject) {
+                            keys.add(new Key((RectangleMapObject) obj));
                         }
                     }
                 }
@@ -170,10 +242,10 @@ public class MapManager {
     }
     public Rectangle getPlayerSpawn() {
         if (map == null) return null;
-        MapLayer layer = map.getLayers().get("Player_spawn");
+        MapLayer layer = map.getLayers().get("Player_Spawn");
         if (layer == null) return null;
         for (MapObject obj : layer.getObjects()) {
-            if ("player_spawn".equals(obj.getName())) {
+            if ("Player_Spawn".equals(obj.getName())) {
                 if (obj instanceof RectangleMapObject) {
                     return ((RectangleMapObject) obj).getRectangle();
                 }
@@ -235,6 +307,15 @@ public class MapManager {
 
         return false;
     }
+    //pushable
+    public PushableBlock getCollidingPushable(Rectangle rect) {
+        for (PushableBlock block : pushables) {
+            if (rect.overlaps(block.getBounds())) {
+                return block;
+            }
+        }
+        return null;
+    }
 
     // =========================
     // PORTAL (CHUYỂN MAP)
@@ -245,6 +326,18 @@ public class MapManager {
                 Rectangle rect = ((RectangleMapObject) portal).getRectangle();
 
                 if (entityRect.overlaps(rect)) {
+                    boolean blockedByDoor = false;
+                    for (RectangleMapObject door : doorObjects) {
+                        if (rect.overlaps(door.getRectangle())) {
+                            blockedByDoor = true;
+                            break;
+                        }
+                    }
+                    // Nếu portal đang bị cửa đóng chặn
+                    if (blockedByDoor) {
+                        return null;
+                    }
+
                     if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
                         || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
 
@@ -272,7 +365,7 @@ public class MapManager {
             }
         }
         // Xóa hình ảnh cái cửa
-        MapLayer visualDoorLayer = map.getLayers().get("Door");
+        MapLayer visualDoorLayer = map.getLayers().get("Doors");
         if (visualDoorLayer != null) {
             for (MapObject obj : visualDoorLayer.getObjects()) {
                 if (doorName.equals(obj.getName())) {
@@ -280,8 +373,62 @@ public class MapManager {
                     System.out.println("✅ Đã ẩn hình ảnh cửa: " + doorName);
                 }
             }
+            //  XỬ LÝ TILE DOOR (Door_Close / Door_Open)
+            for (Door door : doors) {
+
+                if (door.getName().equals(doorName)) {
+
+                    door.open();
+
+                    Rectangle b = door.getBounds();
+
+                    int tileX = Math.round(b.x / 32f);
+                    int tileY = Math.round(b.y / 32f);
+                    // TẮT TILE CỬA ĐÓNG
+                    if (doorCloseLayer != null) {
+                        for (int i = 0; i < 2; i++) {
+                            doorCloseLayer.setCell(tileX, tileY + i, null);
+                        }
+                    }
+                    // BẬT TILE CỬA MỞ
+                    if (doorOpenLayer != null) {
+                        doorOpenLayer.setVisible(true);
+                        for (int i = 0; i < 2; i++) {
+                            TiledMapTileLayer.Cell cell =
+                                doorOpenLayer.getCell(tileX, tileY + i);
+                            if (cell != null) {
+                                doorOpenLayer.setCell(tileX, tileY + i, cell);
+                            }
+                        }
+                    }
+                    System.out.println("🚪 Tile door opened: " + doorName);
+                    break;
+                }
+            }
         }
         System.out.println("🚪 TỔNG KẾT: Door opened: " + doorName);
+    }
+    // GET DOORS
+    public Array<Door> getDoors() {
+        return doors;
+    }
+    public void updateFloorHide(Player player) {
+        MapLayer hideLayer = map.getLayers().get("Floor_Hide");
+        if (hideLayer == null || hideTrigger == null) return;
+        boolean triggered = false;
+        // Player đứng lên trigger
+        if (player.hitbox.overlaps(hideTrigger)) {
+            triggered = true;
+        }
+        // Block đứng lên trigger
+        for (PushableBlock block : pushables) {
+            if (block.getBounds().overlaps(hideTrigger)) {
+                triggered = true;
+                break;
+            }
+        }
+
+        hideLayer.setVisible(!triggered);
     }
     // =========================
     // GETTER
