@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="20" nextobjectid="163">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="20" nextobjectid="165">
  <tileset firstgid="1" name="wallfloor" tilewidth="32" tileheight="32" tilecount="300" columns="20" objectalignment="bottom">
   <image source="real_tileset.png" width="640" height="480"/>
  </tileset>
@@ -71,35 +71,36 @@
 </data>
  </layer>
  <objectgroup id="12" name="Cocoon_Collision">
-  <object id="129" name="cocoon_collision" x="227.75" y="123.083" width="38.25" height="21.5">
+  <object id="129" name="Cocoon_Collision" x="227.75" y="123.083" width="38.25" height="21.5">
    <capsule/>
   </object>
-  <object id="130" name="cocoon_collision" x="293.125" y="219.167" width="38.25" height="21.5">
+  <object id="130" name="Cocoon_Collision" x="293.125" y="219.167" width="38.25" height="21.5">
    <capsule/>
   </object>
-  <object id="131" name="cocoon_collision" x="163.959" y="219.167" width="38.25" height="21.5">
+  <object id="131" name="Cocoon_Collision" x="163.959" y="219.167" width="38.25" height="21.5">
    <capsule/>
   </object>
  </objectgroup>
- <objectgroup id="15" name="Wall_collision">
+ <objectgroup id="15" name="Wall_Collision">
   <object id="141" x="416.625" y="192.75" width="9.875" height="72.875"/>
   <object id="143" x="86.0455" y="256.697" width="341.5" height="10.5"/>
-  <object id="145" x="86.75" y="22.3333" width="9" height="239.917"/>
-  <object id="150" x="416.667" y="23.3333" width="10.3333" height="133.167"/>
-  <object id="151" x="89.5" y="52.5" width="334.667" height="40"/>
+  <object id="145" x="86.75" y="60.3333" width="9" height="201.917"/>
+  <object id="150" x="416.667" y="60" width="10.3333" height="96.5003"/>
+  <object id="151" x="89.5" y="52.5" width="334.667" height="42.1818"/>
   <object id="153" x="416.875" y="192.25" width="30.7917" height="8.75"/>
-  <object id="154" x="416.625" y="150.875" width="31.2917" height="8.5"/>
+  <object id="154" x="416.625" y="150.875" width="31.2917" height="9.125"/>
+  <object id="163" x="440.75" y="152.5" width="16.75" height="47.375"/>
  </objectgroup>
- <objectgroup id="13" name="Player_spawn">
-  <object id="132" name="player_spawn" x="247.81" y="182.81">
+ <objectgroup id="13" name="Player_Spawn">
+  <object id="132" name="Player_Spawn" x="247.81" y="182.81">
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="14" name="ritual_Chamber">
+ <objectgroup id="14" name="Ritual_Chamber">
   <object id="156" name="ritual_chamber.tmx" x="416.516" y="160.638" width="31.3746" height="31.1405"/>
  </objectgroup>
  <objectgroup id="17" name="SpawnPoints">
-  <object id="158" name="ritual_chamber.tmx" x="401.761" y="182.794">
+  <object id="158" name="ritual_chamber.tmx" x="408.261" y="180.794">
    <point/>
   </object>
  </objectgroup>

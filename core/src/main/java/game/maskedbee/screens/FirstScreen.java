@@ -162,4 +162,3 @@ public class FirstScreen implements Screen {
         if (pointer != null) pointer.dispose();
     }
 }
-
