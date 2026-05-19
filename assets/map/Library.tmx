@@ -4,7 +4,7 @@
  <tileset firstgid="211" source="wall_paid.tsx"/>
  <tileset firstgid="407" source="floor_paid.tsx"/>
  <tileset firstgid="505" source="wallfloor.tsx"/>
- <tileset firstgid="805" source="../../../../../map-demo/wallfloor.tsx"/>
+ <tileset firstgid="805" source="wallfloor.tsx"/>
  <tileset firstgid="1105" source="candle.tsx"/>
  <layer id="1" name="Wall" width="16" height="14">
   <data encoding="csv">

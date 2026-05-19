@@ -3,7 +3,7 @@
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="sewer.tsx"/>
  <tileset firstgid="371" source="wall_paid.tsx"/>
- <tileset firstgid="567" source="../../../../../map-demo/wallfloor.tsx"/>
+ <tileset firstgid="567" source="wallfloor.tsx"/>
  <layer id="1" name="Wall" width="16" height="9">
   <data encoding="csv">
 44,44,44,28,22,22,22,22,22,22,22,22,27,44,44,44,

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="27">
  <tileset firstgid="1" source="wallfloor.tsx"/>
- <tileset firstgid="301" source="../../../../../map-demo/wallfloor.tsx"/>
+ <tileset firstgid="301" source="wallfloor.tsx"/>
  <layer id="1" name="Wall" width="16" height="10">
   <data encoding="csv">
 344,344,344,28,23,23,23,23,23,23,23,23,23,27,344,344,
@@ -72,7 +72,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="13" name="Jail_Door" width="16" height="10">
+ <layer id="13" name="Jail_Door" width="16" height="10" visible="0">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

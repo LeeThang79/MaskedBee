@@ -2,7 +2,7 @@
 <map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="30">
  <tileset firstgid="1" source="wall_paid.tsx"/>
  <tileset firstgid="197" source="floor_paid.tsx"/>
- <tileset firstgid="295" source="../../../../../map-demo/wallfloor.tsx"/>
+ <tileset firstgid="295" source="wallfloor.tsx"/>
  <tileset firstgid="595" source="bookself.tsx"/>
  <layer id="2" name="Floor" width="16" height="9">
   <data encoding="csv">

@@ -4,7 +4,7 @@
   <image source="real_tileset.png" width="640" height="480"/>
  </tileset>
  <tileset firstgid="301" source="wax_texture.tsx"/>
- <tileset firstgid="319" source="../../../../../map-demo/wallfloor.tsx"/>
+ <tileset firstgid="319" source="wallfloor.tsx"/>
  <layer id="4" name="Wall" width="16" height="9">
   <data encoding="csv">
 362,362,28,23,23,23,23,23,23,23,23,23,341,345,362,362,
