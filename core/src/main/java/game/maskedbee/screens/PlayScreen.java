@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
+import game.maskedbee.map.PuzzleManager;
 import game.maskedbee.objects.Spike;
 import game.maskedbee.objects.Lever;
 import game.maskedbee.map.PuzzleLibrary;
@@ -41,7 +42,9 @@ public class PlayScreen implements Screen {
     private BitmapFont font;
     private Rectangle continueBtn;
     private Rectangle quitBtn;
+
     private PuzzleLibrary puzzleLibrary;
+    private PuzzleManager puzzleManager; // KHAI BÁO PUZZLE MANAGER
 
     public PlayScreen(CORE game) {
         this.game = game;
@@ -55,6 +58,8 @@ public class PlayScreen implements Screen {
 
         continueBtn = new Rectangle(0,0,100,30);
         quitBtn = new Rectangle(0,0,100,30);
+
+        puzzleManager = new PuzzleManager();
     }
     // Hàm tiện ích: Đưa người chơi về điểm Spawn trên Map
     private void spawnPlayer(String fromMap) {
@@ -100,147 +105,6 @@ public class PlayScreen implements Screen {
         camera.update();
     }
 
-    private void handelInteractions() {
-        // LOGIC PUZZLE: GẠT CẦN (Nhấn phím E)
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-            for (Lever lever : game.map.levers) {
-                if (myPlayer.hitbox.overlaps(lever.hitbox)) {
-
-                    lever.toggle(game.map.getMap()); // Lật hình cái cần gạt
-
-                    if ("lever".equals(lever.type)) {
-                        // Nếu là cần gạt đinh: Đảo trạng thái gai cùng màu và gai đen
-                        for (Spike spike : game.map.spikes) {
-                            if (lever.targetColor != null && lever.targetColor.equals(spike.type) || "black".equals(spike.type)) {
-                                spike.toggle(game.map.getMap());
-                            }
-                        }
-                    }
-                    else if ("door_lever".equals(lever.type)) {
-                        // Nếu là cần mở cửa: Gọi hàm mở cửa
-                        game.map.openDoor(lever.targetName);
-                    }
-                    break;
-                }
-            }
-        }
-        // LOGIC PUZZLE: CHẾT KHI ĐẠP TRÚNG GAI
-        // ------------------------------------------
-        for (Spike spike : game.map.spikes) {
-            if (spike.isUp && myPlayer.hitbox.overlaps(spike.hitbox)) {
-                System.out.println("💀 Dap trung gai! Reset level!");
-                game.map.loadMap("map/" + game.map.getCurrentMapName());
-                spawnPlayer(null);
-                break; // Thoát vòng lặp để tránh lỗi khi reset map
-            }
-        }
-        // OPEN DOOR WITH KEY
-        // ======================================
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
-            for (Door door : game.map.getDoors()) {
-                Rectangle player = myPlayer.hitbox;
-                Rectangle doorRect = door.getBounds();
-                float distanceX = Math.abs(player.x - doorRect.x);
-                float distanceY = Math.abs(player.y - doorRect.y);
-                // Đứng gần cửa
-                if (distanceX <= 40 && distanceY <= 40) {
-                    System.out.println("Player key = " + myPlayer.currentKey);
-                    System.out.println("Door needs = " + door.getRequiredKeyName());
-                    if (door.canOpen(myPlayer.currentKey)) {
-                        game.map.openDoor(door.getName());
-                        System.out.println("🚪 Opened: " + door.getName());
-                    } else {
-                        System.out.println("❌ Need key: " + door.getRequiredKeyName());
-                    }
-                    break;
-                }
-            }
-        }
-    }
-    private void checkKeyPickup() {
-        for (Key key : game.map.getKeys()) {
-            if (!key.isCollected() && myPlayer.hitbox.overlaps(key.getBounds())) {
-                key.collect();
-                myPlayer.currentKey = key.getName();
-                System.out.println("🔑 Picked key: " + myPlayer.currentKey);
-            }
-        }
-    }
-    private void handlePushables() {
-        float pushDistance = 32f;
-        float dx = 0;
-        float dy = 0;
-        // Hướng đẩy
-        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)
-            || Gdx.input.isKeyJustPressed(Input.Keys.A)) {
-            dx = -pushDistance;
-        }
-        else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D)) {
-            dx = pushDistance;
-        }
-        else if (Gdx.input.isKeyJustPressed(Input.Keys.UP)
-            || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
-            dy = pushDistance;
-        }
-        else if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)
-            || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
-            dy = -pushDistance;
-        }
-        if (dx == 0 && dy == 0) return;
-        for (PushableBlock block : game.map.getPushables()) {
-            Rectangle b = block.getBounds();
-            Rectangle p = myPlayer.hitbox;
-            boolean touching = false;
-            // =========================
-            // CHECK THEO HƯỚNG
-            // PUSH RIGHT
-            float tolerance = 2f;
-            // PUSH RIGHT
-            if (dx > 0) {
-                touching = p.x < b.x && (p.x + p.width) >= b.x - tolerance && Math.abs(p.y - b.y) < 12;
-            }
-            // PUSH LEFT
-            else if (dx < 0) {
-                touching = p.x > b.x && p.x <= (b.x + b.width) + tolerance && Math.abs(p.y - b.y) < 12;
-            }
-            // PUSH UP
-            else if (dy > 0) {
-                touching = p.y < b.y && (p.y + p.height) >= b.y - tolerance && Math.abs(p.x - b.x) < 12;
-            }
-            // PUSH DOWN
-            else if (dy < 0) {
-                touching = p.y > b.y && p.y <= (b.y + b.height) + tolerance && Math.abs(p.x - b.x) < 12;
-            }
-            // Không đứng đúng cạnh block
-            if (!touching) continue;
-            // BLOCK TƯƠNG LAI
-            // =========================
-            Rectangle future = new Rectangle(b.x + dx, b.y + dy, b.width, b.height);
-            boolean blocked = false;
-            // WALL
-            for (Rectangle wall : game.map.getWallCollision()) {
-                if (future.overlaps(wall)) {
-                    blocked = true;
-                    break;
-                }
-            }
-            // BLOCK KHÁC
-            for (PushableBlock other : game.map.getPushables()) {
-                if (other != block &&
-                    future.overlaps(other.getBounds())) {
-                    blocked = true;
-                    break;
-                }
-            }
-            // PUSH
-            if (!blocked) {
-                b.x += dx;
-                b.y += dy;
-            }
-            break;
-        }
-    }
-
     @Override
     public void show() {
         game.map.loadMap("map/cocoon_chamber.tmx");
@@ -258,9 +122,16 @@ public class PlayScreen implements Screen {
 
         if (state == GameState.RUNNING) {
             puzzleLibrary.update(myPlayer.hitbox, delta);
-            //PUZZLE
-            handelInteractions();
-            checkKeyPickup();
+            puzzleManager.update(myPlayer, game.map);
+
+            // KIỂM TRA CHẾT DO GAI
+            if (puzzleManager.checkSpikeDeath(myPlayer, game.map)) {
+                game.map.loadMap("map/" + game.map.getCurrentMapName());
+                spawnPlayer(null);
+                updateCamera();
+                return; // Thoát render vòng này để tải lại map
+            }
+
             //Kiểm tra Portal
             String nextMap = game.map.checkPortal(myPlayer.hitbox);
             if (nextMap != null) {
@@ -281,8 +152,6 @@ public class PlayScreen implements Screen {
                 spawnPlayer(game.map.getLastMapName());
                 updateCamera();
             }
-            // PUSH BLOCK
-            handlePushables();
 
             // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
             myPlayer.update(delta, game.map.getWallCollision(), game.map.getPushables());
@@ -290,7 +159,22 @@ public class PlayScreen implements Screen {
 
             // Cập nhật tất cả quái vật trên bản đồ hiện tại
             for (Guard guard : game.map.guards) {
-                guard.update(delta, myPlayer, game.map.getWallCollision());
+                // Nhận kết quả từ hàm update của Guard
+                boolean isCaught = guard.update(delta, myPlayer, game.map.getWallCollision());
+
+                if (isCaught) {
+                    System.out.println("🚨 Bị quái tóm! Đày về kén (Cocoon Chamber)!");
+
+                    // Bắt buộc load lại đúng file map cocoon_chamber
+                    game.map.loadMap("map/cocoon_chamber.tmx");
+
+                    // Spawn player lại (truyền null để nó tự tìm điểm spawn mặc định)
+                    spawnPlayer(null);
+                    updateCamera();
+
+                    // THOÁT NGAY LẬP TỨC để tránh lỗi vòng lặp khi map bị hủy giữa chừng
+                    break;
+                }
             }
 
             //Camera

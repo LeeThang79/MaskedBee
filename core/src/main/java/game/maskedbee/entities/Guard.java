@@ -46,7 +46,7 @@ public class Guard extends Entity {
         walkAnimation = new Animation<TextureRegion>(0.15f, frames);
     }
 
-    public void update(float deltaTime, Player player, Array<Rectangle> walls) {
+    public boolean update(float deltaTime, Player player, Array<Rectangle> walls) {
         stateTime += deltaTime;
 
         // ==========================================
@@ -156,14 +156,16 @@ public class Guard extends Entity {
         moveWithCollision(moveX * currentMoveSpeed * deltaTime, moveY * currentMoveSpeed * deltaTime, walls);
 
         // ==========================================
-        // 5. FIX LỖI BẮT LIÊN TỤC (SPAWN KILL)
+        // 5. NẾU BẮT ĐƯỢC PLAYER -> BÁO TIN VỀ VÀ TẨY NÃO QUÁI
         // ==========================================
         if (this.hitbox.overlaps(player.hitbox)) {
-            // Đưa Player về góc an toàn tít dưới cùng bên trái
-            player.x = 50; player.y = 50;
-            player.hitbox.setPosition(50, 50);
 
-            // Đưa Guard về mốc số 0 và bắt nó đi tới mốc số 1 (Để nó quay mặt đi chỗ khác)
+            // Tẩy não hoàn toàn để lần sau quay lại nó không cắn tiếp
+            this.currentState = State.PATROL;
+            this.alertLevel = 0f;
+            this.lastKnownPos.set(this.startX, this.startY);
+
+            // Đưa Guard về mốc xuất phát ban đầu
             if (patrolPath != null && patrolPath.size > 0) {
                 Vector2 spawnPoint = patrolPath.get(0);
                 this.x = spawnPoint.x;
@@ -172,11 +174,10 @@ public class Guard extends Entity {
                 this.targetWaypointIndex = 1;
             }
 
-            // Tẩy não hoàn toàn
-            this.currentState = State.PATROL;
-            this.alertLevel = 0f;
-            this.lastKnownPos.set(this.x, this.y); // Quên sạch vị trí cũ
+            // TRẢ VỀ TRUE -> BÁO HIỆU ĐÃ TÓM ĐƯỢC NGƯỜI!
+            return true;
         }
+        return false;
     }
 
     private int findNearestWaypointIndex() {

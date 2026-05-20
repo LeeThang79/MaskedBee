@@ -73,7 +73,7 @@
   <object id="13" name="Old_Corridor.tmx" x="384" y="126.125" width="33.125" height="35.75"/>
  </objectgroup>
  <objectgroup id="13" name="SpawnPoints">
-  <object id="14" name="Old_Corridor.tmx" x="373" y="148.5">
+  <object id="14" name="Old_Corridor.tmx" x="358.5" y="150">
    <point/>
   </object>
  </objectgroup>

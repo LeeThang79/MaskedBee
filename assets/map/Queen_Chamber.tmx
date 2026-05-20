@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="24" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="19" nextobjectid="83">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="24" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="20" nextobjectid="86">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <layer id="1" name="Wall" width="24" height="9">
   <data encoding="csv">
@@ -14,6 +14,14 @@
 105,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,106
 </data>
  </layer>
+ <objectgroup id="19" name="Guards">
+  <object id="83" name="guard_2" x="429.198" y="226.358">
+   <polyline points="0,0 -62.3219,-81.724 -149.925,1.17589 -224.006,-71.729 -329.836,-3.52766"/>
+  </object>
+  <object id="84" name="guard_1" x="717.878" y="194.609">
+   <polyline points="0,0 -78.1964,47.0354 -266.926,48.2113 -429.198,-11.7589 -526.797,42.3319 -615.576,-12.9347"/>
+  </object>
+ </objectgroup>
  <layer id="2" name="Floor" width="24" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -34,10 +42,10 @@
   <object id="31" name="Wax_Pumb.tmx" x="353.697" y="72.5" width="28" height="24"/>
  </objectgroup>
  <objectgroup id="9" name="SpawnPoints">
-  <object id="29" name="Corridor.tmx" x="40.8761" y="211.029">
+  <object id="29" name="Corridor.tmx" x="50.8711" y="217.496">
    <point/>
   </object>
-  <object id="30" name="Wax_Pumb.tmx" x="368.667" y="101.333">
+  <object id="30" name="Wax_Pumb.tmx" x="367.491" y="123.675">
    <point/>
   </object>
  </objectgroup>
