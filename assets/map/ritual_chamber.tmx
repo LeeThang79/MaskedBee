@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="46">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="52">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
  <layer id="1" name="Ground" width="16" height="9" locked="1">
@@ -72,7 +72,7 @@
   <object id="3" x="224" y="160" width="96" height="32"/>
   <object id="45" x="352" y="128" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="9" name="Wall_Collision" locked="1">
+ <objectgroup id="9" name="Wall_Collision">
   <object id="12" x="128" y="64" width="127.5" height="32"/>
   <object id="15" x="288" y="64" width="128" height="32"/>
   <object id="16" x="128" y="256" width="128" height="11.136"/>
@@ -84,7 +84,7 @@
   <object id="38" x="288" y="256" width="9" height="32"/>
   <object id="40" x="288" y="256" width="139" height="11"/>
   <object id="41" x="117" y="64" width="11" height="96"/>
-  <object id="42" x="96" y="160" width="2" height="32"/>
+  <object id="42" x="90.3333" y="112" width="2" height="32"/>
   <object id="43" x="256" y="286" width="32" height="2"/>
   <object id="44" x="256" y="75" width="32" height="5"/>
  </objectgroup>
@@ -108,12 +108,12 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="12" name="Guards" locked="1">
-  <object id="38" name="guard_1" x="152.269" y="115.037">
-   <polygon points="0,0 247.414,-1.43626 249.331,121.363 -3.0687,121.363"/>
+ <objectgroup id="12" name="Guards">
+  <object id="48" name="guard1" x="147.333" y="117.667">
+   <polyline points="0,0 249.667,-0.333333"/>
   </object>
-  <object id="39" name="guard_2" x="220.8" y="133.6">
-   <polygon points="0,0 -1.25581,58.4325 110,58.8 111.628,1.47 36.0866,0.475215"/>
+  <object id="50" name="guard2" x="394.333" y="240">
+   <polyline points="-17.6667,-6.66667 -190.667,-4.33333"/>
   </object>
  </objectgroup>
  <layer id="12" name="Overhead" width="16" height="9" locked="1">

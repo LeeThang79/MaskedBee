@@ -14,7 +14,13 @@ public class Player extends Entity {
     public float creepSpeed = 70f;
     public boolean isCreeping = false;
 
-    // ĐÃ THÊM LẠI BIẾN TIẾNG ỒN
+    // Trạng thái cải trang Bee
+    public boolean isBeeDisguised = false;
+
+    // Sau này dùng cho điều kiện lấy vật phẩm
+    public boolean hasKeyItem = false;
+    public boolean hasMaskItem = false;
+
     public float noiseRadius = 0f;
 
     public enum Direction { UP, DOWN, LEFT, RIGHT }
@@ -22,84 +28,219 @@ public class Player extends Entity {
 
     private Animation<TextureRegion> walkSideAnimation, walkUpAnimation, walkDownAnimation;
     private Animation<TextureRegion> creepSideAnimation, creepUpAnimation, creepDownAnimation;
-    private TextureRegion idleSide, idleUp, idleDown, idleCreepSide, idleCreepUp, idleCreepDown;
+
+    private TextureRegion idleSide, idleUp, idleDown;
+    private TextureRegion idleCreepSide, idleCreepUp, idleCreepDown;
+
+    // Animation Bee
+    private Animation<TextureRegion> beeWalkSideAnimation, beeWalkUpAnimation, beeWalkDownAnimation;
+    private Animation<TextureRegion> beeCreepSideAnimation, beeCreepUpAnimation, beeCreepDownAnimation;
+
+    private TextureRegion beeIdleSide, beeIdleUp, beeIdleDown;
+    private TextureRegion beeIdleCreepSide, beeIdleCreepUp, beeIdleCreepDown;
 
     public Player(float startX, float startY) {
         super(startX, startY, 20, 16, 150f);
 
-        // (PHẦN NẠP ẢNH CỦA BẠN - MÌNH RÚT GỌN CHÚT CHO ĐỠ DÀI NHƯNG VẪN ĐẦY ĐỦ LOGIC)
+        // =========================
+        // NORMAL PLAYER
+        // =========================
+        walkSideAnimation = loadAnimation("main/walk_", 5, 0.1f);
+        idleSide = walkSideAnimation.getKeyFrame(0f);
+
+        walkUpAnimation = loadAnimation("main/walk_back_", 4, 0.1f);
+        idleUp = walkUpAnimation.getKeyFrame(0f);
+
+        walkDownAnimation = loadAnimation("main/walk_front_", 4, 0.1f);
+        idleDown = walkDownAnimation.getKeyFrame(0f);
+
+        creepSideAnimation = loadAnimation("main/creep_", 4, 0.15f);
+        idleCreepSide = creepSideAnimation.getKeyFrame(0f);
+
+        // Nếu chưa có creep up/down riêng thì dùng tạm walk up/down
+        creepUpAnimation = walkUpAnimation;
+        idleCreepUp = idleUp;
+
+        creepDownAnimation = walkDownAnimation;
+        idleCreepDown = idleDown;
+
+        // =========================
+        // BEE DISGUISE PLAYER
+        // =========================
+        beeWalkSideAnimation = loadAnimation("main/walk_bee_", 5, 0.1f);
+        beeIdleSide = beeWalkSideAnimation.getKeyFrame(0f);
+
+        beeWalkUpAnimation = loadAnimation("main/walk_back_bee_", 4, 0.1f);
+        beeIdleUp = beeWalkUpAnimation.getKeyFrame(0f);
+
+        beeWalkDownAnimation = loadAnimation("main/walk_front_bee_", 4, 0.1f);
+        beeIdleDown = beeWalkDownAnimation.getKeyFrame(0f);
+
+        beeCreepSideAnimation = loadAnimation("main/creep_bee_", 4, 0.15f);
+        beeIdleCreepSide = beeCreepSideAnimation.getKeyFrame(0f);
+
+        // Nếu chưa cần animation crouch bee riêng cho lên/xuống thì dùng tạm walk bee
+        beeCreepUpAnimation = beeWalkUpAnimation;
+        beeIdleCreepUp = beeIdleUp;
+
+        beeCreepDownAnimation = beeWalkDownAnimation;
+        beeIdleCreepDown = beeIdleDown;
+    }
+
+    private Animation<TextureRegion> loadAnimation(String prefix, int frameCount, float frameDuration) {
         Array<TextureRegion> frames = new Array<>();
-        for(int i=1; i<=5; i++) frames.add(new TextureRegion(new Texture("main/walk_"+i+".png")));
-        walkSideAnimation = new Animation<>(0.1f, frames);
-        idleSide = frames.get(0);
 
-        Array<TextureRegion> hideFrames = new Array<>();
-        hideFrames.add(new TextureRegion(new Texture("main/hide_1.png")));
-        hideFrames.add(new TextureRegion(new Texture("main/hide_1.png")));
-        walkUpAnimation = new Animation<>(0.1f, hideFrames);
-        idleUp = hideFrames.get(0);
-        creepUpAnimation = walkUpAnimation; idleCreepUp = idleUp; // Đóng thế
+        for (int i = 1; i <= frameCount; i++) {
+            frames.add(new TextureRegion(new Texture(prefix + i + ".png")));
+        }
 
-        Array<TextureRegion> walkFrames = new Array<>();
-        walkFrames.add(new TextureRegion(new Texture("main/walk_1.png")));
-        walkFrames.add(new TextureRegion(new Texture("main/walk_1.png")));
-        walkDownAnimation = new Animation<>(0.1f, walkFrames);
-        idleDown = walkFrames.get(0);
-        creepDownAnimation = walkDownAnimation; idleCreepDown = idleDown; // Đóng thế
-
-        Array<TextureRegion> creepFrames = new Array<>();
-        for(int i=1; i<=4; i++) creepFrames.add(new TextureRegion(new Texture("main/creep_"+i+".png")));
-        creepFrames.add(new TextureRegion(new Texture("main/creep_1.png")));
-        creepSideAnimation = new Animation<>(0.15f, creepFrames);
-        idleCreepSide = creepFrames.get(0);
+        return new Animation<>(frameDuration, frames);
     }
 
     public void update(float deltaTime, Array<Rectangle> walls) {
         stateTime += deltaTime;
 
+        // Hiện tại cho bấm P để test mặc / tháo bộ Bee
+        if (Gdx.input.isKeyJustPressed(Keys.P)) {
+            isBeeDisguised = !isBeeDisguised;
+        }
+
+        /*
+         * Sau này khi đã có key + mask thì đổi đoạn trên thành:
+         *
+         * if (Gdx.input.isKeyJustPressed(Keys.P) && hasKeyItem && hasMaskItem) {
+         *     isBeeDisguised = !isBeeDisguised;
+         * }
+         */
+
         isCreeping = Gdx.input.isKeyPressed(Keys.CONTROL_LEFT) || Gdx.input.isKeyPressed(Keys.CONTROL_RIGHT);
         float currentSpeed = isCreeping ? creepSpeed : walkSpeed;
 
-        float moveX = 0, moveY = 0;
-        if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)) moveX -= 1;
-        if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)) moveX += 1;
-        if (Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)) moveY += 1;
-        if (Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S)) moveY -= 1;
+        float moveX = 0f;
+        float moveY = 0f;
+
+        if (Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)) moveX -= 1f;
+        if (Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)) moveX += 1f;
+        if (Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)) moveY += 1f;
+        if (Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S)) moveY -= 1f;
 
         if (moveX < 0) currentDirection = Direction.LEFT;
         else if (moveX > 0) currentDirection = Direction.RIGHT;
         else if (moveY > 0) currentDirection = Direction.UP;
         else if (moveY < 0) currentDirection = Direction.DOWN;
 
-        // TÍNH TOÁN TIẾNG ỒN CHUẨN XÁC
-        boolean isMoving = (moveX != 0 || moveY != 0);
-        if (isMoving && !isCreeping) {
-            noiseRadius = 180f; // Chạy bộ phát ra tiếng ồn
+        boolean isMoving = moveX != 0f || moveY != 0f;
+
+        // Khi mặc Bee thì không tạo tiếng ồn để guard không nghi ngờ
+        if (isBeeDisguised) {
+            noiseRadius = 0f;
+        } else if (isMoving && !isCreeping) {
+            noiseRadius = 100f; // map nhỏ nên giảm từ 180 xuống 100
+        } else if (isMoving && isCreeping) {
+            noiseRadius = 25f;
         } else {
-            noiseRadius = 0f;   // Đứng im hoặc ngồi im lặng tuyệt đối
+            noiseRadius = 0f;
         }
 
-        if (moveX != 0 && moveY != 0) { moveX *= 0.707f; moveY *= 0.707f; }
+        if (moveX != 0f && moveY != 0f) {
+            moveX *= 0.707f;
+            moveY *= 0.707f;
+        }
+
         moveWithCollision(moveX * currentSpeed * deltaTime, moveY * currentSpeed * deltaTime, walls);
     }
 
     @Override
     public void draw(SpriteBatch batch) {
+        boolean isMoving =
+            Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)
+                || Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)
+                || Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)
+                || Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S);
+
+        TextureRegion currentFrame;
+
+        if (isBeeDisguised) {
+            currentFrame = getBeeFrame(isMoving);
+        } else {
+            currentFrame = getNormalFrame(isMoving);
+        }
+
+        float drawX = x - (32 - hitbox.width) / 2f;
+        float drawY = y;
+
+        batch.draw(currentFrame, drawX, drawY);
+    }
+
+    private TextureRegion getNormalFrame(boolean isMoving) {
         TextureRegion currentFrame = idleDown;
-        boolean isMoving = Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)
-            || Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)
-            || Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)
-            || Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S);
 
         switch (currentDirection) {
-            case UP: currentFrame = isMoving ? (isCreeping?creepUpAnimation.getKeyFrame(stateTime,true):walkUpAnimation.getKeyFrame(stateTime,true)) : (isCreeping?idleCreepUp:idleUp); break;
-            case DOWN: currentFrame = isMoving ? (isCreeping?creepDownAnimation.getKeyFrame(stateTime,true):walkDownAnimation.getKeyFrame(stateTime,true)) : (isCreeping?idleCreepDown:idleDown); break;
-            case LEFT: currentFrame = isMoving ? (isCreeping?creepSideAnimation.getKeyFrame(stateTime,true):walkSideAnimation.getKeyFrame(stateTime,true)) : (isCreeping?idleCreepSide:idleSide); if (!currentFrame.isFlipX()) currentFrame.flip(true, false); break;
-            case RIGHT: currentFrame = isMoving ? (isCreeping?creepSideAnimation.getKeyFrame(stateTime,true):walkSideAnimation.getKeyFrame(stateTime,true)) : (isCreeping?idleCreepSide:idleSide); if (currentFrame.isFlipX()) currentFrame.flip(true, false); break;
+            case UP:
+                currentFrame = isMoving
+                    ? (isCreeping ? creepUpAnimation.getKeyFrame(stateTime, true) : walkUpAnimation.getKeyFrame(stateTime, true))
+                    : (isCreeping ? idleCreepUp : idleUp);
+                break;
+
+            case DOWN:
+                currentFrame = isMoving
+                    ? (isCreeping ? creepDownAnimation.getKeyFrame(stateTime, true) : walkDownAnimation.getKeyFrame(stateTime, true))
+                    : (isCreeping ? idleCreepDown : idleDown);
+                break;
+
+            case LEFT:
+                currentFrame = isMoving
+                    ? (isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true))
+                    : (isCreeping ? idleCreepSide : idleSide);
+
+                if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
+                break;
+
+            case RIGHT:
+                currentFrame = isMoving
+                    ? (isCreeping ? creepSideAnimation.getKeyFrame(stateTime, true) : walkSideAnimation.getKeyFrame(stateTime, true))
+                    : (isCreeping ? idleCreepSide : idleSide);
+
+                if (currentFrame.isFlipX()) currentFrame.flip(true, false);
+                break;
         }
-        float drawX = x - (32 - hitbox.width) / 2f;
-        float drawY = y; // Giữ nguyên đáy (chân) trùng khớp
-        // Thay dòng batch.draw(currentFrame, x, y); cũ bằng dòng này:
-        batch.draw(currentFrame, drawX, drawY);
+
+        return currentFrame;
+    }
+
+    private TextureRegion getBeeFrame(boolean isMoving) {
+        TextureRegion currentFrame = beeIdleDown;
+
+        switch (currentDirection) {
+            case UP:
+                currentFrame = isMoving
+                    ? (isCreeping ? beeCreepUpAnimation.getKeyFrame(stateTime, true) : beeWalkUpAnimation.getKeyFrame(stateTime, true))
+                    : (isCreeping ? beeIdleCreepUp : beeIdleUp);
+                break;
+
+            case DOWN:
+                currentFrame = isMoving
+                    ? (isCreeping ? beeCreepDownAnimation.getKeyFrame(stateTime, true) : beeWalkDownAnimation.getKeyFrame(stateTime, true))
+                    : (isCreeping ? beeIdleCreepDown : beeIdleDown);
+                break;
+
+            case LEFT:
+                currentFrame = isMoving
+                    ? (isCreeping ? beeCreepSideAnimation.getKeyFrame(stateTime, true) : beeWalkSideAnimation.getKeyFrame(stateTime, true))
+                    : (isCreeping ? beeIdleCreepSide : beeIdleSide);
+
+                if (!currentFrame.isFlipX()) currentFrame.flip(true, false);
+                break;
+
+            case RIGHT:
+                currentFrame = isMoving
+                    ? (isCreeping ? beeCreepSideAnimation.getKeyFrame(stateTime, true) : beeWalkSideAnimation.getKeyFrame(stateTime, true))
+                    : (isCreeping ? beeIdleCreepSide : beeIdleSide);
+
+                if (currentFrame.isFlipX()) currentFrame.flip(true, false);
+                break;
+        }
+
+        return currentFrame;
     }
 }

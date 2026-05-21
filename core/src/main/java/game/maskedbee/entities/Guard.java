@@ -6,37 +6,64 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.math.Intersector;
 
 public class Guard extends Entity {
-    public float patrolSpeed = 40f;
+    public float patrolSpeed = 36f;
+    public float investigateSpeed = 48f;
     public float chaseSpeed = 60f;
 
-    public enum State { PATROL, SUSPICIOUS, INVESTIGATE, CHASE, RETURN }
+    public enum State {
+        PATROL,
+        ALERT,
+        CHASE,
+        SEARCH,
+        RETURN
+    }
+
     public State currentState = State.PATROL;
 
     public float alertLevel = 0f;
-    private Vector2 lastKnownPos;
+    public float visionRadius = 110f;
+    public float viewAngle = 65f;
 
-    public float visionRadius = 150f; // do xa 150
-    public float viewAngle = 60f; // goc do mo cua mat
     private float rotation = 0f;
-    private float startX, startY;
 
     private Array<Vector2> patrolPath;
     private int targetWaypointIndex = 0;
+
+    private Vector2 lastKnownPos;
+    private Vector2 spawnPos;
+
     private Animation<TextureRegion> walkAnimation;
     private boolean isFacingRight = true;
 
+    private final Vector2 tmpCenter = new Vector2();
+    private final Vector2 tmpTarget = new Vector2();
+    private final Vector2 tmpDir = new Vector2();
+    private final Vector2 tmpMove = new Vector2();
+
+    private float loseSightTimer = 0f;
+    private float searchTimer = 0f;
+    private float stuckTimer = 0f;
+    private float waypointPauseTimer = 0f;
+
+    private int avoidSide = 1;
+
+    private static final float WAYPOINT_REACH_DISTANCE = 10f;
+    private static final float TARGET_REACH_DISTANCE = 8f;
+    private static final float SEARCH_DURATION = 2.2f;
+    private static final float LOSE_SIGHT_TO_SEARCH_TIME = 0.45f;
+
     public Guard(float startX, float startY, Array<Vector2> path) {
         super(startX, startY, 16, 20, 60f);
-        this.startX = startX;
-        this.startY = startY;
+
         this.patrolPath = path;
+        this.spawnPos = new Vector2(startX, startY);
         this.lastKnownPos = new Vector2(startX, startY);
 
         Array<TextureRegion> frames = new Array<>();
@@ -44,232 +71,521 @@ public class Guard extends Entity {
         frames.add(new TextureRegion(new Texture("guard/g_walk_2.png")));
         frames.add(new TextureRegion(new Texture("guard/g_walk_3.png")));
         frames.add(new TextureRegion(new Texture("guard/g_walk_4.png")));
+
         walkAnimation = new Animation<TextureRegion>(0.15f, frames);
+
+        if (patrolPath != null && patrolPath.size > 0) {
+            targetWaypointIndex = 0;
+            faceTo(patrolPath.get(0));
+        }
     }
 
     public void update(float deltaTime, Player player, Array<Rectangle> walls) {
         stateTime += deltaTime;
 
-        // ==========================================
-        // 1. CẢM BIẾN (SENSORS)
-        // ==========================================
-        boolean seeingPlayer = false;
-        boolean hearingPlayer = false;
-        float distToPlayer = Vector2.dst(x, y, player.x, player.y);
+        Vector2 guardCenter = getCenter(tmpCenter);
+        Vector2 playerCenter = getPlayerCenter(player, tmpTarget);
 
-        // Biến currentVisionRadius quyết định tầm nhìn thật sự của Guard
-        float currentVisionRadius = player.isCreeping ? (visionRadius * 0.3f) : visionRadius;
+        float distToPlayer = guardCenter.dst(playerCenter);
 
-        // A. Cảm biến MẮT
-        if (distToPlayer <= currentVisionRadius) {
-            if (currentState == State.CHASE) {
-                seeingPlayer = true;
-            } else {
-                float angleToPlayer = MathUtils.atan2(player.y - (y+20), player.x - (x+16)) * MathUtils.radiansToDegrees;
-                float angleDiff = Math.abs(angleToPlayer - rotation);
-                if (angleDiff > 180) angleDiff = 360 - angleDiff;
-                if (angleDiff <= viewAngle / 2f) seeingPlayer = true;
-            }
-        }
+        boolean seeingPlayer = !player.isBeeDisguised && canSeePlayer(player, walls);
+        boolean hearingPlayer = !player.isBeeDisguised && canHearPlayer(player, distToPlayer);
 
-        // B. Cảm biến TAI
-        if (player.noiseRadius > 0 && distToPlayer <= player.noiseRadius) {
-            hearingPlayer = true;
-        }
+        updateAlertAndState(deltaTime, player, seeingPlayer, hearingPlayer, playerCenter);
+        updateMovement(deltaTime, player, walls, seeingPlayer);
 
-        // ==========================================
-        // 2. THANH CẢNH BÁO
-        // ==========================================
+        checkCatchPlayer(player);
+    }
+
+    private void updateAlertAndState(
+        float deltaTime,
+        Player player,
+        boolean seeingPlayer,
+        boolean hearingPlayer,
+        Vector2 playerCenter
+    ) {
         if (seeingPlayer) {
-            lastKnownPos.set(player.x, player.y);
+            lastKnownPos.set(playerCenter);
+            loseSightTimer = 0f;
+            searchTimer = 0f;
 
-            if (distToPlayer < 120f) {
-                alertLevel += 200f * deltaTime; // Rất gần: Phát hiện ngay
+            float distance = getCenter(tmpCenter).dst(playerCenter);
+            float alertGain;
+
+            if (distance < 70f) {
+                alertGain = 260f;
+            } else if (distance < 120f) {
+                alertGain = 170f;
             } else {
-                float alertSpeed = player.isCreeping ? 25f : 100f;
-                alertLevel += alertSpeed * deltaTime;
+                alertGain = 110f;
+            }
+
+            if (player.isCreeping) {
+                alertGain *= 0.45f;
+            }
+
+            alertLevel += alertGain * deltaTime;
+
+            if (alertLevel >= 100f) {
+                currentState = State.CHASE;
+            } else if (currentState == State.PATROL || currentState == State.RETURN) {
+                currentState = State.ALERT;
             }
         }
         else if (hearingPlayer) {
-            lastKnownPos.set(player.x, player.y);
-            alertLevel += 50f * deltaTime;
-            if (alertLevel > 90f) alertLevel = 90f; // Nghe thấy chỉ lên max 90%
+            lastKnownPos.set(playerCenter);
+
+            if (currentState == State.PATROL || currentState == State.RETURN) {
+                currentState = State.ALERT;
+            }
+
+            alertLevel += 45f * deltaTime;
+
+            // Nghe tiếng động chỉ làm guard nghi ngờ, không tự động full chase
+            if (alertLevel > 75f && currentState != State.CHASE) {
+                alertLevel = 75f;
+            }
         }
         else {
-            alertLevel -= 30f * deltaTime; // Tụt nhanh khi mất dấu
-        }
-        alertLevel = MathUtils.clamp(alertLevel, 0, 100);
+            if (currentState == State.CHASE) {
+                loseSightTimer += deltaTime;
 
-        // ==========================================
-        // 3. CHUYỂN TRẠNG THÁI AI
-        // ==========================================
-        if (alertLevel >= 100f) currentState = State.CHASE;
-        else if (alertLevel > 0 && currentState == State.PATROL) currentState = State.SUSPICIOUS;
-        else if (alertLevel < 100f && currentState == State.CHASE) currentState = State.INVESTIGATE;
-        else if (alertLevel == 0 && (currentState == State.SUSPICIOUS || currentState == State.INVESTIGATE)) {
+                if (loseSightTimer >= LOSE_SIGHT_TO_SEARCH_TIME) {
+                    currentState = State.SEARCH;
+                    searchTimer = 0f;
+                }
+            }
+            else if (currentState == State.ALERT) {
+                alertLevel -= 35f * deltaTime;
+
+                if (alertLevel <= 0f) {
+                    alertLevel = 0f;
+                    currentState = State.RETURN;
+                    targetWaypointIndex = findNearestWaypointIndex();
+                }
+            }
+            else if (currentState == State.SEARCH) {
+                alertLevel -= 22f * deltaTime;
+            }
+            else if (currentState == State.RETURN || currentState == State.PATROL) {
+                alertLevel -= 45f * deltaTime;
+            }
+        }
+
+        alertLevel = MathUtils.clamp(alertLevel, 0f, 100f);
+    }
+
+    private void updateMovement(float deltaTime, Player player, Array<Rectangle> walls, boolean seeingPlayer) {
+        Vector2 center = getCenter(tmpCenter);
+
+        if (waypointPauseTimer > 0f) {
+            waypointPauseTimer -= deltaTime;
+            return;
+        }
+
+        switch (currentState) {
+            case PATROL:
+                updatePatrol(deltaTime, walls);
+                break;
+
+            case ALERT:
+                // Đứng lại nhìn về hướng nghi ngờ
+                faceTo(lastKnownPos);
+
+                // Nếu nghi ngờ đủ cao thì đi kiểm tra
+                if (alertLevel > 45f) {
+                    currentState = State.SEARCH;
+                    searchTimer = 0f;
+                }
+                break;
+
+            case CHASE:
+                if (seeingPlayer) {
+                    lastKnownPos.set(getPlayerCenter(player, tmpTarget));
+                }
+
+                moveToward(lastKnownPos, chaseSpeed, deltaTime, walls);
+                break;
+
+            case SEARCH:
+                float distanceToLastKnown = center.dst(lastKnownPos);
+
+                if (distanceToLastKnown > TARGET_REACH_DISTANCE) {
+                    moveToward(lastKnownPos, investigateSpeed, deltaTime, walls);
+                } else {
+                    searchTimer += deltaTime;
+                    rotation = snapAngleTo4Directions(rotation + 110f * deltaTime);
+
+                    if (searchTimer >= SEARCH_DURATION) {
+                        currentState = State.RETURN;
+                        targetWaypointIndex = findNearestWaypointIndex();
+                        loseSightTimer = 0f;
+                        searchTimer = 0f;
+                    }
+                }
+                break;
+
+            case RETURN:
+                if (patrolPath == null || patrolPath.size == 0) {
+                    moveToward(spawnPos, patrolSpeed, deltaTime, walls);
+                    if (center.dst(spawnPos) <= WAYPOINT_REACH_DISTANCE) {
+                        currentState = State.PATROL;
+                    }
+                } else {
+                    Vector2 target = patrolPath.get(targetWaypointIndex);
+
+                    moveToward(target, patrolSpeed, deltaTime, walls);
+
+                    if (center.dst(target) <= WAYPOINT_REACH_DISTANCE) {
+                        currentState = State.PATROL;
+                        waypointPauseTimer = 0.2f;
+                    }
+                }
+                break;
+        }
+    }
+
+    private void updatePatrol(float deltaTime, Array<Rectangle> walls) {
+        if (patrolPath == null || patrolPath.size == 0) return;
+
+        Vector2 center = getCenter(tmpCenter);
+        Vector2 target = patrolPath.get(targetWaypointIndex);
+
+        if (center.dst(target) <= WAYPOINT_REACH_DISTANCE) {
+            targetWaypointIndex = (targetWaypointIndex + 1) % patrolPath.size;
+            target = patrolPath.get(targetWaypointIndex);
+
+            faceTo(target);
+            waypointPauseTimer = 0.25f;
+            stuckTimer = 0f;
+            return;
+        }
+
+        moveToward(target, patrolSpeed, deltaTime, walls);
+    }
+
+    private void moveToward(Vector2 target, float moveSpeed, float deltaTime, Array<Rectangle> walls) {
+        Vector2 center = getCenter(tmpCenter);
+
+        tmpDir.set(target).sub(center);
+
+        if (tmpDir.len2() < 1f) {
+            return;
+        }
+
+        tmpDir.nor();
+
+        boolean moved = tryMove(tmpDir, moveSpeed, deltaTime, walls);
+
+        if (!moved) {
+            // Nếu đi thẳng bị kẹt, thử đi ngang/dọc trước
+            boolean tryHorizontalFirst = Math.abs(tmpDir.x) > Math.abs(tmpDir.y);
+
+            if (tryHorizontalFirst) {
+                tmpMove.set(Math.signum(tmpDir.x), 0f);
+                moved = tryMove(tmpMove, moveSpeed, deltaTime, walls);
+
+                if (!moved) {
+                    tmpMove.set(0f, Math.signum(tmpDir.y));
+                    moved = tryMove(tmpMove, moveSpeed, deltaTime, walls);
+                }
+            } else {
+                tmpMove.set(0f, Math.signum(tmpDir.y));
+                moved = tryMove(tmpMove, moveSpeed, deltaTime, walls);
+
+                if (!moved) {
+                    tmpMove.set(Math.signum(tmpDir.x), 0f);
+                    moved = tryMove(tmpMove, moveSpeed, deltaTime, walls);
+                }
+            }
+        }
+
+        if (!moved) {
+            // Né vật cản kiểu đơn giản: trượt sang cạnh bên
+            tmpMove.set(-tmpDir.y * avoidSide, tmpDir.x * avoidSide);
+            moved = tryMove(tmpMove, moveSpeed * 0.8f, deltaTime, walls);
+
+            if (!moved) {
+                tmpMove.set(tmpDir.y * avoidSide, -tmpDir.x * avoidSide);
+                moved = tryMove(tmpMove, moveSpeed * 0.8f, deltaTime, walls);
+            }
+        }
+
+        if (moved) {
+            stuckTimer = 0f;
+        } else {
+            stuckTimer += deltaTime;
+
+            if (stuckTimer > 0.55f) {
+                handleStuck();
+                stuckTimer = 0f;
+                avoidSide *= -1;
+            }
+        }
+    }
+
+    private boolean tryMove(Vector2 dir, float moveSpeed, float deltaTime, Array<Rectangle> walls) {
+        if (dir.isZero()) return false;
+
+        Vector2 normalized = tmpMove.set(dir);
+
+        if (normalized.len2() > 1f) {
+            normalized.nor();
+        }
+
+        float oldX = x;
+        float oldY = y;
+
+        boolean moved = moveWithCollision(
+            normalized.x * moveSpeed * deltaTime,
+            normalized.y * moveSpeed * deltaTime,
+            walls
+        );
+
+        float realMoveX = x - oldX;
+        float realMoveY = y - oldY;
+
+        if (Math.abs(realMoveX) > 0.001f || Math.abs(realMoveY) > 0.001f) {
+            float rawAngle = MathUtils.atan2(realMoveY, realMoveX) * MathUtils.radiansToDegrees;
+            rotation = snapAngleTo4Directions(rawAngle);
+
+            isFacingRight = realMoveX >= 0f;
+        }
+
+        return moved;
+    }
+
+    private void handleStuck() {
+        if (currentState == State.PATROL && patrolPath != null && patrolPath.size > 0) {
+            targetWaypointIndex = (targetWaypointIndex + 1) % patrolPath.size;
+        }
+        else if (currentState == State.RETURN && patrolPath != null && patrolPath.size > 0) {
+            targetWaypointIndex = findNearestWaypointIndex();
+        }
+        else if (currentState == State.SEARCH) {
             currentState = State.RETURN;
             targetWaypointIndex = findNearestWaypointIndex();
         }
-
-        // ==========================================
-        // 4. DI CHUYỂN
-        // ==========================================
-        float moveX = 0, moveY = 0;
-        float currentMoveSpeed = patrolSpeed;
-
-        float centerX = this.x + 16;
-        float centerY = this.y + 20;
-
-        if (currentState == State.CHASE) {
-            currentMoveSpeed = chaseSpeed;
-            if (centerX < lastKnownPos.x) moveX = 1; else if (centerX > lastKnownPos.x) moveX = -1;
-            if (centerY < lastKnownPos.y) moveY = 1; else if (centerY > lastKnownPos.y) moveY = -1;
+        else if (currentState == State.CHASE) {
+            currentState = State.SEARCH;
+            searchTimer = 0f;
         }
-        else if (currentState == State.SUSPICIOUS) {
-            rotation = MathUtils.atan2(lastKnownPos.y - (centerY), lastKnownPos.x - (centerX)) * MathUtils.radiansToDegrees;
-            if (alertLevel > 60f) currentState = State.INVESTIGATE;
-        }
-        else if (currentState == State.INVESTIGATE) {
-            if (centerX < lastKnownPos.x - 2) moveX = 1; else if (centerX > lastKnownPos.x + 2) moveX = -1;
-            if (centerY < lastKnownPos.y - 2) moveY = 1; else if (centerY > lastKnownPos.y + 2) moveY = -1;
-            if (Vector2.dst(centerX, centerY, lastKnownPos.x, lastKnownPos.y) < 10) {
-                moveX = 0; moveY = 0;
-                rotation += 100f * deltaTime;
-            }
-        }
-        else if (currentState == State.RETURN || currentState == State.PATROL) {
-            if (patrolPath != null && patrolPath.size > 0) {
-                Vector2 target = patrolPath.get(targetWaypointIndex);
-                if (centerX < target.x - 2) moveX = 1; else if (centerX > target.x + 2) moveX = -1;
-                if (centerY < target.y - 2) moveY = 1; else if (centerY > target.y + 2) moveY = -1;
+    }
 
-                if (Math.abs(centerX - target.x) < 6 && Math.abs(centerY - target.y) < 6) {
-                    currentState = State.PATROL;
-                    targetWaypointIndex = (targetWaypointIndex + 1) % patrolPath.size;
-                }
-            }
+    private boolean canSeePlayer(Player player, Array<Rectangle> walls) {
+        Vector2 guardCenter = getCenter(tmpCenter);
+        Vector2 playerCenter = getPlayerCenter(player, tmpTarget);
+
+        float distance = guardCenter.dst(playerCenter);
+        float currentVisionRadius = player.isCreeping ? visionRadius * 0.45f : visionRadius;
+
+        if (distance > currentVisionRadius) {
+            return false;
         }
 
-        if (moveX != 0 || moveY != 0) rotation = MathUtils.atan2(moveY, moveX) * MathUtils.radiansToDegrees;
-        if (moveX != 0 && moveY != 0) { moveX *= 0.707f; moveY *= 0.707f; }
-        isFacingRight = (moveX >= 0);
+        float angleToPlayer = MathUtils.atan2(
+            playerCenter.y - guardCenter.y,
+            playerCenter.x - guardCenter.x
+        ) * MathUtils.radiansToDegrees;
 
-        moveWithCollision(moveX * currentMoveSpeed * deltaTime, moveY * currentMoveSpeed * deltaTime, walls);
+        float angleDiff = Math.abs(angleToPlayer - rotation);
+        if (angleDiff > 180f) {
+            angleDiff = 360f - angleDiff;
+        }
 
-        // ==========================================
-        // 5. FIX LỖI BẮT LIÊN TỤC (SPAWN KILL)
-        // ==========================================
-        if (this.hitbox.overlaps(player.hitbox)) {
-            // Đưa Player về góc an toàn tít dưới cùng bên trái
-            player.x = 50; player.y = 50;
-            player.hitbox.setPosition(50, 50);
+        // Khi chưa chase thì phải nằm trong nón nhìn
+        if (currentState != State.CHASE && angleDiff > viewAngle / 2f) {
+            return false;
+        }
 
-            // Đưa Guard về mốc số 0 và bắt nó đi tới mốc số 1 (Để nó quay mặt đi chỗ khác)
-            if (patrolPath != null && patrolPath.size > 0) {
-                Vector2 spawnPoint = patrolPath.get(0);
-                this.x = spawnPoint.x;
-                this.y = spawnPoint.y;
-                this.hitbox.setPosition(this.x, this.y);
-                this.targetWaypointIndex = 1;
+        return hasLineOfSight(player, walls);
+    }
+
+    private boolean canHearPlayer(Player player, float distToPlayer) {
+        return player.noiseRadius > 0f && distToPlayer <= player.noiseRadius;
+    }
+
+    private boolean hasLineOfSight(Player player, Array<Rectangle> blockers) {
+        Vector2 guardEye = new Vector2(
+            hitbox.x + hitbox.width / 2f,
+            hitbox.y + hitbox.height * 0.65f
+        );
+
+        Vector2 playerBody = new Vector2(
+            player.hitbox.x + player.hitbox.width / 2f,
+            player.hitbox.y + player.hitbox.height * 0.5f
+        );
+
+        if (blockers == null) return true;
+
+        for (Rectangle blocker : blockers) {
+            if (blocker.overlaps(this.hitbox) || blocker.overlaps(player.hitbox)) {
+                continue;
             }
 
-            // Tẩy não hoàn toàn
-            this.currentState = State.PATROL;
-            this.alertLevel = 0f;
-            this.lastKnownPos.set(this.x, this.y); // Quên sạch vị trí cũ
-        }
-        if (distToPlayer <= currentVisionRadius) {
-            if (currentState == State.CHASE) {
-                // Kể cả lúc đang rượt, nếu Player nấp sau cột thì cũng sẽ bị mất dấu
-                seeingPlayer = hasLineOfSight(player, walls);
-            } else {
-                float angleToPlayer = MathUtils.atan2(player.y - (y+20), player.x - (x+16)) * MathUtils.radiansToDegrees;
-                float angleDiff = Math.abs(angleToPlayer - rotation);
-                if (angleDiff > 180) angleDiff = 360 - angleDiff;
-
-                // Nếu Player nằm trong góc quét của đèn pin
-                if (angleDiff <= viewAngle / 2f) {
-                    // KIỂM TRA QUYẾT ĐỊNH: Có bị cột/tường che không?
-                    seeingPlayer = hasLineOfSight(player, walls);
-                }
+            if (Intersector.intersectSegmentRectangle(guardEye, playerBody, blocker)) {
+                return false;
             }
         }
+
+        return true;
     }
 
     private int findNearestWaypointIndex() {
         if (patrolPath == null || patrolPath.size == 0) return 0;
-        int nearest = 0; float minDst = Float.MAX_VALUE;
+
+        Vector2 center = getCenter(tmpCenter);
+
+        int nearest = 0;
+        float minDst = Float.MAX_VALUE;
+
         for (int i = 0; i < patrolPath.size; i++) {
-            float d = Vector2.dst(x, y, patrolPath.get(i).x, patrolPath.get(i).y);
-            if (d < minDst) { minDst = d; nearest = i; }
+            float d = center.dst(patrolPath.get(i));
+
+            if (d < minDst) {
+                minDst = d;
+                nearest = i;
+            }
         }
+
         return nearest;
     }
 
-    private boolean hasLineOfSight(Player player, Array<Rectangle> walls) {
-        float guardBaseX = this.x + 16;
-
-        // SỬA Ở ĐÂY: Hạ thấp tia nhìn xuống sát chân (từ +20 xuống +8)
-        float guardBaseY = this.y + 8;
-
-        float playerBaseX = player.x + 16;
-
-        // SỬA Ở ĐÂY: Hạ thấp tâm nhận diện của Player (từ +16 xuống +8)
-        float playerBaseY = player.y + 8;
-
-        Vector2 guardBase = new Vector2(guardBaseX, guardBaseY);
-        Vector2 playerBase = new Vector2(playerBaseX, playerBaseY);
-
-        for (Rectangle wall : walls) {
-            // Kiểm tra xem đoạn thẳng nối từ Guard đến Player có bị hình chữ nhật (Tường/Cột) nào cắt ngang không
-            if (com.badlogic.gdx.math.Intersector.intersectSegmentRectangle(guardBase, playerBase, wall)) {
-                return false; // Bị che rồi, tàng hình thành công!
-            }
-        }
-        return true; // Không có gì che cả, bắt nó!
+    private Vector2 getCenter(Vector2 out) {
+        return out.set(
+            hitbox.x + hitbox.width / 2f,
+            hitbox.y + hitbox.height / 2f
+        );
     }
+
+    private Vector2 getPlayerCenter(Player player, Vector2 out) {
+        return out.set(
+            player.hitbox.x + player.hitbox.width / 2f,
+            player.hitbox.y + player.hitbox.height / 2f
+        );
+    }
+
+    private void faceTo(Vector2 target) {
+        Vector2 center = getCenter(tmpCenter);
+
+        float rawAngle = MathUtils.atan2(
+            target.y - center.y,
+            target.x - center.x
+        ) * MathUtils.radiansToDegrees;
+
+        rotation = snapAngleTo4Directions(rawAngle);
+    }
+
+    private void checkCatchPlayer(Player player) {
+        if (player.isBeeDisguised) return;
+        if (!this.hitbox.overlaps(player.hitbox)) {
+            return;
+        }
+
+        // Tạm thời reset player về góc an toàn
+        player.x = 50f;
+        player.y = 50f;
+        player.hitbox.setPosition(player.x, player.y);
+
+        if (patrolPath != null && patrolPath.size > 0) {
+            Vector2 spawnPoint = patrolPath.get(0);
+            this.x = spawnPoint.x;
+            this.y = spawnPoint.y;
+            this.hitbox.setPosition(this.x, this.y);
+
+            targetWaypointIndex = patrolPath.size > 1 ? 1 : 0;
+        } else {
+            this.x = spawnPos.x;
+            this.y = spawnPos.y;
+            this.hitbox.setPosition(this.x, this.y);
+        }
+
+        currentState = State.PATROL;
+        alertLevel = 0f;
+        loseSightTimer = 0f;
+        searchTimer = 0f;
+        stuckTimer = 0f;
+
+        lastKnownPos.set(getCenter(tmpCenter));
+    }
+    private float snapAngleTo4Directions(float angle) {
+        angle = (angle + 360f) % 360f;
+
+        if (angle >= 315f || angle < 45f) return 0f;      // RIGHT
+        if (angle >= 45f && angle < 135f) return 90f;     // UP
+        if (angle >= 135f && angle < 225f) return 180f;   // LEFT
+        return 270f;                                      // DOWN
+    }
+
     @Override
     public void draw(SpriteBatch batch) {
         TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-        if (!isFacingRight && !currentFrame.isFlipX()) currentFrame.flip(true, false);
-        else if (isFacingRight && currentFrame.isFlipX()) currentFrame.flip(true, false);
+
+        if (!isFacingRight && !currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        } else if (isFacingRight && currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        }
+
         batch.draw(currentFrame, x, y);
     }
 
     public void drawDebug(ShapeRenderer shape, Player player) {
-        // Vẽ vòng ồn của Player
-        if (player.noiseRadius > 0) {
+        Vector2 center = getCenter(tmpCenter);
+
+        // Vòng tiếng ồn của player
+        if (player.noiseRadius > 0f) {
             shape.setColor(Color.CYAN);
-            shape.circle(player.x + 16, player.y + 20, player.noiseRadius);
+            shape.circle(
+                player.hitbox.x + player.hitbox.width / 2f,
+                player.hitbox.y + player.hitbox.height / 2f,
+                player.noiseRadius
+            );
         }
 
-        // ==============================================
-        // ĐÃ FIX LỖI HIỂN THỊ TAM GIÁC NHÌN (VISION CONE)
-        // ==============================================
-        // Thay vì dùng visionRadius cố định, bây giờ dùng currentRadius để vẽ!
-        float currentRadius = player.isCreeping ? (visionRadius * 0.3f) : visionRadius;
+        float currentVisionRadius = player.isCreeping ? visionRadius * 0.45f : visionRadius;
 
-        shape.setColor(currentState == State.CHASE ? Color.RED : (alertLevel > 0 ? Color.ORANGE : Color.YELLOW));
-        float centerX = x + 16; float centerY = y + 20;
+        if (currentState == State.CHASE) {
+            shape.setColor(Color.RED);
+        } else if (currentState == State.SEARCH || currentState == State.ALERT) {
+            shape.setColor(Color.ORANGE);
+        } else {
+            shape.setColor(Color.YELLOW);
+        }
 
-        // CÁC DÒNG DƯỚI ĐÂY ĐÃ ĐƯỢC THAY BẰNG currentRadius
-        float x1 = centerX + MathUtils.cosDeg(rotation - viewAngle / 2f) * currentRadius;
-        float y1 = centerY + MathUtils.sinDeg(rotation - viewAngle / 2f) * currentRadius;
-        float x2 = centerX + MathUtils.cosDeg(rotation + viewAngle / 2f) * currentRadius;
-        float y2 = centerY + MathUtils.sinDeg(rotation + viewAngle / 2f) * currentRadius;
+        float x1 = center.x + MathUtils.cosDeg(rotation - viewAngle / 2f) * currentVisionRadius;
+        float y1 = center.y + MathUtils.sinDeg(rotation - viewAngle / 2f) * currentVisionRadius;
 
-        shape.line(centerX, centerY, x1, y1);
-        shape.line(centerX, centerY, x2, y2);
+        float x2 = center.x + MathUtils.cosDeg(rotation + viewAngle / 2f) * currentVisionRadius;
+        float y2 = center.y + MathUtils.sinDeg(rotation + viewAngle / 2f) * currentVisionRadius;
+
+        shape.line(center.x, center.y, x1, y1);
+        shape.line(center.x, center.y, x2, y2);
         shape.line(x1, y1, x2, y2);
 
-        // Vẽ thanh cảnh báo
-        if (alertLevel > 0) {
+        // Vẽ điểm cuối cùng guard biết vị trí player
+        if (currentState == State.CHASE || currentState == State.SEARCH || currentState == State.ALERT) {
+            shape.setColor(Color.PINK);
+            shape.circle(lastKnownPos.x, lastKnownPos.y, 5f);
+            shape.line(center.x, center.y, lastKnownPos.x, lastKnownPos.y);
+        }
+
+        // Thanh cảnh báo
+        if (alertLevel > 0f) {
             shape.end();
             shape.begin(ShapeRenderer.ShapeType.Filled);
+
             shape.setColor(Color.BLACK);
-            shape.rect(x, y + 45, 32, 6);
-            shape.setColor(alertLevel == 100f ? Color.RED : Color.YELLOW);
-            shape.rect(x + 1, y + 46, (30 * alertLevel / 100f), 4);
+            shape.rect(x, y + 34f, 32f, 6f);
+
+            if (alertLevel >= 100f) {
+                shape.setColor(Color.RED);
+            } else {
+                shape.setColor(Color.YELLOW);
+            }
+
+            shape.rect(x + 1f, y + 35f, 30f * alertLevel / 100f, 4f);
+
             shape.end();
             shape.begin(ShapeRenderer.ShapeType.Line);
         }
