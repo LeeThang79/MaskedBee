@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="52">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="40">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
- <layer id="1" name="Ground" width="16" height="9" locked="1">
+ <layer id="1" name="Floor" width="16" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,
@@ -15,7 +15,7 @@
 0,0,0,0,0,0,0,0,41,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="2" name="Wall" width="16" height="9" locked="1">
+ <layer id="2" name="Wall" width="16" height="9">
   <data encoding="csv">
 44,44,44,28,22,22,22,22,22,22,22,22,22,27,44,44,
 44,44,44,6,42,42,42,42,42,42,42,42,42,26,44,44,
@@ -28,7 +28,7 @@
 44,44,44,8,2,2,2,4,0,1,2,2,2,7,44,44
 </data>
  </layer>
- <layer id="3" name="Door_Open" width="16" height="9" locked="1">
+ <layer id="3" name="Door_Open" width="16" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,31,0,0,0,0,0,0,0,
@@ -54,7 +54,18 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="4" name="Stone" width="16" height="9" locked="1">
+ <objectgroup id="12" name="Keys">
+  <object id="40" name="gold_key" x="352" y="192" width="16" height="16"/>
+ </objectgroup>
+ <objectgroup id="13" name="Doors">
+  <object id="41" name="door_exit" x="256" y="32" width="32" height="64">
+   <properties>
+    <property name="keyName" value="gold_key"/>
+    <property name="requiresKey" type="bool" value="true"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <layer id="4" name="Stone" width="16" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -88,14 +99,14 @@
   <object id="43" x="256" y="286" width="32" height="2"/>
   <object id="44" x="256" y="75" width="32" height="5"/>
  </objectgroup>
- <objectgroup id="6" name="cocoon_Chamber" locked="1">
-  <object id="30" name="cocoon_chamber.tmx" x="96" y="160" width="32" height="32"/>
+ <objectgroup id="6" name="Cocoon_Chamber" locked="1">
+  <object id="30" name="Cocoon_Chamber.tmx" x="96" y="160" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="7" name="Corridor_Chamber" locked="1">
-  <object id="29" name="corridor.tmx" x="256" y="256" width="32" height="32"/>
+  <object id="29" name="Corridor.tmx" x="256" y="256" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="8" name="holding_Chamber" locked="1">
-  <object id="28" name="holding_chamber.tmx" x="256" y="80" width="32" height="32"/>
+ <objectgroup id="8" name="Holding_Chamber" locked="1">
+  <object id="28" name="Holding_Chamber.tmx" x="256" y="80" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="10" name="SpawnPoints" locked="1">
   <object id="31" name="holding_chamber.tmx" x="272" y="121">

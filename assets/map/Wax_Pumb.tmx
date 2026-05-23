@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="16" nextobjectid="39">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="16" nextobjectid="38">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="sewer.tsx"/>
  <tileset firstgid="371" source="wall_paid.tsx"/>
@@ -30,12 +30,12 @@
 </data>
  </layer>
  <objectgroup id="4" name="SpawnPoints" locked="1">
-  <object id="2" name="queen_chamber.tmx" x="268" y="245">
+  <object id="2" name="Queen_Chamber.tmx" x="268" y="245">
    <point/>
   </object>
  </objectgroup>
  <objectgroup id="5" name="Queen_Chamber" locked="1">
-  <object id="1" name="queen_chamber.tmx" x="256" y="224" width="32.1246" height="31.7748"/>
+  <object id="1" name="Queen_Chamber.tmx" x="256" y="224" width="32.1246" height="31.7748"/>
  </objectgroup>
  <layer id="8" name="Pipe1" width="16" height="9" locked="1">
   <data encoding="csv">
