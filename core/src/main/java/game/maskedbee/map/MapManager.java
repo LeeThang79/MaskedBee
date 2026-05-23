@@ -89,7 +89,23 @@ public class MapManager {
                 String layerName = layer.getName();
 
                 // Collision: Wall_Collision, Stone_Collision, v.v.
-                if (layerName.contains("Collision")) {
+                // XỬ LÝ VA CHẠM TƯỜNG / CỬA ẨN
+                if (layerName.equals("Hidden_Room_Collision")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject) {
+                            RectangleMapObject rectObj = (RectangleMapObject) obj;
+
+                            // Nếu trong Tiled chưa đặt name thì tự đặt để openDoor tìm được
+                            if (rectObj.getName() == null || rectObj.getName().isEmpty()) {
+                                rectObj.setName("hidden_room");
+                            }
+
+                            // Không cho vào wallCollision, cho vào doorObjects để có thể mở/xóa
+                            doorObjects.add(rectObj);
+                        }
+                    }
+                }
+                else if (layerName.contains("Collision")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
                             if (obj.getName() != null && obj.getName().contains("jail_door")) {
@@ -429,50 +445,100 @@ public class MapManager {
     public void openDoor(String doorName) {
         if (doorName == null) return;
 
-        // 1. Xóa collision cửa
+        String target = doorName.toLowerCase();
+
+        // Cho phép gọi bằng nhiều tên khác nhau
+        if (target.contains("hidden")) {
+            target = "hidden_room";
+        }
+
+        // Xóa vùng va chạm cửa
         for (int i = doorObjects.size - 1; i >= 0; i--) {
             String objName = doorObjects.get(i).getName();
-            if (objName != null && objName.contains(doorName)) {
+
+            if (objName == null) continue;
+
+            String current = objName.toLowerCase();
+
+            if (current.contains(target) || target.contains(current)) {
                 doorObjects.removeIndex(i);
             }
         }
 
-        // 2. Ẩn object cửa nếu map dùng Object Layer Door/Doors
-        hideDoorObjectInLayer("Door", doorName);
-        hideDoorObjectInLayer("Doors", doorName);
+        // Ẩn layer collision của cửa bí mật nếu có
+        if (target.equals("hidden_room")) {
+            MapLayer hiddenCollision = map.getLayers().get("Hidden_Room_Collision");
+            if (hiddenCollision != null) {
+                hiddenCollision.setVisible(false);
+            }
 
-        // 3. Xử lý door tile layer Door_Close / Door_Open nếu map dùng tile door mới
-        for (Door door : doors) {
-            if (doorName.equals(door.getName())) {
-                door.open();
+            System.out.println("✅ Hidden room collision removed!");
+            return;
+        }
 
-                Rectangle b = door.getBounds();
-                int tileX = Math.round(b.x / 32f);
-                int tileY = Math.round(b.y / 32f);
+        // Logic cửa thường cũ của bạn
+        MapLayer visualDoorLayer = map.getLayers().get("Door");
+        if (visualDoorLayer == null) {
+            visualDoorLayer = map.getLayers().get("Doors");
+        }
 
-                if (doorCloseLayer != null) {
-                    for (int i = 0; i < 2; i++) {
-                        doorCloseLayer.setCell(tileX, tileY + i, null);
-                    }
+        if (visualDoorLayer != null) {
+            for (MapObject obj : visualDoorLayer.getObjects()) {
+                if (obj.getName() != null && obj.getName().equals(doorName)) {
+                    obj.setVisible(false);
                 }
+            }
+        }
+    }
+    public void openHiddenRoom() {
+        // 1. Ẩn lớp hình ảnh che phòng bí mật
+        MapLayer hideFloor = map.getLayers().get("Hide_Floor");
+        if (hideFloor != null) {
+            hideFloor.setVisible(false);
+        }
 
-                if (doorOpenLayer != null) {
-                    doorOpenLayer.setVisible(true);
-                    // Lưu ý: nếu Door_Open ban đầu đã có tile sẵn và chỉ bị invisible,
-                    // setVisible(true) là đủ. Đoạn get/set cell dưới đây giữ nguyên cell nếu có.
-                    for (int i = 0; i < 2; i++) {
-                        TiledMapTileLayer.Cell cell = doorOpenLayer.getCell(tileX, tileY + i);
-                        if (cell != null) {
-                            doorOpenLayer.setCell(tileX, tileY + i, cell);
+        // 2. Ẩn layer collision cho dễ debug trong Tiled/render
+        MapLayer hiddenCollisionLayer = map.getLayers().get("Hidden_Room_Collision");
+        if (hiddenCollisionLayer != null) {
+            hiddenCollisionLayer.setVisible(false);
+
+            // 3. Xóa khỏi wallCollision nếu nó đang nằm trong wallCollision
+            for (MapObject obj : hiddenCollisionLayer.getObjects()) {
+                if (obj instanceof RectangleMapObject) {
+                    Rectangle rectToRemove = ((RectangleMapObject) obj).getRectangle();
+
+                    for (int i = wallCollision.size - 1; i >= 0; i--) {
+                        Rectangle wall = wallCollision.get(i);
+
+                        if (wall.overlaps(rectToRemove)
+                            || rectToRemove.overlaps(wall)
+                            || sameRect(wall, rectToRemove)) {
+                            wallCollision.removeIndex(i);
+                        }
+                    }
+
+                    // 4. Xóa khỏi doorObjects nếu lỡ đang nằm trong doorObjects
+                    for (int i = doorObjects.size - 1; i >= 0; i--) {
+                        Rectangle doorRect = doorObjects.get(i).getRectangle();
+
+                        if (doorRect.overlaps(rectToRemove)
+                            || rectToRemove.overlaps(doorRect)
+                            || sameRect(doorRect, rectToRemove)) {
+                            doorObjects.removeIndex(i);
                         }
                     }
                 }
-
-                break;
             }
         }
 
-        System.out.println("🚪 Door opened: " + doorName);
+        System.out.println("✅ Hidden room opened: Hide_Floor hidden + Hidden_Room_Collision removed");
+    }
+
+    private boolean sameRect(Rectangle a, Rectangle b) {
+        return Math.abs(a.x - b.x) < 0.01f
+            && Math.abs(a.y - b.y) < 0.01f
+            && Math.abs(a.width - b.width) < 0.01f
+            && Math.abs(a.height - b.height) < 0.01f;
     }
 
     private void hideDoorObjectInLayer(String layerName, String doorName) {

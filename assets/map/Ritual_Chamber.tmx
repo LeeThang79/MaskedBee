@@ -105,21 +105,21 @@
  <objectgroup id="7" name="Corridor_Chamber" locked="1">
   <object id="29" name="Corridor.tmx" x="256" y="256" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="8" name="Holding_Chamber" locked="1">
+ <objectgroup id="8" name="Holding_Chamber">
   <object id="28" name="Holding_Chamber.tmx" x="256" y="80" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="10" name="SpawnPoints" locked="1">
-  <object id="31" name="holding_chamber.tmx" x="272" y="121">
+ <objectgroup id="10" name="SpawnPoints">
+  <object id="31" name="Holding_Chamber.tmx" x="272" y="121">
    <point/>
   </object>
-  <object id="33" name="corridor.tmx" x="266" y="277">
+  <object id="33" name="Corridor.tmx" x="266" y="277">
    <point/>
   </object>
-  <object id="36" name="cocoon_chamber.tmx" x="112" y="181">
+  <object id="36" name="Cocoon_Chamber.tmx" x="112" y="181">
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="12" name="Guards">
+ <objectgroup id="12" name="Guards" locked="1">
   <object id="48" name="guard1" x="147.333" y="117.667">
    <polyline points="0,0 249.667,-0.333333"/>
   </object>

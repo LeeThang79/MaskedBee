@@ -23,6 +23,8 @@ public class Player extends Entity {
     public boolean hasMaskItem = false;
 
     public float noiseRadius = 0f;
+    // Chìa khóa hiện tại Player đang giữ
+    public String currentKey = "";
 
     public enum Direction { UP, DOWN, LEFT, RIGHT }
 

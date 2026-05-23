@@ -91,7 +91,7 @@
   <object id="166" x="446" y="160" width="2" height="32"/>
   <object id="167" x="416" y="192" width="32" height="11"/>
  </objectgroup>
- <objectgroup id="13" name="Player_Spawn" locked="1">
+ <objectgroup id="13" name="Player_Spawn">
   <object id="132" name="Player_Spawn" x="245" y="180">
    <point/>
   </object>
@@ -99,7 +99,7 @@
  <objectgroup id="14" name="Ritual_Chamber" locked="1">
   <object id="156" name="Ritual_Chamber.tmx" x="416" y="160" width="31.3746" height="31.1405"/>
  </objectgroup>
- <objectgroup id="17" name="SpawnPoints" locked="1">
+ <objectgroup id="17" name="SpawnPoints">
   <object id="158" name="Ritual_Chamber.tmx" x="426" y="181">
    <point/>
   </object>

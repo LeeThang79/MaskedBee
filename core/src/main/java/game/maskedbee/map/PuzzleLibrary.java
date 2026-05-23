@@ -396,7 +396,7 @@ public class PuzzleLibrary {
     // MỞ PHÒNG BÍ MẬT
     // =====================================================
     private void openHiddenRoom() {
-        MapLayer hiddenLayer = map.getLayers().get("HiddenRoomWall");
+        MapLayer hiddenLayer = map.getLayers().get("Hide_Floor");
         if (hiddenLayer != null) {
             hiddenLayer.setVisible(false);
         }
