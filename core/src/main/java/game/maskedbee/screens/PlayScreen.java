@@ -223,7 +223,7 @@ public class PlayScreen implements Screen {
         // Dùng getFullCollision() để giữ collision tường + cửa + pushable.
         // Nếu Player của bạn đã có hàm update(delta, walls, pushables), bạn có thể đổi dòng này thành:
         // myPlayer.update(delta, game.map.getWallCollision(), game.map.getPushables());
-        myPlayer.update(delta, game.map.getFullCollision());
+        myPlayer.update(delta, game.map.getWallCollision());
 
         game.map.updateFloorHide(myPlayer);
 

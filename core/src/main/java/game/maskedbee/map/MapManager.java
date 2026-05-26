@@ -88,24 +88,8 @@ public class MapManager {
                 if (layer == null) continue;
                 String layerName = layer.getName();
 
-                // Collision: Wall_Collision, Stone_Collision, v.v.
-                // XỬ LÝ VA CHẠM TƯỜNG / CỬA ẨN
-                if (layerName.equals("Hidden_Room_Collision")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            RectangleMapObject rectObj = (RectangleMapObject) obj;
-
-                            // Nếu trong Tiled chưa đặt name thì tự đặt để openDoor tìm được
-                            if (rectObj.getName() == null || rectObj.getName().isEmpty()) {
-                                rectObj.setName("hidden_room");
-                            }
-
-                            // Không cho vào wallCollision, cho vào doorObjects để có thể mở/xóa
-                            doorObjects.add(rectObj);
-                        }
-                    }
-                }
-                else if (layerName.contains("Collision")) {
+                // Collision: Wall_Collision, Stone_Collision, Hidden_Room_Collision, v.v.
+                if (layerName.contains("Collision")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
                             if (obj.getName() != null && obj.getName().contains("jail_door")) {

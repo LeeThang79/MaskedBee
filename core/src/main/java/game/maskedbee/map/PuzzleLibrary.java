@@ -402,7 +402,7 @@ public class PuzzleLibrary {
         }
 
         // 2. XÓA VÙNG VA CHẠM
-        MapLayer collisionLayer = map.getLayers().get("hidden_room_Collision");
+        MapLayer collisionLayer = map.getLayers().get("Hidden_Room_Collision");
         if (collisionLayer != null) {
             for (MapObject obj : collisionLayer.getObjects()) {
                 if (obj instanceof RectangleMapObject) {
