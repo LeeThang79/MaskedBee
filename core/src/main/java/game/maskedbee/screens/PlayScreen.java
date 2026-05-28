@@ -190,9 +190,6 @@ public class PlayScreen implements Screen {
             puzzleManager.update(myPlayer, game.map);
         }
 
-        // Puzzle cũ: lever/spike/door_lever
-        handleInteractions();
-
         // Check spike death từ PuzzleManager mới nếu có logic mới ở đó
         if (puzzleManager != null && puzzleManager.checkSpikeDeath(myPlayer, game.map)) {
             reloadCurrentMapAndRespawn();
