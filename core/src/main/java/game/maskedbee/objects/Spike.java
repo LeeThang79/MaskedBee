@@ -11,10 +11,6 @@ public class Spike {
     public boolean isUp;
     public Rectangle hitbox;
 
-    private final int originalTileId;
-    private final Integer upTileId;
-    private final Integer downTileId;
-
     public Spike(TiledMapTileMapObject obj) {
         this.mapObject = obj;
 
@@ -23,38 +19,27 @@ public class Spike {
         Boolean up = getBooleanProperty(obj, "isUp");
         this.isUp = up != null ? up : true;
 
-        this.originalTileId = obj.getTile() != null ? obj.getTile().getId() : -1;
-
-        Integer readUpTileId = getIntProperty(obj, "upTileID", "upTileId", "upID", "upId");
-        Integer readDownTileId = getIntProperty(obj, "downTileID", "downTileId", "downID", "downId");
-
-        this.upTileId = readUpTileId != null ? readUpTileId : (isUp ? originalTileId : null);
-        this.downTileId = readDownTileId != null ? readDownTileId : (!isUp ? originalTileId : null);
-
         this.hitbox = new Rectangle(obj.getX(), obj.getY() - 32f, 32f, 32f);
     }
 
     public void toggle(TiledMap map) {
-        boolean nextIsUp = !isUp;
-        Integer nextTileId = nextIsUp ? upTileId : downTileId;
+        isUp = !isUp;
 
-        if (nextTileId == null || nextTileId < 0) {
-            System.out.println("⚠️ Spike missing tile ID. type=" + type
-                + ". Hãy thêm upTileID/downTileID trong Tiled.");
-            // Vẫn đổi trạng thái để gameplay chạy, nhưng hình sẽ không đổi nếu thiếu tile ID.
-            isUp = nextIsUp;
+        Integer tileId = isUp
+            ? getIntProperty(mapObject, "upTileID", "upTileId", "upID", "upId")
+            : getIntProperty(mapObject, "downTileID", "downTileId", "downID", "downId");
+
+        if (tileId == null || tileId < 0) {
+            System.out.println("⚠️ Spike missing tile ID. type=" + type + ", isUp=" + isUp);
             return;
         }
 
-        TiledMapTile tile = map.getTileSets().getTile(nextTileId);
-
+        TiledMapTile tile = map.getTileSets().getTile(tileId);
         if (tile == null) {
-            System.out.println("⚠️ Cannot find spike tile with ID = " + nextTileId);
-            isUp = nextIsUp;
+            System.out.println("⚠️ Cannot find spike tile with ID = " + tileId);
             return;
         }
 
-        isUp = nextIsUp;
         mapObject.setTile(tile);
     }
 
@@ -65,16 +50,13 @@ public class Spike {
 
     private Boolean getBooleanProperty(TiledMapTileMapObject obj, String... names) {
         Object value = getProperty(obj, names);
-
         if (value == null) return null;
         if (value instanceof Boolean) return (Boolean) value;
-
         return Boolean.parseBoolean(value.toString());
     }
 
     private Integer getIntProperty(TiledMapTileMapObject obj, String... names) {
         Object value = getProperty(obj, names);
-
         if (value == null) return null;
         if (value instanceof Integer) return (Integer) value;
 
@@ -88,7 +70,6 @@ public class Spike {
     private Object getProperty(TiledMapTileMapObject obj, String... names) {
         for (String name : names) {
             Object value = obj.getProperties().get(name);
-
             if (value != null) return value;
 
             if (obj.getTile() != null) {
@@ -96,7 +77,6 @@ public class Spike {
                 if (value != null) return value;
             }
         }
-
         return null;
     }
 }

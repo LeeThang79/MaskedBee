@@ -19,9 +19,7 @@ import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
 import game.maskedbee.map.PuzzleLibrary;
 import game.maskedbee.map.PuzzleManager;
-import game.maskedbee.objects.Lever;
 import game.maskedbee.objects.PushableBlock;
-import game.maskedbee.objects.Spike;
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -33,7 +31,6 @@ public class PlayScreen implements Screen {
     public enum GameState {
         RUNNING, PAUSE
     }
-
     private GameState state = GameState.RUNNING;
 
     private ShapeRenderer shapeRender;
@@ -43,7 +40,6 @@ public class PlayScreen implements Screen {
 
     private PuzzleLibrary puzzleLibrary;
     private PuzzleManager puzzleManager;
-
     public PlayScreen(CORE game) {
         this.game = game;
         this.camera = new OrthographicCamera();
@@ -60,7 +56,6 @@ public class PlayScreen implements Screen {
         puzzleManager = new PuzzleManager();
     }
 
-    // Hàm tiện ích: Đưa người chơi về điểm Spawn trên Map
     private void spawnPlayer(String fromMap) {
         Rectangle spawn = game.map.getSpawnPoint(fromMap);
 
@@ -76,7 +71,7 @@ public class PlayScreen implements Screen {
             myPlayer.x = 100;
             myPlayer.y = 100;
             myPlayer.hitbox.setPosition(100, 100);
-            System.out.println("⚠️ Cảnh báo: Không tìm thấy điểm Spawn nào trên Map!");
+            System.out.println("Cảnh báo: Không tìm thấy điểm Spawn nào trên Map!");
         }
     }
 
@@ -106,50 +101,18 @@ public class PlayScreen implements Screen {
     }
 
     private void recreatePuzzleLibrary() {
-        puzzleLibrary = new PuzzleLibrary(
-            game.map.getMap(),
-            game.map.getWallCollision(),
-            game.map.getInteractPoints()
-        );
+        puzzleLibrary = new PuzzleLibrary(game.map);
     }
 
     private void reloadCurrentMapAndRespawn() {
+        // Chết do gai/reset level: gai và cần gạt về trạng thái ban đầu của map.
+        game.map.clearSpikeLeverStateForCurrentMap();
+
         game.map.loadMap("map/" + game.map.getCurrentMapName());
         recreatePuzzleLibrary();
         spawnPlayer(null);
+        game.map.updateFloorHide(myPlayer);
         updateCamera();
-    }
-
-    private void handleInteractions() {
-        // LOGIC PUZZLE CŨ: GẠT CẦN (Nhấn E)
-        if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-            for (Lever lever : game.map.levers) {
-                if (myPlayer.hitbox.overlaps(lever.hitbox)) {
-                    lever.toggle(game.map.getMap());
-
-                    if ("lever".equals(lever.type)) {
-                        for (Spike spike : game.map.spikes) {
-                            if ((lever.targetColor != null && lever.targetColor.equals(spike.type))
-                                || "black".equals(spike.type)) {
-                                spike.toggle(game.map.getMap());
-                            }
-                        }
-                    } else if ("door_lever".equals(lever.type)) {
-                        game.map.openDoor(lever.targetName);
-                    }
-                    break;
-                }
-            }
-        }
-
-        // LOGIC PUZZLE CŨ: CHẾT KHI ĐẠP GAI
-        for (Spike spike : game.map.spikes) {
-            if (spike.isUp && myPlayer.hitbox.overlaps(spike.hitbox)) {
-                System.out.println("💀 Đạp trúng gai! Reset level!");
-                reloadCurrentMapAndRespawn();
-                break;
-            }
-        }
     }
 
     @Override
@@ -157,6 +120,7 @@ public class PlayScreen implements Screen {
         game.map.loadMap("map/cocoon_chamber.tmx");
         recreatePuzzleLibrary();
         spawnPlayer(null);
+        game.map.updateFloorHide(myPlayer);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         updateCamera();
     }
@@ -184,59 +148,57 @@ public class PlayScreen implements Screen {
         if (puzzleLibrary != null) {
             puzzleLibrary.update(myPlayer.hitbox, delta);
         }
-
-        // Puzzle mới: keys, doors, pushable blocks, floor hide, v.v.
+        // PuzzleManager xử lý: E gạt cần/gai/cửa, F mở cửa bằng key, nhặt key, đẩy block.
         if (puzzleManager != null) {
             puzzleManager.update(myPlayer, game.map);
         }
 
-        // Check spike death từ PuzzleManager mới nếu có logic mới ở đó
         if (puzzleManager != null && puzzleManager.checkSpikeDeath(myPlayer, game.map)) {
             reloadCurrentMapAndRespawn();
             return;
         }
 
-        // Portal chuyển map
         String nextMap = game.map.checkPortal(myPlayer.hitbox);
         if (nextMap != null) {
             String lastMap = game.map.getCurrentMapName();
             game.map.loadMap(nextMap);
             recreatePuzzleLibrary();
             spawnPlayer(lastMap);
+            game.map.updateFloorHide(myPlayer);
             updateCamera();
             return;
         }
-
-        // Reset puzzle bằng R
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
-            for (PushableBlock block : game.map.getPushables()) {
-                block.resetPosition();
+            game.map.clearPushableStateForCurrentMap();
+            game.map.resetPushables();
+
+            String resetSpawnFromMap = game.map.getLastMapName();
+
+            if ("Disposal.tmx".equalsIgnoreCase(game.map.getCurrentMapName())) {
+                resetSpawnFromMap = "Corridor.tmx";
             }
-            spawnPlayer(game.map.getLastMapName());
+
+            spawnPlayer(resetSpawnFromMap);
+
+            game.map.updateFloorHide(myPlayer);
             updateCamera();
         }
 
-        // Cập nhật Player.
-        // Dùng getFullCollision() để giữ collision tường + cửa + pushable.
-        // Nếu Player của bạn đã có hàm update(delta, walls, pushables), bạn có thể đổi dòng này thành:
-        // myPlayer.update(delta, game.map.getWallCollision(), game.map.getPushables());
-        myPlayer.update(delta, game.map.getWallCollision());
+        // Dùng full collision để Player bị chặn bởi tường + cửa tù + block.
+        // Hidden_Room_Collision vẫn xóa được vì PuzzleLibrary xóa nó khỏi wallCollision.
+        myPlayer.update(delta, game.map.getFullCollision());
 
         game.map.updateFloorHide(myPlayer);
 
-        // Cập nhật guard. Không nhận boolean để tương thích với Guard hiện tại của bạn.
         for (Guard guard : game.map.guards) {
             guard.update(delta, myPlayer, game.map.getWallCollision());
         }
 
         updateCamera();
     }
-
     private void drawGame() {
         ScreenUtils.clear(0, 0, 0, 1);
 
-        // GIỮ LOGIC RENDER CŨ:
-        // background -> entities -> overhead, có sortY để xử lý vật thể che Player.
         float sortY = game.map.getSortY();
 
         if (myPlayer.y < sortY) {

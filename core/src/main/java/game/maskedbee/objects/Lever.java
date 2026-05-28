@@ -30,10 +30,10 @@ public class Lever {
         this.otherTileId = getIntProperty(obj, "otherTileID", "otherTileId", "otherID", "otherId");
 
         this.hitbox = new Rectangle(
-            obj.getX() - 16f,
-            obj.getY() - 32f - 16f,
-            64f,
-            64f
+            obj.getX() - 4f,
+            obj.getY() - 36f,
+            40f,
+            40f
         );
     }
 
@@ -41,7 +41,6 @@ public class Lever {
         isPulled = !isPulled;
 
         Integer nextTileId;
-
         if (isPulled) {
             nextTileId = otherTileId;
         } else {
@@ -54,7 +53,6 @@ public class Lever {
         }
 
         TiledMapTile tile = map.getTileSets().getTile(nextTileId);
-
         if (tile == null) {
             System.out.println("⚠️ Cannot find lever tile with ID = " + nextTileId);
             return;
@@ -70,16 +68,13 @@ public class Lever {
 
     private Boolean getBooleanProperty(TiledMapTileMapObject obj, String... names) {
         Object value = getProperty(obj, names);
-
         if (value == null) return null;
         if (value instanceof Boolean) return (Boolean) value;
-
         return Boolean.parseBoolean(value.toString());
     }
 
     private Integer getIntProperty(TiledMapTileMapObject obj, String... names) {
         Object value = getProperty(obj, names);
-
         if (value == null) return null;
         if (value instanceof Integer) return (Integer) value;
 
@@ -93,7 +88,6 @@ public class Lever {
     private Object getProperty(TiledMapTileMapObject obj, String... names) {
         for (String name : names) {
             Object value = obj.getProperties().get(name);
-
             if (value != null) return value;
 
             if (obj.getTile() != null) {
@@ -101,7 +95,6 @@ public class Lever {
                 if (value != null) return value;
             }
         }
-
         return null;
     }
 }
