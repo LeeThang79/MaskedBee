@@ -211,9 +211,20 @@ public class PlayScreen implements Screen {
         game.map.render(camera); //Vẽ map
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-        myPlayer.draw(game.batch);
+
         for (PushableBlock block : game.map.getPushables()) {
-            block.render(game.batch);
+            // nếu block ở phía trên player
+            if (block.getBounds().y > myPlayer.y) {
+                block.render(game.batch);
+            }
+        }
+        myPlayer.draw(game.batch);
+        // ===== VẼ BLOCK PHÍA TRƯỚC PLAYER =====
+        for (PushableBlock block : game.map.getPushables()) {
+            // nếu block ở phía dưới player
+            if (block.getBounds().y <= myPlayer.y) {
+                block.render(game.batch);
+            }
         }
         // Vẽ quái vật
         for (Guard guard : game.map.guards) {
