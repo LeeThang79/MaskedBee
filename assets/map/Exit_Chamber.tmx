@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="30">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="44">
  <tileset firstgid="1" source="wall_paid.tsx"/>
  <tileset firstgid="197" source="floor_paid.tsx"/>
  <tileset firstgid="295" source="wallfloor.tsx"/>
@@ -44,39 +44,17 @@
 </data>
  </layer>
  <objectgroup id="11" name="Skull_Collision">
-  <object id="17" x="105.75" y="217.75" width="41" height="22">
-   <ellipse/>
-  </object>
-  <object id="18" x="169.833" y="122.25" width="42" height="22">
-   <ellipse/>
-  </object>
-  <object id="19" x="233.167" y="186.333" width="42.5" height="22">
-   <ellipse/>
-  </object>
-  <object id="20" x="361" y="186" width="42" height="22">
-   <ellipse/>
-  </object>
-  <object id="21" x="393.5" y="122" width="42.5" height="22">
-   <ellipse/>
-  </object>
-  <object id="23" x="163.333" y="178" width="25.6667" height="14">
-   <capsule/>
-  </object>
-  <object id="24" x="194.833" y="243" width="25.6667" height="14">
-   <capsule/>
-  </object>
-  <object id="25" x="67.1667" y="114" width="25.6667" height="14">
-   <capsule/>
-  </object>
-  <object id="27" x="258.833" y="114.667" width="25.6667" height="14">
-   <capsule/>
-  </object>
-  <object id="28" x="322.833" y="146.333" width="25.6667" height="14">
-   <capsule/>
-  </object>
-  <object id="29" x="419.5" y="242.667" width="25.6667" height="14">
-   <capsule/>
-  </object>
+  <object id="32" x="164.432" y="127.295" width="53.75" height="23.25"/>
+  <object id="34" x="100.898" y="222.801" width="53.75" height="23.25"/>
+  <object id="35" x="228.58" y="191.648" width="53.75" height="23.25"/>
+  <object id="36" x="356.761" y="191.83" width="53.75" height="23.25"/>
+  <object id="37" x="388.761" y="127.466" width="53.75" height="23.25"/>
+  <object id="38" x="159.62" y="175.83" width="31.2554" height="17.0682"/>
+  <object id="39" x="255.611" y="111.814" width="31.2554" height="17.0682"/>
+  <object id="40" x="64.9178" y="111.284" width="31.2554" height="17.0682"/>
+  <object id="41" x="319.747" y="143.966" width="31.2554" height="17.0682"/>
+  <object id="42" x="417.997" y="238.716" width="31.2554" height="17.0682"/>
+  <object id="43" x="192.19" y="240.011" width="31.2554" height="17.0682"/>
  </objectgroup>
  <objectgroup id="7" name="Wall_Collision">
   <object id="1" x="29.5" y="161.75" width="34" height="104.25"/>
@@ -95,6 +73,9 @@
  </objectgroup>
  <objectgroup id="9" name="Old_Corridor_Chamber">
   <object id="15" name="Old_Corridor.tmx" x="30.5455" y="129.273" width="32" height="32.3636"/>
+ </objectgroup>
+ <objectgroup id="13" name="Text">
+  <object id="31" gid="555" x="128" y="224" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="10" name="Exit">
   <object id="16" name="Exit.tmx" x="448.909" y="128.727" width="31.2727" height="65.2727"/>

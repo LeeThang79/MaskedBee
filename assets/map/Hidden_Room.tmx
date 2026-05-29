@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="17">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="18">
  <tileset firstgid="1" source="floor_paid.tsx"/>
  <tileset firstgid="99" source="wall_paid.tsx"/>
  <tileset firstgid="295" source="wallfloor.tsx"/>
- <tileset firstgid="595" source="wallfloor.tsx"/>
- <tileset firstgid="895" source="bookself.tsx"/>
+ <tileset firstgid="595" source="bookself.tsx"/>
  <layer id="1" name="Wall" width="16" height="9">
   <data encoding="csv">
 114,114,114,114,114,114,114,114,114,114,114,114,114,114,114,114,
@@ -21,9 +20,9 @@
  <layer id="4" name="Ladder" width="16" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,664,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,664,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,684,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,364,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,364,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,384,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -43,6 +42,9 @@
  </objectgroup>
  <objectgroup id="5" name="Library_Chamber">
   <object id="9" name="Library.tmx" x="264" y="35.3333" width="16.6667" height="16.6667"/>
+ </objectgroup>
+ <objectgroup id="13" name="Text">
+  <object id="17" gid="555" x="192" y="96" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="6" name="SpawnPoints">
   <object id="11" name="Library.tmx" x="272.667" y="56">
@@ -67,9 +69,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,998,998,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,998,982,983,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,996,997,0,0,0,0,0,0,0,
+0,0,0,0,0,0,698,698,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,698,682,683,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,696,697,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -85,7 +87,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,606,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,306,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

@@ -131,6 +131,24 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <layer id="41" name="Book" width="16" height="14">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,767,768,769,770,0,0,0,0,0,0,0,0,
+0,0,0,0,787,788,789,790,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
  <objectgroup id="11" name="Corridor_Chamber">
   <object id="75" name="Corridor.tmx" x="415.258" y="321.566" width="32.3105" height="31.5412"/>
  </objectgroup>
@@ -156,6 +174,7 @@
   <object id="67" x="319.333" y="393" width="64" height="27"/>
   <object id="88" x="117.333" y="105.333" width="137.333" height="21.3333"/>
   <object id="89" x="292" y="106.667" width="125.333" height="20"/>
+  <object id="93" x="122.75" y="357.75" width="132.5" height="66.5"/>
  </objectgroup>
  <objectgroup id="26" name="Hidden_Room_Chamber">
   <object id="79" name="Hidden_Room.tmx" x="95.2307" y="126.165" width="28.2616" height="35.5206"/>
@@ -173,6 +192,9 @@
  </objectgroup>
  <objectgroup id="40" name="Door_Collision">
   <object id="91" x="114.667" y="125.333" width="12" height="36"/>
+ </objectgroup>
+ <objectgroup id="42" name="Text">
+  <object id="92" gid="765" x="192" y="352" width="32" height="32"/>
  </objectgroup>
  <layer id="37" name="Interact_Point_4" width="16" height="14">
   <data encoding="csv">
