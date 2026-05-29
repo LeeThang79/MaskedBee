@@ -219,7 +219,10 @@ public class PlayScreen implements Screen {
         myPlayer.draw(game.batch);
 
         for (PushableBlock block : game.map.getPushables()) {
-            block.render(game.batch);
+            // nếu block ở phía dưới player
+            if (block.getBounds().y <= myPlayer.y) {
+                block.render(game.batch);
+            }
         }
 
         for (Guard guard : game.map.guards) {

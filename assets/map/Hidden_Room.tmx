@@ -43,6 +43,9 @@
  <objectgroup id="5" name="Library_Chamber">
   <object id="9" name="Library.tmx" x="261" y="32" width="22" height="20"/>
  </objectgroup>
+ <objectgroup id="13" name="Text">
+  <object id="17" gid="555" x="192" y="96" width="32" height="32"/>
+ </objectgroup>
  <objectgroup id="6" name="SpawnPoints">
   <object id="11" name="Library.tmx" x="266" y="53">
    <point/>
