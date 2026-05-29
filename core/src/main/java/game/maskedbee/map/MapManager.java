@@ -417,12 +417,19 @@ public class MapManager {
         if (hideLayer == null || hideTrigger == null) return;
         boolean triggered = false;
         // Player đứng lên trigger
-        if (player.hitbox.overlaps(hideTrigger)) {
+        float playerCenterX = player.hitbox.x + player.hitbox.width / 2f;
+
+        float playerCenterY = player.hitbox.y + player.hitbox.height / 2f;
+
+        if (hideTrigger.contains(playerCenterX, playerCenterY)) {
             triggered = true;
         }
         // Block đứng lên trigger
         for (PushableBlock block : pushables) {
-            if (block.getBounds().overlaps(hideTrigger)) {
+            Rectangle b = block.getBounds();
+            float blockCenterX = b.x + b.width / 2f;
+            float blockCenterY = b.y + b.height / 2f;
+            if (hideTrigger.contains(blockCenterX, blockCenterY)) {
                 triggered = true;
                 break;
             }

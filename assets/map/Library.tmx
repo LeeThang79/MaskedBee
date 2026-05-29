@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="43" nextobjectid="94">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="42" nextobjectid="93">
  <tileset firstgid="1" source="bookself.tsx"/>
  <tileset firstgid="211" source="wall_paid.tsx"/>
  <tileset firstgid="407" source="floor_paid.tsx"/>
@@ -151,6 +151,9 @@
  </layer>
  <objectgroup id="11" name="Corridor_Chamber">
   <object id="75" name="Corridor.tmx" x="415.258" y="321.566" width="32.3105" height="31.5412"/>
+ </objectgroup>
+ <objectgroup id="41" name="Keys">
+  <object id="92" name="gold_key" x="264" y="94" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="12" name="Wall_Collision">
   <object id="45" x="116.667" y="161.333" width="9.33333" height="261.333"/>
@@ -319,7 +322,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="30" name="Candle_On_2" width="16" height="14" visible="0">
+ <layer id="30" name="Candle_On_2" width="16" height="14">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,842,0,840,0,846,0,844,0,0,0,0,
