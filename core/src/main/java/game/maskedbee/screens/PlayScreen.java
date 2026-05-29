@@ -1,5 +1,6 @@
 package game.maskedbee.screens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -7,31 +8,25 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
-import game.maskedbee.map.PuzzleManager;
-import game.maskedbee.objects.Spike;
-import game.maskedbee.objects.Lever;
 import game.maskedbee.map.PuzzleLibrary;
-import com.badlogic.gdx.graphics.Texture;
-import game.maskedbee.objects.Door;
-import game.maskedbee.objects.Key;
+import game.maskedbee.map.PuzzleManager;
 import game.maskedbee.objects.PushableBlock;
 
 public class PlayScreen implements Screen {
     public final CORE game;
     public Player myPlayer;
+
     private OrthographicCamera camera;
     private Viewport viewport;
-    private Texture background;
 
     public enum GameState {
         RUNNING, PAUSE
@@ -44,74 +39,90 @@ public class PlayScreen implements Screen {
     private Rectangle quitBtn;
 
     private PuzzleLibrary puzzleLibrary;
-    private PuzzleManager puzzleManager; // KHAI BÁO PUZZLE MANAGER
-
+    private PuzzleManager puzzleManager;
     public PlayScreen(CORE game) {
         this.game = game;
         this.camera = new OrthographicCamera();
         this.viewport = new FitViewport(515, 290, camera);
 
-        this.myPlayer = new Player(0,0);
+        this.myPlayer = new Player(0, 0);
 
         this.shapeRender = new ShapeRenderer();
         this.font = new BitmapFont();
 
-        continueBtn = new Rectangle(0,0,100,30);
-        quitBtn = new Rectangle(0,0,100,30);
+        continueBtn = new Rectangle(0, 0, 100, 30);
+        quitBtn = new Rectangle(0, 0, 100, 30);
 
         puzzleManager = new PuzzleManager();
     }
-    // Hàm tiện ích: Đưa người chơi về điểm Spawn trên Map
+
     private void spawnPlayer(String fromMap) {
         Rectangle spawn = game.map.getSpawnPoint(fromMap);
 
-        if(spawn==null) {
-            spawn=game.map.getPlayerSpawn();
+        if (spawn == null) {
+            spawn = game.map.getPlayerSpawn();
         }
-        if(spawn != null) {
+
+        if (spawn != null) {
             myPlayer.x = spawn.x;
             myPlayer.y = spawn.y;
             myPlayer.hitbox.setPosition(spawn.x, spawn.y);
+        } else {
+            myPlayer.x = 100;
+            myPlayer.y = 100;
+            myPlayer.hitbox.setPosition(100, 100);
+            System.out.println("Cảnh báo: Không tìm thấy điểm Spawn nào trên Map!");
         }
     }
 
     private void updateCamera() {
         float mapWidth = game.map.getMapWidth();
         float mapHeight = game.map.getMapHeight();
+        float halfWidth = viewport.getWorldWidth() / 2f;
+        float halfHeight = viewport.getWorldHeight() / 2f;
 
-        float halfViewportWidth = viewport.getWorldWidth() / 2f;
-        float halfViewportHeight = viewport.getWorldHeight() / 2f;
-
-        // Camera sẽ đi theo Player
         float camX = myPlayer.x;
         float camY = myPlayer.y;
 
-        // KIỂM TRA CHIỀU NGANG: Nếu map nhỏ hơn khung nhìn -> Cố định ở giữa map
         if (mapWidth <= viewport.getWorldWidth()) {
             camX = mapWidth / 2f;
         } else {
-            // Nếu map to -> Giới hạn không cho camera lộ ra vùng đen bên ngoài map
-            camX = com.badlogic.gdx.math.MathUtils.clamp(camX, halfViewportWidth, mapWidth - halfViewportWidth);
+            camX = com.badlogic.gdx.math.MathUtils.clamp(camX, halfWidth, mapWidth - halfWidth);
         }
 
-        // KIỂM TRA CHIỀU DỌC: Tương tự như chiều ngang
         if (mapHeight <= viewport.getWorldHeight()) {
             camY = mapHeight / 2f;
         } else {
-            camY = com.badlogic.gdx.math.MathUtils.clamp(camY, halfViewportHeight, mapHeight - halfViewportHeight);
+            camY = com.badlogic.gdx.math.MathUtils.clamp(camY, halfHeight, mapHeight - halfHeight);
         }
 
         camera.position.set(camX, camY, 0);
         camera.update();
     }
 
+    private void recreatePuzzleLibrary() {
+        puzzleLibrary = new PuzzleLibrary(game.map);
+    }
+
+    private void reloadCurrentMapAndRespawn() {
+        // Chết do gai/reset level: gai và cần gạt về trạng thái ban đầu của map.
+        game.map.clearSpikeLeverStateForCurrentMap();
+
+        game.map.loadMap("map/" + game.map.getCurrentMapName());
+        recreatePuzzleLibrary();
+        spawnPlayer(null);
+        game.map.updateFloorHide(myPlayer);
+        updateCamera();
+    }
+
     @Override
     public void show() {
         game.map.loadMap("map/cocoon_chamber.tmx");
-        puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getWallCollision());
+        recreatePuzzleLibrary();
         spawnPlayer(null);
+        game.map.updateFloorHide(myPlayer);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
-        camera.update();
+        updateCamera();
     }
 
     @Override
@@ -121,162 +132,178 @@ public class PlayScreen implements Screen {
         }
 
         if (state == GameState.RUNNING) {
+            updateRunning(delta);
+        } else if (state == GameState.PAUSE) {
+            handlePauseMenuLogic();
+        }
+
+        drawGame();
+
+        if (state == GameState.PAUSE) {
+            drawPauseMenu();
+        }
+    }
+
+    private void updateRunning(float delta) {
+        if (puzzleLibrary != null) {
             puzzleLibrary.update(myPlayer.hitbox, delta);
+        }
+        // PuzzleManager xử lý: E gạt cần/gai/cửa, F mở cửa bằng key, nhặt key, đẩy block.
+        if (puzzleManager != null) {
             puzzleManager.update(myPlayer, game.map);
+        }
 
-            // KIỂM TRA CHẾT DO GAI
-            if (puzzleManager.checkSpikeDeath(myPlayer, game.map)) {
-                game.map.loadMap("map/" + game.map.getCurrentMapName());
-                spawnPlayer(null);
-                updateCamera();
-                return; // Thoát render vòng này để tải lại map
-            }
+        if (puzzleManager != null && puzzleManager.checkSpikeDeath(myPlayer, game.map)) {
+            reloadCurrentMapAndRespawn();
+            return;
+        }
 
-            //Kiểm tra Portal
-            String nextMap = game.map.checkPortal(myPlayer.hitbox);
-            if (nextMap != null) {
-                String lastMap = game.map.getCurrentMapName();
-                game.map.loadMap(nextMap);
-                puzzleLibrary = new PuzzleLibrary(game.map.getMap(), game.map.getWallCollision());
-                spawnPlayer(lastMap);
-                updateCamera();
-                return; // Thoát render vòng này để vẽ map mới
-            }
-            // RESET PUZZLE
-            if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
-                // reset block
-                for (PushableBlock block : game.map.getPushables()) {
-                    block.resetPosition();
-                }
-                // reset player
-                spawnPlayer(game.map.getLastMapName());
-                updateCamera();
-            }
-
-            // Cập nhật người chơi (Truyền danh sách tường vào để không đi xuyên tường)
-            myPlayer.update(delta, game.map.getWallCollision(), game.map.getPushables());
+        String nextMap = game.map.checkPortal(myPlayer.hitbox);
+        if (nextMap != null) {
+            String lastMap = game.map.getCurrentMapName();
+            game.map.loadMap(nextMap);
+            recreatePuzzleLibrary();
+            spawnPlayer(lastMap);
             game.map.updateFloorHide(myPlayer);
+            updateCamera();
+            return;
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+            game.map.clearPushableStateForCurrentMap();
+            game.map.resetPushables();
 
-            // Cập nhật tất cả quái vật trên bản đồ hiện tại
-            for (Guard guard : game.map.guards) {
-                // Nhận kết quả từ hàm update của Guard
-                boolean isCaught = guard.update(delta, myPlayer, game.map.getWallCollision());
+            String resetSpawnFromMap = game.map.getLastMapName();
 
-                if (isCaught) {
-                    System.out.println("🚨 Bị quái tóm! Đày về kén (Cocoon Chamber)!");
-
-                    // Bắt buộc load lại đúng file map cocoon_chamber
-                    game.map.loadMap("map/cocoon_chamber.tmx");
-
-                    // Spawn player lại (truyền null để nó tự tìm điểm spawn mặc định)
-                    spawnPlayer(null);
-                    updateCamera();
-
-                    // THOÁT NGAY LẬP TỨC để tránh lỗi vòng lặp khi map bị hủy giữa chừng
-                    break;
-                }
+            if ("Disposal.tmx".equalsIgnoreCase(game.map.getCurrentMapName())) {
+                resetSpawnFromMap = "Corridor.tmx";
             }
 
-            //Camera
+            spawnPlayer(resetSpawnFromMap);
+
+            game.map.updateFloorHide(myPlayer);
             updateCamera();
         }
 
-        // TRẠNG THÁI: GAME ĐANG TẠM DỪNG
-        else if (state == GameState.PAUSE) {
-            // Cập nhật tọa độ nút bấm theo vị trí hiện tại của camera
-            float centerX = camera.position.x;
-            float centerY = camera.position.y;
+        // Dùng full collision để Player bị chặn bởi tường + cửa tù + block.
+        // Hidden_Room_Collision vẫn xóa được vì PuzzleLibrary xóa nó khỏi wallCollision.
+        myPlayer.update(delta, game.map.getFullCollision());
 
-            continueBtn.setPosition(centerX - continueBtn.width / 2, centerY + 10);
-            quitBtn.setPosition(centerX - quitBtn.width / 2, centerY - 30);
+        game.map.updateFloorHide(myPlayer);
 
-            // Xử lý click chuột vào nút
-            if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-                // Lấy tọa độ chuột trên màn hình máy tính (Pixel)
-                Vector3 touchPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-                // Dịch tọa độ đó sang không gian 2D của game
-                camera.unproject(touchPoint);
-
-                // Kiểm tra xem tọa độ chuột có nằm gọn trong nút không
-                if (continueBtn.contains(touchPoint.x, touchPoint.y)) {
-                    state = GameState.RUNNING; // Tiếp tục game
-                } else if (quitBtn.contains(touchPoint.x, touchPoint.y)) {
-                    game.setScreen(new FirstScreen(game)); // Chuyển về màn hình đầu
-                }
-            }
+        for (Guard guard : game.map.guards) {
+            guard.update(delta, myPlayer, game.map.getWallCollision());
         }
 
-        // RENDER (VẼ LÊN MÀN HÌNH)
+        updateCamera();
+    }
+    private void drawGame() {
         ScreenUtils.clear(0, 0, 0, 1);
-        game.map.render(camera); //Vẽ map
+
+        float sortY = game.map.getSortY();
+
+        if (myPlayer.y < sortY) {
+            game.map.renderBackground(camera);
+            game.map.renderForeground(camera);
+            drawEntities();
+        } else {
+            game.map.renderBackground(camera);
+            drawEntities();
+            game.map.renderForeground(camera);
+        }
+    }
+
+    private void drawEntities() {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        for (PushableBlock block : game.map.getPushables()) {
-            // nếu block ở phía trên player
-            if (block.getBounds().y > myPlayer.y) {
-                block.render(game.batch);
-            }
-        }
         myPlayer.draw(game.batch);
-        // ===== VẼ BLOCK PHÍA TRƯỚC PLAYER =====
+
         for (PushableBlock block : game.map.getPushables()) {
             // nếu block ở phía dưới player
             if (block.getBounds().y <= myPlayer.y) {
                 block.render(game.batch);
             }
         }
-        // Vẽ quái vật
+
         for (Guard guard : game.map.guards) {
             guard.draw(game.batch);
         }
+
         game.batch.end();
-        // Vẽ Menu Pause đè lên trên
-        if (state == GameState.PAUSE) {
-            // Bật blend để vẽ nền đen trong suốt
-            Gdx.gl.glEnable(GL20.GL_BLEND);
-            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-            shapeRender.setProjectionMatrix(camera.combined);
-            shapeRender.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRender.setProjectionMatrix(camera.combined);
+        shapeRender.begin(ShapeRenderer.ShapeType.Line);
+        for (Guard guard : game.map.guards) {
+            guard.drawDebug(shapeRender, myPlayer);
+        }
+        shapeRender.end();
+    }
 
-            // Vẽ lớp phủ màn hình màu đen, độ mờ 60%
-            shapeRender.setColor(0, 0, 0, 0.6f);
-            shapeRender.rect(
-                camera.position.x - viewport.getWorldWidth() / 2,
-                camera.position.y - viewport.getWorldHeight() / 2,
-                viewport.getWorldWidth(),
-                viewport.getWorldHeight()
-            );
+    private void handlePauseMenuLogic() {
+        float centerX = camera.position.x;
+        float centerY = camera.position.y;
 
-            // Vẽ màu nền cho 2 nút bấm (Màu xám đậm)
-            shapeRender.setColor(Color.DARK_GRAY);
-            shapeRender.rect(continueBtn.x, continueBtn.y, continueBtn.width, continueBtn.height);
-            shapeRender.rect(quitBtn.x, quitBtn.y, quitBtn.width, quitBtn.height);
+        continueBtn.setPosition(centerX - continueBtn.width / 2, centerY + 10);
+        quitBtn.setPosition(centerX - quitBtn.width / 2, centerY - 30);
 
-            shapeRender.end();
-            Gdx.gl.glDisable(GL20.GL_BLEND);
+        if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+            Vector3 touchPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+            camera.unproject(touchPoint);
 
-            // Vẽ chữ lên trên nút bấm
-            game.batch.begin();
-            // Căn chỉnh chữ thủ công cho vào giữa nút
-            font.draw(game.batch, "Continue", continueBtn.x + 20, continueBtn.y + 20);
-            font.draw(game.batch, "Quit", quitBtn.x + 35, quitBtn.y + 20);
-            game.batch.end();
+            if (continueBtn.contains(touchPoint.x, touchPoint.y)) {
+                state = GameState.RUNNING;
+            } else if (quitBtn.contains(touchPoint.x, touchPoint.y)) {
+                game.setScreen(new FirstScreen(game));
+            }
         }
     }
 
+    private void drawPauseMenu() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRender.setProjectionMatrix(camera.combined);
+        shapeRender.begin(ShapeRenderer.ShapeType.Filled);
+
+        shapeRender.setColor(0, 0, 0, 0.6f);
+        shapeRender.rect(
+            camera.position.x - viewport.getWorldWidth() / 2,
+            camera.position.y - viewport.getWorldHeight() / 2,
+            viewport.getWorldWidth(),
+            viewport.getWorldHeight()
+        );
+
+        shapeRender.setColor(Color.DARK_GRAY);
+        shapeRender.rect(continueBtn.x, continueBtn.y, continueBtn.width, continueBtn.height);
+        shapeRender.rect(quitBtn.x, quitBtn.y, quitBtn.width, quitBtn.height);
+
+        shapeRender.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+        font.draw(game.batch, "Continue", continueBtn.x + 20, continueBtn.y + 20);
+        font.draw(game.batch, "Quit", quitBtn.x + 35, quitBtn.y + 20);
+        game.batch.end();
+    }
 
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height);
     }
+
     @Override
-    public void pause() {}
+    public void pause() {
+    }
+
     @Override
-    public void resume() {}
+    public void resume() {
+    }
+
     @Override
-    public void hide() {}
+    public void hide() {
+    }
+
     @Override
     public void dispose() {
         shapeRender.dispose();

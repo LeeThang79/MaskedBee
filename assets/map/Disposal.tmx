@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="11" tilewidth="32" tileheight="32" infinite="0" nextlayerid="18" nextobjectid="55">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="11" tilewidth="32" tileheight="32" infinite="0" nextlayerid="19" nextobjectid="55">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="wax_texture.tsx"/>
  <tileset firstgid="319" source="bookself.tsx"/>
@@ -115,7 +115,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,223,224,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,243,244,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -209,12 +209,12 @@
 </data>
  </layer>
  <objectgroup id="8" name="Wall_Collision" locked="1">
-  <object id="13" x="285.364" y="72" width="144.636" height="22.0909"/>
-  <object id="14" x="116" y="69" width="143" height="25"/>
-  <object id="15" x="417.091" y="79.3333" width="24.9091" height="266.667"/>
-  <object id="16" x="110" y="74.3333" width="18" height="265.667"/>
-  <object id="18" x="117.667" y="320.636" width="318.667" height="27.3636"/>
-  <object id="52" x="250.25" y="59" width="42.75" height="17.5"/>
+  <object id="14" x="128" y="64" width="128" height="32"/>
+  <object id="16" x="117" y="64" width="11" height="267"/>
+  <object id="18" x="117" y="320" width="310" height="11"/>
+  <object id="51" x="288" y="64" width="128" height="32"/>
+  <object id="53" x="416" y="64" width="11" height="267"/>
+  <object id="54" x="256" y="64" width="32" height="2"/>
  </objectgroup>
  <objectgroup id="17" name="Old_Corridor_Chamber" locked="1">
   <object id="53" name="Old_Corridor.tmx" x="160.667" y="160.667" width="31" height="30"/>
@@ -223,11 +223,26 @@
   <object id="30" name="Corridor.tmx" x="258.596" y="68.3026" width="25.3868" height="26.5957"/>
  </objectgroup>
  <objectgroup id="9" name="SpawnPoints">
-  <object id="29" name="Corridor.tmx" x="267.648" y="107.761">
+  <object id="29" name="Corridor.tmx" x="266" y="87">
    <point/>
   </object>
-  <object id="54" name="Old_Corridor.tmx" x="176.227" y="179.12">
+  <object id="54" name="Old_Corridor.tmx" x="192" y="224">
    <point/>
   </object>
  </objectgroup>
+ <layer id="18" name="Overhead" width="16" height="11">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,223,224,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
 </map>

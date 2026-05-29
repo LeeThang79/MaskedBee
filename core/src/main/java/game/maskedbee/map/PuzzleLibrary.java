@@ -13,6 +13,8 @@ public class PuzzleLibrary {
     private final Array<Rectangle> wallCollision;
 
     private final TiledMap map;
+    private final MapManager mapManager;
+    private Array<RectangleMapObject> interactPoints;
 
     // =====================================================
     // PUZZLE STATE
@@ -24,16 +26,11 @@ public class PuzzleLibrary {
     private boolean phase2Solved = false;
 
     private int displayedPhase = 0;
-
-    // =====================================================
-    // ĐÁP ÁN
-    // =====================================================
-
     private final int[] phase1Answer = {2, 4, 3, 1};
     private final int[] phase2Answer = {1, 3, 4, 2};
     private int[] currentSequence;
     private int currentSequencePhase;
-    // Input player
+
     private final Array<Integer> currentInput = new Array<>();
 
     // =====================================================
@@ -59,11 +56,36 @@ public class PuzzleLibrary {
 
     private final float SHOW_DELAY = 0.7f;
 
-    public PuzzleLibrary(TiledMap map, Array<Rectangle> wallCollision) {
+    public PuzzleLibrary(MapManager mapManager) {
+        this.mapManager = mapManager;
+        this.map = mapManager.getMap();
+        this.wallCollision = mapManager.getWallCollision();
+        this.interactPoints = mapManager.getInteractPoints();
 
+        init();
+
+        // Nếu phòng bí mật của map này đã mở rồi thì không bắt người chơi giải lại.
+        if (mapManager.isHiddenRoomOpened()) {
+            started = true;
+            finished = true;
+            phase1Solved = true;
+            phase2Solved = true;
+            openChest();
+            turnOnAllCandles();
+            mapManager.openHiddenRoom();
+        }
+    }
+
+    // Giữ constructor cũ để nếu chỗ nào trong code còn gọi kiểu cũ thì không bị lỗi compile.
+    public PuzzleLibrary(TiledMap map, Array<Rectangle> wallCollision, Array<RectangleMapObject> interactPoints) {
+        this.mapManager = null;
         this.map = map;
         this.wallCollision = wallCollision;
+        this.interactPoints = interactPoints;
 
+        init();
+    }
+    private void init() {
         loadInteractPoints();
 
         // Ban đầu:
@@ -391,46 +413,41 @@ public class PuzzleLibrary {
         setLayerVisible("Chest_Open", true);
     }
 
+    // =====================================================
+    // MỞ PHÒNG BÍ MẬT
+    // =====================================================
     private void openHiddenRoom() {
+        if (mapManager != null) {
+            mapManager.openHiddenRoom();
+            return;
+        }
 
-        MapLayer hiddenLayer =
-            map.getLayers().get("HiddenRoomWall");
-
+        MapLayer hiddenLayer = map.getLayers().get("Hide_Floor");
         if (hiddenLayer != null) {
             hiddenLayer.setVisible(false);
         }
-        // =====================================
-        // XÓA COLLISION
-        // =====================================
 
-        MapLayer collisionLayer =
-            map.getLayers().get("hidden_room_Collision");
-
+        // 2. XÓA VÙNG VA CHẠM
+        MapLayer collisionLayer = map.getLayers().get("Hidden_Room_Collision");
         if (collisionLayer != null) {
-
             for (MapObject obj : collisionLayer.getObjects()) {
-
                 if (obj instanceof RectangleMapObject) {
-
-                    Rectangle rect =
-                        ((RectangleMapObject) obj).getRectangle();
-
-                    wallCollision.removeValue(rect, true);
+                    Rectangle rectToRemove = ((RectangleMapObject) obj).getRectangle();
+                    // Xóa từ wallCollision
+                    for (int i = wallCollision.size - 1; i >= 0; i--) {
+                        if (wallCollision.get(i).overlaps(rectToRemove)) {
+                            wallCollision.removeIndex(i);
+                        }
+                    }
                 }
             }
         }
-
-        System.out.println("Hidden room opened");
     }
 
-    private void setLayerVisible(String layerName,
-                                 boolean visible) {
+    private void setLayerVisible(String layerName, boolean visible) {
 
-        MapLayer layer =
-            map.getLayers().get(layerName);
+        MapLayer layer = map.getLayers().get(layerName);
 
-        if (layer != null) {
-            layer.setVisible(visible);
-        }
+        if (layer != null) layer.setVisible(visible);
     }
 }

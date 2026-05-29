@@ -1,16 +1,14 @@
 package game.maskedbee.entities;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
-import game.maskedbee.objects.PushableBlock;
 
 public abstract class Entity {
     public float x, y;
     public float speed;
     public Rectangle hitbox;
+
     protected Rectangle futureHitbox = new Rectangle();
     protected float stateTime = 0f;
 
@@ -20,113 +18,64 @@ public abstract class Entity {
         this.speed = speed;
         this.hitbox = new Rectangle(x, y, width, height);
     }
-    // LOGIC VẬT LÝ VÀ CHỐNG KẸT TƯỜNG (Dùng chung cho cả Player và Guard)
-    public void moveWithCollision(float stepX, float stepY, Array<Rectangle> walls) {
-        // Kiểm tra trục X
-        futureHitbox.set(hitbox.x + stepX, hitbox.y, hitbox.width, hitbox.height);
-        boolean canMoveX = true;
+
+    public float getCenterX() {
+        return hitbox.x + hitbox.width / 2f;
+    }
+
+    public float getCenterY() {
+        return hitbox.y + hitbox.height / 2f;
+    }
+
+    protected boolean collides(Rectangle rect, Array<Rectangle> walls) {
+        if (walls == null) return false;
+
         for (Rectangle wall : walls) {
-            if (futureHitbox.overlaps(wall)) {
-                canMoveX = false;
-                break;
+            if (rect.overlaps(wall)) {
+                return true;
             }
         }
-        if (canMoveX) {
-            x += stepX;
-            hitbox.x = x;
+        return false;
+    }
+
+    // Trả về true nếu Entity thật sự di chuyển được
+    public boolean moveWithCollision(float stepX, float stepY, Array<Rectangle> walls) {
+        float oldX = x;
+        float oldY = y;
+
+        // Di chuyển trục X
+        if (stepX != 0) {
+            futureHitbox.set(hitbox);
+            futureHitbox.x += stepX;
+
+            if (!collides(futureHitbox, walls)) {
+                x += stepX;
+                hitbox.x = x;
+            }
         }
 
-        // Kiểm tra trục Y
-        futureHitbox.set(hitbox.x, hitbox.y + stepY, hitbox.width, hitbox.height);
-        boolean canMoveY = true;
-        for (Rectangle wall : walls) {
-            if (futureHitbox.overlaps(wall)) {
-                canMoveY = false;
-                break;
+        // Di chuyển trục Y
+        if (stepY != 0) {
+            futureHitbox.set(hitbox);
+            futureHitbox.y += stepY;
+
+            if (!collides(futureHitbox, walls)) {
+                y += stepY;
+                hitbox.y = y;
             }
         }
-        if (canMoveY) {
-            y += stepY;
-            hitbox.y = y;
-        }
-        // Kẹp tọa độ không cho ra khỏi viền màn hình
-        x = MathUtils.clamp(x, 0, Gdx.graphics.getWidth() - hitbox.width);
-        y = MathUtils.clamp(y, 0, Gdx.graphics.getHeight() - hitbox.height);
 
         hitbox.setPosition(x, y);
+
+        return Math.abs(x - oldX) > 0.001f || Math.abs(y - oldY) > 0.001f;
     }
-    public void moveWithCollision(
-        float stepX,
-        float stepY,
-        Array<Rectangle> walls,
-        Array<PushableBlock> blocks
-    ) {
 
-        // X AXIS
-        futureHitbox.set(
-            hitbox.x + stepX,
-            hitbox.y,
-            hitbox.width,
-            hitbox.height
-        );
-
-        boolean canMoveX = true;
-
-        // WALL
-        for (Rectangle wall : walls) {
-            if (futureHitbox.overlaps(wall)) {
-                canMoveX = false;
-                break;
-            }
-        }
-
-        // BLOCK
-        if (canMoveX) {
-            for (PushableBlock block : blocks) {
-                if (futureHitbox.overlaps(block.getBounds())) {
-                    canMoveX = false;
-                    break;
-                }
-            }
-        }
-
-        if (canMoveX) {
-            x += stepX;
-            hitbox.x = x;
-        }
-
-        // Y AXIS
-        futureHitbox.set(
-            hitbox.x,
-            hitbox.y + stepY,
-            hitbox.width,
-            hitbox.height
-        );
-
-        boolean canMoveY = true;
-
-        // WALL
-        for (Rectangle wall : walls) {
-            if (futureHitbox.overlaps(wall)) {
-                canMoveY = false;
-                break;
-            }
-        }
-
-        // BLOCK
-        if (canMoveY) {
-            for (PushableBlock block : blocks) {
-                if (futureHitbox.overlaps(block.getBounds())) {
-                    canMoveY = false;
-                    break;
-                }
-            }
-        }
-
-        if (canMoveY) {
-            y += stepY;
-            hitbox.y = y;
-        }
+    public boolean wouldCollide(float stepX, float stepY, Array<Rectangle> walls) {
+        futureHitbox.set(hitbox);
+        futureHitbox.x += stepX;
+        futureHitbox.y += stepY;
+        return collides(futureHitbox, walls);
     }
+
     public abstract void draw(SpriteBatch batch);
 }

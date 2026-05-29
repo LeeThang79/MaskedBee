@@ -1,36 +1,100 @@
 package game.maskedbee.objects;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.math.Rectangle;
 
 public class Lever {
     public TiledMapTileMapObject mapObject;
-    public String type; // "lever" hoặc "door_lever"
+    public String type;
     public String targetColor;
     public String targetName;
     public boolean isPulled;
     public Rectangle hitbox;
 
+    private final Integer originalTileId;
+    private final Integer otherTileId;
+
     public Lever(TiledMapTileMapObject obj) {
         this.mapObject = obj;
-        this.type = obj.getProperties().get("type", String.class);
-        this.targetColor = obj.getProperties().get("targetColor", String.class);
-        this.targetName = obj.getProperties().get("targetName", String.class);
-        Boolean pulled = obj.getProperties().get("isPulled", Boolean.class);
-        this.isPulled = (pulled != null) ? pulled : false;
 
-        // Vùng để Player đứng gần có thể tương tác (rộng hơn cần gạt 1 chút)
-        this.hitbox = new Rectangle(obj.getX() - 10, obj.getY() - 32 - 10, 52, 52);
+        this.type = getStringProperty(obj, "type");
+        this.targetColor = getStringProperty(obj, "targetColor");
+        this.targetName = getStringProperty(obj, "targetName");
+
+        Boolean pulled = getBooleanProperty(obj, "isPulled");
+        this.isPulled = pulled != null ? pulled : false;
+
+        this.originalTileId = obj.getTile() != null ? obj.getTile().getId() : null;
+        this.otherTileId = getIntProperty(obj, "otherTileID", "otherTileId", "otherID", "otherId");
+
+        this.hitbox = new Rectangle(
+            obj.getX() - 4f,
+            obj.getY() - 36f,
+            40f,
+            40f
+        );
     }
 
-    // Hàm lật cần gạt
     public void toggle(TiledMap map) {
         isPulled = !isPulled;
-        // Đổi hình ảnh cần gạt trái/phải
-        Integer otherId = mapObject.getTile().getProperties().get("otherTileID", Integer.class);
-        if (otherId != null) {
-            mapObject.setTile(map.getTileSets().getTile(otherId));
+
+        Integer nextTileId;
+        if (isPulled) {
+            nextTileId = otherTileId;
+        } else {
+            nextTileId = originalTileId;
         }
+
+        if (nextTileId == null || nextTileId < 0) {
+            System.out.println("⚠️ Lever missing otherTileID. type=" + type + ", targetColor=" + targetColor);
+            return;
+        }
+
+        TiledMapTile tile = map.getTileSets().getTile(nextTileId);
+        if (tile == null) {
+            System.out.println("⚠️ Cannot find lever tile with ID = " + nextTileId);
+            return;
+        }
+
+        mapObject.setTile(tile);
+    }
+
+    private String getStringProperty(TiledMapTileMapObject obj, String... names) {
+        Object value = getProperty(obj, names);
+        return value == null ? null : value.toString();
+    }
+
+    private Boolean getBooleanProperty(TiledMapTileMapObject obj, String... names) {
+        Object value = getProperty(obj, names);
+        if (value == null) return null;
+        if (value instanceof Boolean) return (Boolean) value;
+        return Boolean.parseBoolean(value.toString());
+    }
+
+    private Integer getIntProperty(TiledMapTileMapObject obj, String... names) {
+        Object value = getProperty(obj, names);
+        if (value == null) return null;
+        if (value instanceof Integer) return (Integer) value;
+
+        try {
+            return Integer.parseInt(value.toString());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Object getProperty(TiledMapTileMapObject obj, String... names) {
+        for (String name : names) {
+            Object value = obj.getProperties().get(name);
+            if (value != null) return value;
+
+            if (obj.getTile() != null) {
+                value = obj.getTile().getProperties().get(name);
+                if (value != null) return value;
+            }
+        }
+        return null;
     }
 }

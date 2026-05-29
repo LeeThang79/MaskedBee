@@ -1,34 +1,42 @@
 package game.maskedbee.objects;
 
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.Array;
 
 public class PushableBlock {
 
-    private Rectangle bounds;
-    private Rectangle startBounds;
-
-    // load ảnh (đặt đúng path)
-    private static Texture texture = new Texture("map/block.png");
+    private final String id;
+    private final Rectangle bounds;
+    private final Rectangle startBounds;
+    // Đổi path này nếu sprite cocoon của bạn nằm ở file khác.
+    private static final Texture texture = new Texture("map/block.png");
 
     public PushableBlock(Rectangle rect) {
+        this(rect, "pushable_" + Math.round(rect.x) + "_" + Math.round(rect.y));
+    }
+
+    public PushableBlock(Rectangle rect, String id) {
+        this.id = id;
         this.bounds = new Rectangle(rect);
-        // lưu vị trí ban đầu
         this.startBounds = new Rectangle(rect);
     }
+    public String getId() {
+        return id;
+    }
     public void resetPosition() {
-
-        bounds.x = startBounds.x;
-        bounds.y = startBounds.y;
+        setPosition(startBounds.x, startBounds.y);
     }
 
+    public void setPosition(float x, float y) {
+        bounds.x = x;
+        bounds.y = y;
+    }
     public Rectangle getBounds() {
         return bounds;
     }
 
-    // 👉 render bằng ảnh
     public void render(SpriteBatch batch) {
         batch.draw(texture, bounds.x, bounds.y, bounds.width, bounds.height);
     }
@@ -36,14 +44,11 @@ public class PushableBlock {
     public void move(float dx, float dy,
                      Array<Rectangle> walls,
                      Array<PushableBlock> others) {
-
-        // Move X
         bounds.x += dx;
         if (isCollidingWalls(walls) || isCollidingBlocks(others)) {
             bounds.x -= dx;
         }
 
-        // Move Y
         bounds.y += dy;
         if (isCollidingWalls(walls) || isCollidingBlocks(others)) {
             bounds.y -= dy;

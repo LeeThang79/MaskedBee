@@ -1,6 +1,7 @@
 package game.maskedbee.objects;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -12,26 +13,70 @@ public class Spike {
 
     public Spike(TiledMapTileMapObject obj) {
         this.mapObject = obj;
-        // Đọc dữ liệu từ Tiled
-        this.type = obj.getProperties().get("type", String.class);
-        Boolean up = obj.getProperties().get("isUp", Boolean.class);
-        this.isUp = (up != null) ? up : true;
 
-        // Tạo vùng va chạm cho gai (dùng tọa độ X, Y của object)
-        this.hitbox = new Rectangle(obj.getX(), obj.getY() - 32, 32, 32);
+        this.type = getStringProperty(obj, "type");
+
+        Boolean up = getBooleanProperty(obj, "isUp");
+        this.isUp = up != null ? up : true;
+
+        this.hitbox = new Rectangle(obj.getX(), obj.getY() - 32f, 32f, 32f);
     }
 
-    // Hàm đảo trạng thái và ĐỔI HÌNH ẢNH
     public void toggle(TiledMap map) {
         isUp = !isUp;
-        if (isUp) {
-            // Lấy ID ảnh Gai Nhọn và đổi
-            Integer upId = mapObject.getTile().getProperties().get("upTileID", Integer.class);
-            if (upId != null) mapObject.setTile(map.getTileSets().getTile(upId));
-        } else {
-            // Lấy ID ảnh Gai Phẳng và đổi
-            Integer downId = mapObject.getTile().getProperties().get("downTileID", Integer.class);
-            if (downId != null) mapObject.setTile(map.getTileSets().getTile(downId));
+
+        Integer tileId = isUp
+            ? getIntProperty(mapObject, "upTileID", "upTileId", "upID", "upId")
+            : getIntProperty(mapObject, "downTileID", "downTileId", "downID", "downId");
+
+        if (tileId == null || tileId < 0) {
+            System.out.println("⚠️ Spike missing tile ID. type=" + type + ", isUp=" + isUp);
+            return;
         }
+
+        TiledMapTile tile = map.getTileSets().getTile(tileId);
+        if (tile == null) {
+            System.out.println("⚠️ Cannot find spike tile with ID = " + tileId);
+            return;
+        }
+
+        mapObject.setTile(tile);
+    }
+
+    private String getStringProperty(TiledMapTileMapObject obj, String... names) {
+        Object value = getProperty(obj, names);
+        return value == null ? null : value.toString();
+    }
+
+    private Boolean getBooleanProperty(TiledMapTileMapObject obj, String... names) {
+        Object value = getProperty(obj, names);
+        if (value == null) return null;
+        if (value instanceof Boolean) return (Boolean) value;
+        return Boolean.parseBoolean(value.toString());
+    }
+
+    private Integer getIntProperty(TiledMapTileMapObject obj, String... names) {
+        Object value = getProperty(obj, names);
+        if (value == null) return null;
+        if (value instanceof Integer) return (Integer) value;
+
+        try {
+            return Integer.parseInt(value.toString());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Object getProperty(TiledMapTileMapObject obj, String... names) {
+        for (String name : names) {
+            Object value = obj.getProperties().get(name);
+            if (value != null) return value;
+
+            if (obj.getTile() != null) {
+                value = obj.getTile().getProperties().get(name);
+                if (value != null) return value;
+            }
+        }
+        return null;
     }
 }
