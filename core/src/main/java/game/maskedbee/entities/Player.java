@@ -15,7 +15,6 @@ public class Player extends Entity {
     public float creepSpeed = 70f;
 
     public boolean isCreeping = false;
-    public boolean isBeeDisguised = false;
     public boolean isHidingAtStone = false;
 
     // Sau này dùng khi nhặt đủ vật phẩm
@@ -24,6 +23,8 @@ public class Player extends Entity {
 
     public float noiseRadius = 0f;
     // Chìa khóa hiện tại Player đang giữ
+    public boolean hasMask = false;
+    public boolean isBeeDisguised = false;
     public String currentKey = "";
 
     public enum Direction { UP, DOWN, LEFT, RIGHT }
@@ -165,17 +166,14 @@ public class Player extends Entity {
 
         // Bấm P để test mặc / tháo đồ bee
         if (Gdx.input.isKeyJustPressed(Keys.P)) {
-            isBeeDisguised = !isBeeDisguised;
+            if (hasMask) {
+                isBeeDisguised = !isBeeDisguised;
+                System.out.println("Bee disguise: " + isBeeDisguised);
+            } else {
+                isBeeDisguised = false;
+                System.out.println("Bạn chưa có mặt nạ nên chưa thể mặc bee.");
+            }
         }
-
-        /*
-         * Sau này khi đã có key + mask thì đổi đoạn trên thành:
-         *
-         * if (Gdx.input.isKeyJustPressed(Keys.P) && hasKeyItem && hasMaskItem) {
-         *     isBeeDisguised = !isBeeDisguised;
-         * }
-         */
-
         // Bấm F để vào / thoát núp cột
         if (pressedHideKey) {
             if (isHidingAtStone) {
