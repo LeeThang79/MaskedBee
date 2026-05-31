@@ -14,7 +14,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.math.MathUtils;
 
 
 import game.maskedbee.entities.Boss;
@@ -33,10 +32,15 @@ public class PlayScreen implements Screen {
     private Viewport viewport;
 
     public enum GameState {
-        RUNNING, PAUSE
+        RUNNING, PAUSE, QUEEN_CHOICE, EXIT_CHOICE
     }
 
     private GameState state = GameState.RUNNING;
+
+    private boolean refusedQueenEnding = false;
+
+    // escape: có mặt nạ và rời khỏi hive
+    private String pendingExitEndingType = "escape";
 
     private ShapeRenderer shapeRender;
     private BitmapFont font;
@@ -134,19 +138,35 @@ public class PlayScreen implements Screen {
     @Override
     public void render(float delta) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            state = (state == GameState.RUNNING) ? GameState.PAUSE : GameState.RUNNING;
+            if (state == GameState.RUNNING) {
+                state = GameState.PAUSE;
+            } else if (state == GameState.PAUSE) {
+                state = GameState.RUNNING;
+            }
         }
 
         if (state == GameState.RUNNING) {
             updateRunning(delta);
         } else if (state == GameState.PAUSE) {
             handlePauseMenuLogic();
+        } else if (state == GameState.QUEEN_CHOICE) {
+            handleQueenChoiceLogic();
+        } else if (state == GameState.EXIT_CHOICE) {
+            handleExitChoiceLogic();
         }
 
         drawGame();
 
         if (state == GameState.PAUSE) {
             drawPauseMenu();
+        }
+
+        if (state == GameState.QUEEN_CHOICE) {
+            drawQueenChoiceMenu();
+        }
+
+        if (state == GameState.EXIT_CHOICE) {
+            drawExitChoiceMenu();
         }
     }
 
@@ -159,6 +179,8 @@ public class PlayScreen implements Screen {
             puzzleManager.update(myPlayer, game.map);
         }
 
+        checkQueenInteraction();
+
         if (puzzleManager != null && puzzleManager.checkSpikeDeath(myPlayer, game.map)) {
             reloadCurrentMapAndRespawn();
             return;
@@ -166,12 +188,25 @@ public class PlayScreen implements Screen {
 
         String nextMap = game.map.checkPortal(myPlayer.hitbox);
         if (nextMap != null) {
+            String currentMap = game.map.getCurrentMapName();
+            // Sau khi từ chối Queen, đi vào Exit thì chưa ending ngay.
+            // Mở bảng lựa chọn Continue / Exit.
+            if (isFinalExitPortal(currentMap, nextMap)) {
+                pendingExitEndingType = getExitEndingType();
+
+                state = GameState.EXIT_CHOICE;
+                System.out.println("Exit choice opened. Ending type = " + pendingExitEndingType);
+                return;
+            }
+
             String lastMap = game.map.getCurrentMapName();
+
             game.map.loadMap(nextMap);
             recreatePuzzleLibrary();
             spawnPlayer(lastMap);
             game.map.updateFloorHide(myPlayer);
             updateCamera();
+
             return;
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
@@ -199,9 +234,134 @@ public class PlayScreen implements Screen {
         for (Guard guard : game.map.guards) {
             guard.update(delta, myPlayer, game.map.getWallCollision());
         }
+        for (Boss boss : game.map.bosses) {
+            boolean caught = boss.update(
+                delta,
+                myPlayer,
+                game.map.getWallCollision(),
+                game.map.getSkullCollision()
+            );
+
+            if (caught) {
+                goToEnding("boss");
+                return;
+            }
+        }
 
         updateCamera();
     }
+    private boolean isFinalExitPortal(String currentMap, String nextMap) {
+        if (currentMap == null || nextMap == null) return false;
+
+        String lowerNextMap = nextMap.toLowerCase();
+
+        // Case chính của bạn:
+        // Đang ở Exit_Chamber.tmx, portal tên Exit.tmx -> nextMap = map/Exit.tmx
+        if ("Exit_Chamber.tmx".equalsIgnoreCase(currentMap)
+            && lowerNextMap.endsWith("exit.tmx")) {
+            return true;
+        }
+
+        // Dự phòng nếu sau này đặt portal cuối trực tiếp trong Queen_Chamber là Exit.tmx.
+        // Không bắt Exit_Chamber.tmx để tránh chặn nhầm cổng đi sang phòng Exit_Chamber.
+        if ("Queen_Chamber.tmx".equalsIgnoreCase(currentMap)
+            && lowerNextMap.endsWith("exit.tmx")
+            && !lowerNextMap.contains("exit_chamber")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private String getExitEndingType() {
+        // Chưa có mặt nạ mà đi tới Exit cuối
+        if (!myPlayer.hasMask) {
+            return "no_mask";
+        }
+
+        // Có mặt nạ và đã từ chối Queen
+        if (refusedQueenEnding) {
+            return "escape";
+        }
+
+        // Có mặt nạ nhưng bỏ đi mà không nhận lời Queen
+        return "escape";
+    }
+
+    private void checkQueenInteraction() {
+        if (!"Queen_Chamber.tmx".equalsIgnoreCase(game.map.getCurrentMapName())) {
+            return;
+        }
+
+        if (!Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            return;
+        }
+
+        if (!myPlayer.hasMask) {
+            System.out.println("Bạn cần có mặt nạ trước khi nói chuyện với Queen.");
+            return;
+        }
+
+        for (RectangleMapObject obj : game.map.getInteractPoints()) {
+            if (!"queen_flower".equals(obj.getName())) {
+                continue;
+            }
+
+            if (myPlayer.hitbox.overlaps(obj.getRectangle())) {
+                state = GameState.QUEEN_CHOICE;
+                System.out.println("Queen choice opened");
+                return;
+            }
+        }
+    }
+    private void handleExitChoiceLogic() {
+        // 1: tiếp tục chơi
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
+
+            continueFromExitChoice();
+            return;
+        }
+        // 2: ra ending tương ứng
+        // - chưa có mặt nạ -> no_mask
+        // - có mặt nạ -> escape
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
+
+            goToEnding(pendingExitEndingType);
+        }
+    }
+    private void continueFromExitChoice() {
+        state = GameState.RUNNING;
+        System.out.println("Continue playing");
+    }
+
+    private void goToEnding(String endingType) {
+        System.out.println("Ending type: " + endingType);
+        game.setScreen(new EndingScreen(game, endingType));
+    }
+    private void handleQueenChoiceLogic() {
+        // 1: chấp nhận thành Queen
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
+
+            goToEnding("queen");
+            return;
+        }
+        // 2: từ chối, quay lại game
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
+
+            refuseQueenChoice();
+        }
+    }
+
+    private void refuseQueenChoice() {
+        refusedQueenEnding = true;
+        state = GameState.RUNNING;
+        System.out.println("Refused queen ending. Exit is now escape ending.");
+    }
+
     private void drawGame() {
         ScreenUtils.clear(0, 0, 0, 1);
 
@@ -259,6 +419,103 @@ public class PlayScreen implements Screen {
             boss.drawDebug(shapeRender);
         }
         shapeRender.end();
+    }
+    private void drawExitChoiceMenu() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRender.setProjectionMatrix(camera.combined);
+        shapeRender.begin(ShapeRenderer.ShapeType.Filled);
+
+        shapeRender.setColor(0f, 0f, 0f, 0.78f);
+        shapeRender.rect(
+            camera.position.x - 185,
+            camera.position.y - 70,
+            370,
+            140
+        );
+
+        shapeRender.setColor(Color.DARK_GRAY);
+        shapeRender.rect(camera.position.x - 150, camera.position.y - 15, 300, 28);
+        shapeRender.rect(camera.position.x - 150, camera.position.y - 52, 300, 28);
+
+        shapeRender.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+
+        font.draw(
+            game.batch,
+            "Leave the hive?",
+            camera.position.x - 70,
+            camera.position.y + 42
+        );
+
+        font.draw(
+            game.batch,
+            "1. Continue",
+            camera.position.x - 115,
+            camera.position.y + 4
+        );
+
+        font.draw(
+            game.batch,
+            "2. Exit",
+            camera.position.x - 115,
+            camera.position.y - 33
+        );
+        game.batch.end();
+    }
+    private void drawQueenChoiceMenu() {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+        shapeRender.setProjectionMatrix(camera.combined);
+        shapeRender.begin(ShapeRenderer.ShapeType.Filled);
+
+        // Nền bảng
+        shapeRender.setColor(0f, 0f, 0f, 0.78f);
+        shapeRender.rect(
+            camera.position.x - 190,
+            camera.position.y - 75,
+            380,
+            150
+        );
+
+        // Ô lựa chọn
+        shapeRender.setColor(Color.DARK_GRAY);
+        shapeRender.rect(camera.position.x - 155, camera.position.y - 20, 310, 28);
+        shapeRender.rect(camera.position.x - 155, camera.position.y - 58, 310, 28);
+
+        shapeRender.end();
+        Gdx.gl.glDisable(GL20.GL_BLEND);
+
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+
+        font.draw(
+            game.batch,
+            "Queen: Become the new Queen?",
+            camera.position.x - 145,
+            camera.position.y + 45
+        );
+
+        font.draw(
+            game.batch,
+            "1. Accept",
+            camera.position.x - 120,
+            camera.position.y
+        );
+
+        font.draw(
+            game.batch,
+            "2. Refuse",
+            camera.position.x - 120,
+            camera.position.y - 38
+        );
+
+        game.batch.end();
     }
 
     private void handlePauseMenuLogic() {
