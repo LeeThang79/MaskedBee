@@ -89,6 +89,15 @@ public class MapManager {
         return openedHiddenRooms.contains(stateKey("hidden_room"));
     }
 
+    private boolean isFloorHideOpened() {
+        if (map == null) return false;
+
+        MapLayer hideLayer = map.getLayers().get("Floor_Hide");
+        if (hideLayer == null) return false;
+
+        return !hideLayer.isVisible();
+    }
+
     public void markKeyCollected(String keyName) {
         if (keyName == null || keyName.isEmpty()) return;
         collectedKeys.add(stateKey(keyName));
@@ -196,7 +205,7 @@ public class MapManager {
                         }
                     }
                 }
-                else if (layerName.equals("Exit") || layerName.contains("_Chamber") || layerName.equals("Corridor")) {
+                else if (layerName.equals("Exit") || layerName.contains("_Chamber") || layerName.contains("Corridor")) {
                     for (MapObject obj : layer.getObjects()) {
                         portalObjects.add(obj);
                     }
@@ -436,23 +445,46 @@ public class MapManager {
 
     public String checkPortal(Rectangle entityRect) {
         for (MapObject portal : portalObjects) {
-            if (portal instanceof RectangleMapObject) {
-                Rectangle rect = ((RectangleMapObject) portal).getRectangle();
+            if (!(portal instanceof RectangleMapObject)) {
+                continue;
+            }
+            Rectangle rect = ((RectangleMapObject) portal).getRectangle();
+            if (!entityRect.overlaps(rect)) {
+                continue;
+            }
+            String dest = portal.getName();
+            System.out.println("Player touched portal: " + dest);
+            if ("ExitTrigger".equalsIgnoreCase(dest)) {
+                EndingManager.getInstance().triggerEnding(
+                    EndingType.ESCAPE
+                );
+                System.out.println("GAME ENDED");
+                return null;
+            }
+            // player chưa đứng vào portal
+            if (!entityRect.overlaps(rect)) {
+                continue;
+            }
+            // PORTAL RIÊNG
+            if ("Old_Corridor.tmx".equals(dest)) {
+                if (!isFloorHideOpened()) {
+                    return null;
+                }
+            }
+            // PORTAL THƯỜNG
+            else {
 
-                if (entityRect.overlaps(rect)) {
-                    for (RectangleMapObject door : doorObjects) {
-                        if (rect.overlaps(door.getRectangle())) {
-                            return null;
-                        }
+                for (RectangleMapObject door : doorObjects) {
+                    if (rect.overlaps(door.getRectangle())) {
+                        return null;
                     }
-
-                    if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
-                        || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-                        String dest = portal.getName();
-                        if (dest != null && dest.endsWith(".tmx")) {
-                            return "map/" + dest;
-                        }
-                    }
+                }
+            }
+            // NHẤN SPACE / ENTER
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+                || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+                if (dest != null && dest.endsWith(".tmx")) {
+                    return "map/" + dest;
                 }
             }
         }

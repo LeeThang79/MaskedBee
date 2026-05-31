@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="22" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="29" nextobjectid="76">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="22" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="30" nextobjectid="77">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
  <layer id="1" name="Wall" width="22" height="9" locked="1">
@@ -67,6 +67,14 @@
   <object id="68" x="0" y="160" width="5" height="32"/>
   <object id="69" x="320" y="283" width="32" height="5"/>
   <object id="70" x="480" y="32" width="96" height="32"/>
+ </objectgroup>
+ <objectgroup id="29" name="Doors">
+  <object id="76" name="door_exit" x="320" y="258" width="32" height="30">
+   <properties>
+    <property name="keyName" value="gold_key"/>
+    <property name="requiresKey" type="bool" value="true"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="28" name="Guards">
   <object id="67" name="guard_1" x="98" y="183.5">

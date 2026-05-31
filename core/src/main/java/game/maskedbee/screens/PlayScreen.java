@@ -20,6 +20,7 @@ import game.maskedbee.main.CORE;
 import game.maskedbee.map.PuzzleLibrary;
 import game.maskedbee.map.PuzzleManager;
 import game.maskedbee.objects.PushableBlock;
+import game.maskedbee.map.EndingManager;
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -145,6 +146,9 @@ public class PlayScreen implements Screen {
     }
 
     private void updateRunning(float delta) {
+        if (EndingManager.getInstance().isGameEnded()) {
+            return;
+        }
         if (puzzleLibrary != null) {
             puzzleLibrary.update(myPlayer.hitbox, delta);
         }
@@ -215,16 +219,22 @@ public class PlayScreen implements Screen {
     private void drawEntities() {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-
-        myPlayer.draw(game.batch);
-
+        float playerFootY = myPlayer.hitbox.y;
+        // ===== BLOCK PHÍA SAU PLAYER =====
         for (PushableBlock block : game.map.getPushables()) {
-            // nếu block ở phía dưới player
-            if (block.getBounds().y <= myPlayer.y) {
+            float blockFootY = block.getBounds().y;
+            if (blockFootY > playerFootY) {
                 block.render(game.batch);
             }
         }
-
+        myPlayer.draw(game.batch);
+        // ===== BLOCK PHÍA TRƯỚC PLAYER =====
+        for (PushableBlock block : game.map.getPushables()) {
+            float blockFootY = block.getBounds().y;
+            if (blockFootY <= playerFootY) {
+                block.render(game.batch);
+            }
+        }
         for (Guard guard : game.map.guards) {
             guard.draw(game.batch);
         }
