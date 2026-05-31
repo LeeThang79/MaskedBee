@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="17">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="19">
  <tileset firstgid="1" source="floor_paid.tsx"/>
  <tileset firstgid="99" source="wall_paid.tsx"/>
  <tileset firstgid="295" source="wallfloor.tsx"/>
@@ -78,7 +78,10 @@
 </data>
  </layer>
  <objectgroup id="11" name="Coffin_Collision">
-  <object id="12" x="226.598" y="161.097" width="43.4956" height="30.5396"/>
+  <object id="12" x="224" y="160" width="46.0936" height="31.6366"/>
+ </objectgroup>
+ <objectgroup id="13" name="Mask_Interact" locked="1">
+  <object id="18" name="mask_coffin" x="209" y="139" width="74" height="65"/>
  </objectgroup>
  <layer id="10" name="Item" width="16" height="9">
   <data encoding="csv">

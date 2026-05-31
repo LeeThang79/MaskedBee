@@ -13,7 +13,11 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.math.MathUtils;
 
+
+import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
@@ -32,6 +36,7 @@ public class PlayScreen implements Screen {
     public enum GameState {
         RUNNING, PAUSE
     }
+
     private GameState state = GameState.RUNNING;
 
     private ShapeRenderer shapeRender;
@@ -41,6 +46,7 @@ public class PlayScreen implements Screen {
 
     private PuzzleLibrary puzzleLibrary;
     private PuzzleManager puzzleManager;
+
     public PlayScreen(CORE game) {
         this.game = game;
         this.camera = new OrthographicCamera();
@@ -190,7 +196,7 @@ public class PlayScreen implements Screen {
 
         // Dùng full collision để Player bị chặn bởi tường + cửa tù + block.
         // Hidden_Room_Collision vẫn xóa được vì PuzzleLibrary xóa nó khỏi wallCollision.
-        myPlayer.update(delta, game.map.getFullCollision());
+        myPlayer.update(delta, game.map.getFullCollision(), game.map.getStoneCollision());
 
         game.map.updateFloorHide(myPlayer);
 
@@ -235,16 +241,27 @@ public class PlayScreen implements Screen {
                 block.render(game.batch);
             }
         }
+
         for (Guard guard : game.map.guards) {
             guard.draw(game.batch);
         }
 
+        for (Boss boss : game.map.bosses) {
+            boss.draw(game.batch);
+        }
+
         game.batch.end();
+
 
         shapeRender.setProjectionMatrix(camera.combined);
         shapeRender.begin(ShapeRenderer.ShapeType.Line);
+
         for (Guard guard : game.map.guards) {
             guard.drawDebug(shapeRender, myPlayer);
+        }
+
+        for (Boss boss : game.map.bosses) {
+            boss.drawDebug(shapeRender);
         }
         shapeRender.end();
     }

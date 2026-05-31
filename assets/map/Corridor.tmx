@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="22" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="30" nextobjectid="77">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="22" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="30" nextobjectid="77">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
  <layer id="1" name="Wall" width="22" height="9" locked="1">
@@ -41,7 +41,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="27" name="Pillars" width="22" height="9">
+ <layer id="27" name="Stone" width="22" height="9">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -68,14 +68,6 @@
   <object id="69" x="320" y="283" width="32" height="5"/>
   <object id="70" x="480" y="32" width="96" height="32"/>
  </objectgroup>
- <objectgroup id="29" name="Doors">
-  <object id="76" name="door_exit" x="320" y="258" width="32" height="30">
-   <properties>
-    <property name="keyName" value="gold_key"/>
-    <property name="requiresKey" type="bool" value="true"/>
-   </properties>
-  </object>
- </objectgroup>
  <objectgroup id="28" name="Guards">
   <object id="67" name="guard_1" x="98" y="183.5">
    <polyline points="7,8 111.502,-22.4842 190.97,15.1125 288.994,-22.6058 439.5,16.5"/>
@@ -87,7 +79,7 @@
    <polygon points="20,-10.5 -146.494,-20.3569 -250,-9 -247,114 -151.5,111.5 -168.782,66.0429 -196,-4 -144.955,-21.5898 -95,-3.5 -108,83.5 19.5,83"/>
   </object>
  </objectgroup>
- <objectgroup id="6" name="Pillars_Collision">
+ <objectgroup id="6" name="Stone_Collision">
   <object id="42" x="64.0737" y="128.001" width="32" height="30.9993" rotation="1.0564"/>
   <object id="71" x="256.074" y="128.001" width="32" height="30.9993" rotation="1.0564"/>
   <object id="72" x="160.085" y="191.411" width="32" height="31.5893" rotation="1.0564"/>
@@ -98,7 +90,7 @@
  <objectgroup id="26" name="Ritual_Chamber">
   <object id="66" name="Ritual_Chamber.tmx" x="512" y="64" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="7" name="Disposal_Chamber">
+ <objectgroup id="7" name="Disposal_Chamber" locked="1">
   <object id="56" name="Disposal.tmx" x="320" y="256" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="8" name="Queen_Chamber">

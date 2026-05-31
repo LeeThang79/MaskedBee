@@ -2,6 +2,7 @@ package game.maskedbee.map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
 
 import game.maskedbee.entities.Player;
@@ -17,8 +18,34 @@ public class PuzzleManager {
         handlePushables(player, mapManager);
         checkKeyPickup(player, mapManager);
         handleInteractions(player, mapManager);
+        handleMaskPickup(player, mapManager);
     }
 
+    private void handleMaskPickup(Player player, MapManager mapManager) {
+        if (!Gdx.input.isKeyJustPressed(Input.Keys.E)) return;
+
+        // Chỉ xử lý ở Hidden_Room
+        if (!"Hidden_Room.tmx".equalsIgnoreCase(mapManager.getCurrentMapName())) {
+            return;
+        }
+
+        // Đã có mặt nạ rồi thì không lấy lại nữa
+        if (player.hasMask) {
+            return;
+        }
+
+        for (RectangleMapObject obj : mapManager.getInteractPoints()) {
+            if (!"mask_coffin".equals(obj.getName())) {
+                continue;
+            }
+
+            if (player.hitbox.overlaps(obj.getRectangle())) {
+                player.hasMask = true;
+                System.out.println("Picked bee mask!");
+                return;
+            }
+        }
+    }
     private void handleInteractions(Player player, MapManager mapManager) {
         if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
             for (Lever lever : mapManager.levers) {
