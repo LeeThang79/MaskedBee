@@ -222,6 +222,8 @@ public class PuzzleLibrary {
             if (displayedPhase == 0) {
                 displayedPhase = 1;
                 phase1Solved = true;
+                mapManager.openDoor("gold_key_chest");
+                System.out.println("Phase 1 solved - opened gold key chest path");
                 currentInput.clear();
                 openChest();
 
