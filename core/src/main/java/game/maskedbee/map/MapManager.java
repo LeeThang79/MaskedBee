@@ -1,5 +1,6 @@
 package game.maskedbee.map;
 
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -15,12 +16,14 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Polyline;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
 
+import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.objects.Door;
@@ -50,6 +53,10 @@ public class MapManager {
     public final Array<Spike> spikes = new Array<>();
     public final Array<Lever> levers = new Array<>();
     public final Array<Guard> guards = new Array<>();
+    public final Array<Boss> bosses = new Array<>();
+
+    private final Array<Rectangle> stoneCollision = new Array<>();
+    private final Array<Rectangle> skullCollision = new Array<>();
 
     private String currentMapName = "";
     private String lastMapName = "";
@@ -106,8 +113,10 @@ public class MapManager {
             currentMapName = fileName.replace("map/", "");
             if (map != null) map.dispose();
             if (renderer != null) renderer.dispose();
+
             map = new TmxMapLoader().load(fileName);
             renderer = new OrthogonalTiledMapRenderer(map);
+
             wallCollision.clear();
             doorObjects.clear();
             portalObjects.clear();
@@ -118,6 +127,10 @@ public class MapManager {
             spikes.clear();
             levers.clear();
             guards.clear();
+            bosses.clear();
+            skullCollision.clear();
+            stoneCollision.clear();
+
             hideTrigger = null;
 
             doorCloseLayer = getTileLayerSafe("Door_Close");
@@ -127,13 +140,52 @@ public class MapManager {
                 if (layer == null) continue;
 
                 String layerName = layer.getName();
-                if (layerName.equals("Jail_Door_Collision")) {
+
+                // Skull_Collision là vùng núp boss.
+                // Không được cho vào wallCollision, vì player phải đi vào được.
+                if (layerName.equals("Skull_Collision")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject) {
+                            skullCollision.add(((RectangleMapObject) obj).getRectangle());
+                        }
+                    }
+                }
+
+                // Boss / Bosses layer.
+                else if (layerName.equals("Boss") || layerName.equals("Bosses")) {
+                    loadBossLayer(layer);
+                }
+                else if (layerName.equals("Jail_Door_Collision")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
                             RectangleMapObject rectObj = (RectangleMapObject) obj;
                             if (rectObj.getName() == null || rectObj.getName().isEmpty()) {
                                 rectObj.setName("jail_door_hitbox");
                             }
+                            doorObjects.add(rectObj);
+                        }
+                    }
+                }
+                else if (layerName.equals("Stone_Collision")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject) {
+                            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                            // Stone vẫn là vật cản bình thường
+                            wallCollision.add(rect);
+                            // Nhưng chỉ Stone_Collision mới được dùng để núp bằng F
+                            stoneCollision.add(rect);
+                        }
+                    }
+                }
+                else if (layerName.equals("Chest_Collision")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject) {
+                            RectangleMapObject rectObj = (RectangleMapObject) obj;
+
+                            if (rectObj.getName() == null || rectObj.getName().isEmpty()) {
+                                rectObj.setName("gold_key_chest_block");
+                            }
+                            // Cho vào doorObjects để sau này openDoor() xóa được
                             doorObjects.add(rectObj);
                         }
                     }
@@ -233,9 +285,11 @@ public class MapManager {
             }
 
             resetFloorHideToClosed();
+
             applySavedMapState();
             applySavedPushableState();
             applySavedSpikeLeverState();
+
             updateFloorHide(null);
 
             System.out.println("✅ Loaded map: " + fileName);
@@ -244,6 +298,69 @@ public class MapManager {
         }
     }
 
+    private void loadBossLayer(MapLayer layer) {
+        Array<Vector2> path = null;
+        Float bossX = null;
+        Float bossY = null;
+
+        for (MapObject obj : layer.getObjects()) {
+            Array<Vector2> objectPath = readPath(obj);
+
+            if (objectPath.size > 0) {
+                path = objectPath;
+
+                if (bossX == null || bossY == null) {
+                    bossX = objectPath.get(0).x;
+                    bossY = objectPath.get(0).y;
+                }
+
+                continue;
+            }
+
+            if (obj instanceof RectangleMapObject) {
+                Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                bossX = rect.x;
+                bossY = rect.y;
+            } else if (obj instanceof PointMapObject) {
+                bossX = ((PointMapObject) obj).getPoint().x;
+                bossY = ((PointMapObject) obj).getPoint().y;
+            } else if (obj instanceof TiledMapTileMapObject) {
+                TiledMapTileMapObject tileObject = (TiledMapTileMapObject) obj;
+                bossX = tileObject.getX();
+                bossY = tileObject.getY() - 32f;
+            }
+        }
+
+        if (path != null && path.size > 0) {
+            bosses.add(new Boss(0, 0, path));
+            System.out.println("Loaded boss with path");
+        } else if (bossX != null && bossY != null) {
+            bosses.add(new Boss(bossX, bossY, null));
+            System.out.println("Loaded boss at " + bossX + ", " + bossY);
+        }
+    }
+
+    private Array<Vector2> readPath(MapObject obj) {
+        Array<Vector2> path = new Array<>();
+
+        if (obj instanceof PolylineMapObject) {
+            Polyline polyline = ((PolylineMapObject) obj).getPolyline();
+            float[] vertices = polyline.getTransformedVertices();
+
+            for (int i = 0; i < vertices.length; i += 2) {
+                path.add(new Vector2(vertices[i], vertices[i + 1]));
+            }
+        } else if (obj instanceof PolygonMapObject) {
+            Polygon polygon = ((PolygonMapObject) obj).getPolygon();
+            float[] vertices = polygon.getTransformedVertices();
+
+            for (int i = 0; i < vertices.length; i += 2) {
+                path.add(new Vector2(vertices[i], vertices[i + 1]));
+            }
+        }
+
+        return path;
+    }
     private TiledMapTileLayer getTileLayerSafe(String name) {
         if (map == null) return null;
         MapLayer layer = map.getLayers().get(name);
@@ -410,6 +527,13 @@ public class MapManager {
         return wallCollision;
     }
 
+    public Array<Rectangle> getSkullCollision() {
+        return skullCollision;
+    }
+
+    public Array<Rectangle> getStoneCollision() {
+        return stoneCollision;
+    }
     public Array<Rectangle> getFullCollision() {
         Array<Rectangle> allHitboxes = new Array<>();
         allHitboxes.addAll(wallCollision);
