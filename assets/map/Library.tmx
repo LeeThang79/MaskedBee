@@ -144,6 +144,18 @@
  <objectgroup id="38" name="Hidden_Room_Collision">
   <object id="84" x="116" y="128" width="12" height="32"/>
  </objectgroup>
+ <objectgroup id="43" name="ExaminePoints">
+  <object id="93" name="library_bookcase" x="131.667" y="72" width="59" height="55.3333"/>
+  <object id="97" name="library_bookcase" x="301.833" y="73" width="48.3333" height="55.3333"/>
+  <object id="98" name="library_bookcase" x="131.5" y="167.667" width="59" height="55.3333"/>
+  <object id="99" name="library_bookcase" x="258.833" y="169.333" width="59" height="55.3333"/>
+  <object id="100" name="library_bookcase" x="355.167" y="168" width="59" height="55.3333"/>
+  <object id="101" name="library_bookcase" x="227.833" y="264.667" width="59" height="55.3333"/>
+  <object id="102" name="library_bookcase" x="354.167" y="263.667" width="59" height="55.3333"/>
+  <object id="103" name="library_chest" x="251.667" y="75.3333" width="42.3333" height="57.6667"/>
+  <object id="104" name="library_table" x="309.333" y="368.667" width="83.3333" height="48.3333"/>
+  <object id="105" name="library_special" x="140.667" y="394.667" width="23.3333" height="16.6667"/>
+ </objectgroup>
  <objectgroup id="26" name="Hidden_Room_Chamber" locked="1">
   <object id="118" name="Hidden_Room.tmx" x="96" y="128" width="32" height="32"/>
  </objectgroup>

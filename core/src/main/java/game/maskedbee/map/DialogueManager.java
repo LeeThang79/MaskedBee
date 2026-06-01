@@ -1,4 +1,4 @@
-package game.maskedbee.map; // Đổi lại package nếu bạn để ở thư mục khác
+package game.maskedbee.map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -28,11 +28,11 @@ public class DialogueManager {
     public DialogueManager() {
         this.shapeRenderer = new ShapeRenderer();
         this.font = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
-        this.font.getData().setScale(0.5f);
+        this.font.getData().setScale(0.3f);
         this.dialogueLines = new Array<>();
     }
 
-    // 1. HÀM KÍCH HOẠT HỘI THOẠI
+    // HÀM KÍCH HOẠT HỘI THOẠI
     public void startDialogue(String[] lines) {
         dialogueLines.clear();
         for (String line : lines) {
@@ -49,7 +49,7 @@ public class DialogueManager {
         characterIndex = 0;
     }
 
-    // 2. HÀM CẬP NHẬT (Xử lý phím Enter & Hiệu ứng chữ)
+    // HÀM CẬP NHẬT (Xử lý phím G & Hiệu ứng chữ)
     public void update(float delta) {
         if (!isShowing) return;
 
@@ -65,8 +65,8 @@ public class DialogueManager {
             }
         }
 
-        // Nhấn phím SPACE hoặc ENTER để qua câu thoại / Chữ chạy nhanh
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+        // Nhấn phím G để qua câu thoại / Chữ chạy nhanh
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
             if (characterIndex < fullLine.length()) {
                 // Nếu chữ chưa chạy hết -> Bấm để hiển thị toàn bộ câu luôn
                 characterIndex = fullLine.length();
@@ -83,48 +83,72 @@ public class DialogueManager {
         }
     }
 
-    // 3. HÀM VẼ (Vẽ khung nền đen mờ và chữ)
+    // HÀM VẼ (Vẽ khung nền đen mờ và chữ)
     public void draw(SpriteBatch batch, OrthographicCamera camera) {
         if (!isShowing) return;
 
-        // Tính toán vị trí UI (Cố định ở góc dưới màn hình, đi theo camera)
+        // TÍNH TOÁN VỊ TRÍ KHUNG TO
         float camX = camera.position.x;
         float camY = camera.position.y;
         float viewWidth = camera.viewportWidth;
         float viewHeight = camera.viewportHeight;
 
         float boxWidth = viewWidth * 0.8f; // Rộng 80% màn hình
-        float boxHeight = 70f;
+        float boxHeight = 80f;
         float boxX = camX - (boxWidth / 2f);
         float boxY = camY - (viewHeight / 2f) + 10f; // Cách đáy 10 pixel
 
-        // 1. Vẽ khung nền trong suốt (Opacity 80%)
+        // TÍNH TOÁN VỊ TRÍ KHUNG NHỎ
+        float smallBoxWidth = 80f; // Chiều rộng khung nhỏ (Tùy chỉnh cho vừa chữ)
+        float smallBoxHeight = 15f; // Chiều cao khung nhỏ
+        float smallBoxX = boxX; // Nằm sát mép trái cùng với khung to
+        float smallBoxY = boxY + boxHeight; // Đặt đè ngay trên nóc khung to
+
+        // VẼ KHUNG NỀN
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Nền đen
+        // Nền đen mờ cho cả 2 khung
         shapeRenderer.setColor(0, 0, 0, 0.8f);
-        shapeRenderer.rect(boxX, boxY, boxWidth, boxHeight);
+        shapeRenderer.rect(boxX, boxY, boxWidth, boxHeight); // Khung to
+        shapeRenderer.rect(smallBoxX, smallBoxY, smallBoxWidth, smallBoxHeight); // Khung nhỏ
 
         // Viền trắng
         shapeRenderer.setColor(Color.WHITE);
+
+        // Viền khung to (chỉ vẽ viền dưới và viền trên)
         shapeRenderer.rectLine(boxX, boxY, boxX + boxWidth, boxY, 2f); // Viền dưới
         shapeRenderer.rectLine(boxX, boxY + boxHeight, boxX + boxWidth, boxY + boxHeight, 2f); // Viền trên
+
+        // Viền khung nhỏ (Vẽ hình chữ U ngược: Trái, Trên, Phải)
+        shapeRenderer.rectLine(smallBoxX, smallBoxY, smallBoxX, smallBoxY + smallBoxHeight, 2f); // Cạnh trái
+        shapeRenderer.rectLine(smallBoxX, smallBoxY + smallBoxHeight, smallBoxX + smallBoxWidth, smallBoxY + smallBoxHeight, 2f); // Cạnh trên
+        shapeRenderer.rectLine(smallBoxX + smallBoxWidth, smallBoxY, smallBoxX + smallBoxWidth, smallBoxY + smallBoxHeight, 2f); // Cạnh phải
 
         shapeRenderer.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
-        // 2. Vẽ chữ lên trên khung
+        // VẼ CHỮ (SPRITE BATCH)
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        // Căn chữ lùi vào trong khung 10 pixel
+
+        // Giữ lại cỡ chữ cũ đang dùng
+        float originalScale = font.getData().scaleX;
+
+        // Chữ cho khung nhỏ (Có thể ép nhỏ font xuống một chút cho đẹp)
+        font.getData().setScale(originalScale * 0.8f);
+        // Vì font bạn đã ép qua Hiero nên giờ gõ tiếng Việt có dấu vô tư!
+        font.draw(batch, "Bấm G để tiếp tục", smallBoxX + 10f, smallBoxY + smallBoxHeight - 6f);
+
+        // Trả lại cỡ chữ bình thường và vẽ chữ cho khung to
+        font.getData().setScale(originalScale);
         font.draw(batch, currentTextToDraw, boxX + 10f, boxY + boxHeight - 10f);
 
-        // Vẽ nút nhấp nháy báo hiệu "Bấm tiếp"
+        // Vẽ nút nhấp nháy báo hiệu "Bấm tiếp" ở góc phải
         if (characterIndex >= dialogueLines.get(currentLineIndex).length()) {
-            if ((System.currentTimeMillis() / 500) % 2 == 0) { // Nhấp nháy nửa giây
+            if ((System.currentTimeMillis() / 500) % 2 == 0) {
                 font.draw(batch, "▼", boxX + boxWidth - 20f, boxY + 20f);
             }
         }

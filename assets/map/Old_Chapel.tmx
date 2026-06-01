@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="16" nextobjectid="16">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="17" nextobjectid="21">
  <tileset firstgid="1" source="wall_paid.tsx"/>
  <tileset firstgid="197" source="floor_paid.tsx"/>
  <tileset firstgid="295" source="bookself.tsx"/>
@@ -61,6 +61,13 @@
  </objectgroup>
  <objectgroup id="15" name="Text">
   <object id="15" gid="765" x="128" y="64" width="32" height="32"/>
+ </objectgroup>
+ <objectgroup id="16" name="ExaminePoints">
+  <object id="16" name="chapel_statue" x="232" y="71.5" width="65.5" height="115.5"/>
+  <object id="17" name="chapel_coffin" x="161" y="203.5" width="49" height="31.5"/>
+  <object id="18" name="chapel_coffin" x="318" y="204.5" width="55.5" height="33"/>
+  <object id="19" name="chapel_bookcase1" x="318" y="34" width="75" height="66.5"/>
+  <object id="20" name="chapel_special" x="128.5" y="60.5" width="29" height="39"/>
  </objectgroup>
  <objectgroup id="13" name="SpawnPoints">
   <object id="14" name="Old_Corridor.tmx" x="358.5" y="150">

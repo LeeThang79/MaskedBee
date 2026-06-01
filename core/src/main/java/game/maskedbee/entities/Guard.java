@@ -80,7 +80,7 @@ public class Guard extends Entity {
         }
     }
 
-    public void update(float deltaTime, Player player, Array<Rectangle> walls) {
+    public boolean update(float deltaTime, Player player, Array<Rectangle> walls) {
         stateTime += deltaTime;
 
         Vector2 guardCenter = getCenter(tmpCenter);
@@ -95,6 +95,7 @@ public class Guard extends Entity {
         updateMovement(deltaTime, player, walls, seeingPlayer);
 
         checkCatchPlayer(player);
+        return this.hitbox.overlaps(player.hitbox);
     }
 
     private void updateAlertAndState(

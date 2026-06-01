@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="24" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="21" nextobjectid="84">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="24" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="21" nextobjectid="101">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <layer id="1" name="Wall" width="24" height="9" locked="1">
   <data encoding="csv">
@@ -21,6 +21,19 @@
   <object id="100" name="guard_1" x="447.333" y="234">
    <polygon points="0,0 -382.667,2 -245.333,-74"/>
   </object>
+ </objectgroup>
+ <objectgroup id="20" name="ExaminePoints">
+  <object id="83" name="queen_nest" x="541.495" y="93.4829" width="105.83" height="101.126" visible="0"/>
+  <object id="91" name="queen_shoot" x="420.379" y="81.1361" width="51.151" height="71.729"/>
+  <object id="92" name="queen_flower" x="495.636" y="128.171" width="29.3971" height="21.7539"/>
+  <object id="93" name="queen_shoot" x="260.753" y="81.724" width="51.151" height="71.729"/>
+  <object id="94" name="queen_shoot" x="101.42" y="81.724" width="51.151" height="71.729"/>
+  <object id="95" name="queen_shoot" x="677.604" y="81.1361" width="51.151" height="71.729"/>
+  <object id="96" name="queen_flower" x="478.585" y="144.928" width="29.3971" height="21.7539"/>
+  <object id="97" name="queen_flower" x="499.751" y="163.742" width="29.3971" height="21.7539"/>
+  <object id="98" name="queen_flower" x="659.672" y="167.858" width="29.3971" height="21.7539"/>
+  <object id="99" name="queen_flower" x="625.571" y="97.3045" width="29.3971" height="21.7539"/>
+  <object id="100" name="queen_flower" x="639.094" y="103.184" width="29.3971" height="21.7539"/>
  </objectgroup>
  <layer id="2" name="Floor" width="24" height="9" locked="1">
   <data encoding="csv">

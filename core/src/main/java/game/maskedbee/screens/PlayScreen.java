@@ -8,21 +8,24 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
-
-
 import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
+import game.maskedbee.map.DialogueManager;
 import game.maskedbee.map.PuzzleLibrary;
 import game.maskedbee.map.PuzzleManager;
+import game.maskedbee.map.StoryManager;
 import game.maskedbee.objects.PushableBlock;
+
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -46,9 +49,12 @@ public class PlayScreen implements Screen {
     private BitmapFont font;
     private Rectangle continueBtn;
     private Rectangle quitBtn;
+    private String currentPrompt = "";
 
     private PuzzleLibrary puzzleLibrary;
     private PuzzleManager puzzleManager;
+    private StoryManager storyManager;
+    private DialogueManager dialogueManager;
 
     public PlayScreen(CORE game) {
         this.game = game;
@@ -58,12 +64,15 @@ public class PlayScreen implements Screen {
         this.myPlayer = new Player(0, 0);
 
         this.shapeRender = new ShapeRenderer();
-        this.font = new BitmapFont();
+        this.font = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
+        this.font.getData().setScale(0.5f);
 
         continueBtn = new Rectangle(0, 0, 100, 30);
         quitBtn = new Rectangle(0, 0, 100, 30);
 
         puzzleManager = new PuzzleManager();
+        dialogueManager = new DialogueManager();
+        storyManager = new StoryManager();
     }
 
     private void spawnPlayer(String fromMap) {
@@ -157,6 +166,20 @@ public class PlayScreen implements Screen {
 
         drawGame();
 
+        // VẼ NÚT GỢI Ý ĐÈ LÊN TRÊN MAP, LÊN ĐỈNH ĐẦU PLAYER
+        if (!currentPrompt.isEmpty() && state == GameState.RUNNING) {
+            game.batch.setProjectionMatrix(camera.combined);
+            game.batch.begin();
+            // Chữ được vẽ thụt lùi lại 15 pixel (x) và bay lên 45 pixel (y) so với chân Player
+            font.draw(game.batch, currentPrompt, myPlayer.x - 15, myPlayer.y + 45);
+            game.batch.end();
+        }
+
+        //Vẽ hội thoại lên trên cùng
+        if (dialogueManager != null && state == GameState.RUNNING) {
+            dialogueManager.draw(game.batch, camera);
+        }
+
         if (state == GameState.PAUSE) {
             drawPauseMenu();
         }
@@ -171,6 +194,22 @@ public class PlayScreen implements Screen {
     }
 
     private void updateRunning(float delta) {
+        if(dialogueManager != null) {
+            //Kiểm tra xem thoại có đang bật không
+            boolean wasShowing = dialogueManager.isShowing;
+
+            dialogueManager.update(delta);
+
+            //Nếu có thoại thì khỏi di chuyển đi
+            if (wasShowing) {
+                currentPrompt = ""; // Ẩn luôn gợi ý phím khi thoại đang mở
+                return;
+            }
+        }
+        storyManager.handleExamine(myPlayer.hitbox, game.map.getMap(), dialogueManager,game.map.getPushables(),game.map.getCurrentMapName());
+
+        updateInteractionPrompt();
+
         if (puzzleLibrary != null) {
             puzzleLibrary.update(myPlayer.hitbox, delta);
         }
@@ -206,7 +245,7 @@ public class PlayScreen implements Screen {
             spawnPlayer(lastMap);
             game.map.updateFloorHide(myPlayer);
             updateCamera();
-
+            storyManager.checkMapEnterEvent(nextMap, dialogueManager);
             return;
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
@@ -409,7 +448,6 @@ public class PlayScreen implements Screen {
 
         game.batch.end();
 
-
         shapeRender.setProjectionMatrix(camera.combined);
         shapeRender.begin(ShapeRenderer.ShapeType.Line);
 
@@ -520,6 +558,64 @@ public class PlayScreen implements Screen {
         game.batch.end();
     }
 
+    // QUÉT BẢN ĐỒ ĐỂ HIỂN THỊ NÚT BẤM
+    // HÀM HỖ TRỢ
+    private boolean checkLayerOverlap(String layerName, Rectangle interactRange) {
+        MapLayer layer = game.map.getMap().getLayers().get(layerName);
+
+        if (layer != null) {
+            for (MapObject obj : layer.getObjects()) {
+                if (obj instanceof RectangleMapObject) {
+                    if (interactRange.overlaps(((RectangleMapObject) obj).getRectangle())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void updateInteractionPrompt() {
+        currentPrompt = "";
+
+        // Tạo vùng cảm biến
+        Rectangle interactRange = new Rectangle(
+            myPlayer.hitbox.x - 5, myPlayer.hitbox.y - 5,
+            myPlayer.hitbox.width + 10, myPlayer.hitbox.height + 10
+        );
+
+        // QUÉT ĐIỂM ĐIỀU TRA VẬT ĐỘNG PUSHABLE
+        if (game.map.getPushables() != null) {
+            for (PushableBlock block : game.map.getPushables()) {
+                if (interactRange.overlaps(block.getBounds())) {
+                    currentPrompt = "[G]"; return;
+                }
+            }
+        }
+
+        // QUÉT ĐIỂM ĐIỀU TRA VẬT TĨNH
+        if (checkLayerOverlap("ExaminePoints", interactRange)) {
+            currentPrompt = "[G]"; return;
+        }
+
+        // QUÉT CỬA KHÓA
+        if (checkLayerOverlap("Doors", interactRange)) {
+            currentPrompt = "[F]"; return;
+        }
+
+        // QUÉT CẦN GẠT / GIẢI ĐỐ
+        for (int i = 0; i <= 5; i++) {
+            if (checkLayerOverlap("Interact_Point_" + i, interactRange)) {
+                currentPrompt = "[E]"; return;
+            }
+        }
+
+        // QUÉT CỬA QUA MÀN
+        if (checkLayerOverlap("SpawnPoints", interactRange)) {
+            currentPrompt = "[SPACE]"; return;
+        }
+    }
+
     private void handlePauseMenuLogic() {
         float centerX = camera.position.x;
         float centerY = camera.position.y;
@@ -563,6 +659,7 @@ public class PlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
+        font.getData().setScale(0.5f);
         font.draw(game.batch, "Continue", continueBtn.x + 20, continueBtn.y + 20);
         font.draw(game.batch, "Quit", quitBtn.x + 35, quitBtn.y + 20);
         game.batch.end();
