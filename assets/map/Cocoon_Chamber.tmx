@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="21" nextobjectid="176">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="22" nextobjectid="187">
  <tileset firstgid="1" name="wallfloor" tilewidth="32" tileheight="32" tilecount="300" columns="20" objectalignment="bottom">
   <image source="real_tileset.png" width="640" height="480"/>
  </tileset>
@@ -18,6 +18,13 @@
 362,362,326,320,320,320,320,320,320,320,320,320,320,325,362,362
 </data>
  </layer>
+ <objectgroup id="21" name="ExaminePoints" offsetx="-5" offsety="0.666667">
+  <object id="182" name="cocoon_player" x="199.667" y="71.3333" width="106.333" height="73.6667"/>
+  <object id="183" name="cocoon_other" x="140.333" y="177.667" width="99.3333" height="74.6667"/>
+  <object id="184" name="cocoon_other" x="267.667" y="178.333" width="98.6667" height="75.3333"/>
+  <object id="185" name="wall_honey" x="308.333" y="46.6667" width="111.667" height="57.6667"/>
+  <object id="186" name="wall_honey" x="111.333" y="47.3333" width="85.6667" height="58.6667"/>
+ </objectgroup>
  <layer id="5" name="Floor" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

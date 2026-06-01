@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="44">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="16" nextobjectid="46">
  <tileset firstgid="1" source="wall_paid.tsx"/>
  <tileset firstgid="197" source="floor_paid.tsx"/>
  <tileset firstgid="295" source="wallfloor.tsx"/>
@@ -17,6 +17,11 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="15" name="Boss">
+  <object id="45" name="boss" x="424.103" y="167.368">
+   <polygon points="0,0 -72.121,9.01512 -104.262,40.3721 -168.152,-18.8142 -231.649,48.2113 -330.816,20.774 -315.529,-13.7187 -208.916,-0.783923 -130.523,-12.5428 -86.6235,-59.1862 -50.5631,-3.52766"/>
+  </object>
+ </objectgroup>
  <layer id="1" name="Wall" width="16" height="9">
   <data encoding="csv">
 16,5,141,142,141,142,141,142,141,142,141,142,141,142,7,16,
@@ -66,6 +71,9 @@
   <object id="9" x="28.3333" y="69.5833" width="34.3333" height="59.75"/>
   <object id="10" x="48.0833" y="62" width="413.917" height="32.6667"/>
  </objectgroup>
+ <objectgroup id="14" name="ExaminePoints">
+  <object id="44" name="exit_special" x="133.267" y="219.499" width="25.4775" height="28.6132"/>
+ </objectgroup>
  <objectgroup id="8" name="SpawnPoints">
   <object id="11" name="Old_Corridor.tmx" x="107.628" y="153.33">
    <point/>
@@ -78,6 +86,6 @@
   <object id="31" gid="555" x="128" y="224" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="10" name="Exit">
-  <object id="16" name="Exit.tmx" x="448.909" y="128.727" width="31.2727" height="65.2727"/>
+  <object id="16" name="Exit.tmx" x="460" y="128" width="20" height="64"/>
  </objectgroup>
 </map>
