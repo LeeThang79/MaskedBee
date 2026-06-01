@@ -578,13 +578,6 @@ public class MapManager {
             }
             String dest = portal.getName();
             System.out.println("Player touched portal: " + dest);
-            if ("ExitTrigger".equalsIgnoreCase(dest)) {
-                EndingManager.getInstance().triggerEnding(
-                    EndingType.ESCAPE
-                );
-                System.out.println("GAME ENDED");
-                return null;
-            }
             // player chưa đứng vào portal
             if (!entityRect.overlaps(rect)) {
                 continue;

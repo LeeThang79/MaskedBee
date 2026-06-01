@@ -13,8 +13,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.math.MathUtils;
 
 
 import game.maskedbee.entities.Boss;
@@ -24,7 +22,6 @@ import game.maskedbee.main.CORE;
 import game.maskedbee.map.PuzzleLibrary;
 import game.maskedbee.map.PuzzleManager;
 import game.maskedbee.objects.PushableBlock;
-import game.maskedbee.map.EndingManager;
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -124,7 +121,7 @@ public class PlayScreen implements Screen {
 
     @Override
     public void show() {
-        game.map.loadMap("map/cocoon_chamber.tmx");
+        game.map.loadMap("map/Exit_Chamber.tmx");
         recreatePuzzleLibrary();
         spawnPlayer(null);
         game.map.updateFloorHide(myPlayer);
