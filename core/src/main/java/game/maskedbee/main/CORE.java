@@ -1,6 +1,7 @@
 package game.maskedbee.main;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import game.maskedbee.entities.Player;
 import game.maskedbee.map.MapManager;
@@ -22,6 +23,9 @@ public class CORE extends Game {
 
     @Override
     public void render() {
+        float dt = Gdx.graphics.getDeltaTime();
+        AudioManager.getInstance().update(dt); // CẬP NHẬT ĐỂ NHẠC TỰ ĐỘNG NHỎ DẦN / TO DẦN
+
         super.render();
     }
 

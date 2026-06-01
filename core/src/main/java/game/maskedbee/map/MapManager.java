@@ -31,6 +31,7 @@ import game.maskedbee.objects.Key;
 import game.maskedbee.objects.Lever;
 import game.maskedbee.objects.PushableBlock;
 import game.maskedbee.objects.Spike;
+import game.maskedbee.main.AudioManager;
 
 public class MapManager {
 
@@ -109,6 +110,7 @@ public class MapManager {
 
     public void loadMap(String fileName) {
         try {
+
             lastMapName = currentMapName;
             currentMapName = fileName.replace("map/", "");
             if (map != null) map.dispose();
@@ -293,6 +295,19 @@ public class MapManager {
             updateFloorHide(null);
 
             System.out.println("✅ Loaded map: " + fileName);
+
+            // ================================================================
+            // THÊM NHẠC NỀN (Tên file, Âm lượng đích)
+            // ================================================================
+            if (currentMapName.equals("Library.tmx")||currentMapName.equals("Hidden_Room.tmx")||currentMapName.equals("Old_Corridor.tmx")||
+                currentMapName.equals("Old_Chapel.tmx")||currentMapName.equals("Exit_Chamber.tmx")) {
+                AudioManager.getInstance().playBackgroundMusic("audio/Save_Room_Theme.ogg", 0.4f);
+            } else if (currentMapName.equals("Ritual_Chamber.tmx")||currentMapName.equals("Queen_Chamber.tmx")||currentMapName.equals("Corridor.tmx")) {
+                AudioManager.getInstance().playBackgroundMusic("audio/The_Gauntlet.ogg", 0.2f);
+            } else{
+                // Nhạc nền mặc định cho các map khác
+                AudioManager.getInstance().playBackgroundMusic("audio/The_Gauntlet.ogg", 0.1f);
+            }
         } catch (Exception e) {
             Gdx.app.error("MapManager", "❌ Error loading map: " + fileName, e);
         }
@@ -592,6 +607,10 @@ public class MapManager {
             openHiddenRoom();
             return;
         }
+
+        // Am thanh mo cua
+        AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.5f);
+
         openedDoors.add(stateKey(doorName));
         applyDoorOpened(doorName);
 
@@ -639,6 +658,9 @@ public class MapManager {
     }
 
     public void openHiddenRoom() {
+        // Am thanh mo cua
+        AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.5f);
+
         openedHiddenRooms.add(stateKey("hidden_room"));
         applyHiddenRoomOpened();
         System.out.println("✅ Hidden room opened");
@@ -779,6 +801,7 @@ public class MapManager {
 
         Rectangle b = block.getBounds();
         savedPushablePositions.put(pushableStateKey(block), new Vector2(b.x, b.y));
+        AudioManager.getInstance().playSoundEffect("audio/Cocoon_Push.wav", 0.8f);
     }
     private void applySavedPushableState() {
         for (PushableBlock block : pushables) {
@@ -826,6 +849,8 @@ public class MapManager {
             tileObjectStateKey("lever", lever.mapObject),
             lever.isPulled
         );
+
+        AudioManager.getInstance().playSoundEffect("audio/Lever_Sound.wav", 0.5f);
     }
     private void applySavedSpikeLeverState() {
         for (Spike spike : spikes) {
@@ -919,6 +944,8 @@ public class MapManager {
     }
 
     public void dispose() {
+        // NGẮT NHẠC NỀN KHI MAP MANAGER BỊ HỦY
+        AudioManager.getInstance().stopBackgroundMusic();
         if (map != null) map.dispose();
         if (renderer != null) renderer.dispose();
     }
