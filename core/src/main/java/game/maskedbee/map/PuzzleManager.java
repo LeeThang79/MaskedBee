@@ -91,17 +91,25 @@ public class PuzzleManager {
     }
 
     private void checkKeyPickup(Player player, MapManager mapManager) {
+        if (!Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            return;
+        }
         for (Key key : mapManager.getKeys()) {
-            if (!key.isCollected() && player.hitbox.overlaps(key.getBounds())) {
+            if (key.isCollected()) {
+                continue;
+            }
+            Rectangle keyRect = key.getBounds();
+            Rectangle playerRect = player.hitbox;
+            float distanceX = Math.abs((playerRect.x + playerRect.width / 2f) - (keyRect.x + keyRect.width / 2f));
+            float distanceY = Math.abs(
+                (playerRect.y + playerRect.height / 2f) - (keyRect.y + keyRect.height / 2f));
+            if (distanceX <= 40f && distanceY <= 40f) {
                 key.collect();
-
                 String keyName = key.getName();
                 player.currentKey = keyName;
-
                 if (keyName != null && !keyName.isEmpty()) {
                     mapManager.markKeyCollected(keyName);
                 }
-
                 System.out.println("Picked key: " + player.currentKey);
                 return;
             }
