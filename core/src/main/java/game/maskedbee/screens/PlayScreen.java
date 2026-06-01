@@ -381,18 +381,20 @@ public class PlayScreen implements Screen {
     private void drawEntities() {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-
+        float playerFootY = myPlayer.hitbox.y;
+        // ===== BLOCK PHÍA SAU PLAYER =====
         for (PushableBlock block : game.map.getPushables()) {
-            if (block.getBounds().y > myPlayer.y) {
+            float blockFootY = block.getBounds().y;
+            if (blockFootY > playerFootY) {
                 block.render(game.batch);
             }
         }
 
         myPlayer.draw(game.batch);
-
+        // ===== BLOCK PHÍA TRƯỚC PLAYER =====
         for (PushableBlock block : game.map.getPushables()) {
-            // nếu block ở phía dưới player
-            if (block.getBounds().y <= myPlayer.y) {
+            float blockFootY = block.getBounds().y;
+            if (blockFootY <= playerFootY) {
                 block.render(game.batch);
             }
         }

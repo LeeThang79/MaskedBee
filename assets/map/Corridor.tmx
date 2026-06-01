@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="22" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="30" nextobjectid="77">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="22" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="31" nextobjectid="78">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
  <layer id="1" name="Wall" width="22" height="9" locked="1">
@@ -114,6 +114,14 @@
   </object>
   <object id="65" name="Queen_Chamber.tmx" x="665.655" y="145.41">
    <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="30" name="Doors" visible="0">
+  <object id="77" name="door_exit" x="320" y="258" width="32" height="28">
+   <properties>
+    <property name="keyName" value="gold_key"/>
+    <property name="requiresKey" type="bool" value="true"/>
+   </properties>
   </object>
  </objectgroup>
  <layer id="28" name="Overhead" width="22" height="9">
