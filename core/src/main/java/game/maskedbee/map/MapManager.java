@@ -577,7 +577,6 @@ public class MapManager {
                 continue;
             }
             String dest = portal.getName();
-            System.out.println("Player touched portal: " + dest);
             // player chưa đứng vào portal
             if (!entityRect.overlaps(rect)) {
                 continue;

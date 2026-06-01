@@ -116,7 +116,7 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="30" name="Doors">
+ <objectgroup id="30" name="Doors" visible="0">
   <object id="77" name="door_exit" x="320" y="258" width="32" height="28">
    <properties>
     <property name="keyName" value="gold_key"/>
