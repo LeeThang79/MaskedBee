@@ -1,6 +1,8 @@
 package game.maskedbee.entities;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
@@ -43,27 +45,41 @@ public abstract class Entity {
         float oldX = x;
         float oldY = y;
 
-        // Di chuyển trục X
-        if (stepX != 0) {
-            futureHitbox.set(hitbox);
-            futureHitbox.x += stepX;
+        futureHitbox.set(hitbox.x + stepX, hitbox.y, hitbox.width, hitbox.height);
+        boolean canMoveX = true;
 
-            if (!collides(futureHitbox, walls)) {
-                x += stepX;
-                hitbox.x = x;
+        if (walls != null) {
+            for (Rectangle wall : walls) {
+                if (futureHitbox.overlaps(wall)) {
+                    canMoveX = false;
+                    break;
+                }
             }
         }
 
-        // Di chuyển trục Y
-        if (stepY != 0) {
-            futureHitbox.set(hitbox);
-            futureHitbox.y += stepY;
+        if (canMoveX) {
+            x += stepX;
+            hitbox.x = x;
+        }
 
-            if (!collides(futureHitbox, walls)) {
-                y += stepY;
-                hitbox.y = y;
+        futureHitbox.set(hitbox.x, hitbox.y + stepY, hitbox.width, hitbox.height);
+        boolean canMoveY = true;
+
+        if (walls != null) {
+            for (Rectangle wall : walls) {
+                if (futureHitbox.overlaps(wall)) {
+                    canMoveY = false;
+                    break;
+                }
             }
         }
+
+        if (canMoveY) {
+            y += stepY;
+            hitbox.y = y;
+        }
+        x = MathUtils.clamp(x, 0, Gdx.graphics.getWidth() - hitbox.width);
+        y = MathUtils.clamp(y, 0, Gdx.graphics.getHeight() - hitbox.height);
 
         hitbox.setPosition(x, y);
 

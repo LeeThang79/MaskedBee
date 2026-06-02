@@ -19,6 +19,39 @@ public class PuzzleManager {
         checkKeyPickup(player, mapManager);
         handleInteractions(player, mapManager);
         handleMaskPickup(player, mapManager);
+        handleChapelMaskActivation(player, mapManager);
+    }
+
+    private void handleChapelMaskActivation(Player player, MapManager mapManager) {
+        if (!Gdx.input.isKeyJustPressed(Input.Keys.E)) return;
+
+        if (!"Old_Chapel.tmx".equalsIgnoreCase(mapManager.getCurrentMapName())) {
+            return;
+        }
+
+        for (RectangleMapObject obj : mapManager.getInteractPoints()) {
+            if (!"chapel_altar".equals(obj.getName())) {
+                continue;
+            }
+
+            if (!player.hitbox.overlaps(obj.getRectangle())) {
+                continue;
+            }
+
+            if (!player.hasMask) {
+                System.out.println("Ban can co mat na truoc khi tuong tac voi diem nay.");
+                return;
+            }
+
+            if (player.hasActivatedMask) {
+                System.out.println("Mat na da duoc kich hoat roi.");
+                return;
+            }
+
+            player.hasActivatedMask = true;
+            System.out.println("Mask activated at Old Chapel!");
+            return;
+        }
     }
 
     private void handleMaskPickup(Player player, MapManager mapManager) {
@@ -41,6 +74,8 @@ public class PuzzleManager {
 
             if (player.hitbox.overlaps(obj.getRectangle())) {
                 player.hasMask = true;
+                player.hasMaskItem = true;
+                mapManager.saveProgressCheckpointHere();
                 System.out.println("Picked bee mask!");
                 return;
             }
@@ -63,6 +98,7 @@ public class PuzzleManager {
                         }
                     } else if ("door_lever".equals(lever.type)) {
                         mapManager.openDoor(lever.targetName);
+                        mapManager.saveProgressCheckpointHere();
                     }
 
                     break;
@@ -171,7 +207,7 @@ public class PuzzleManager {
     public boolean checkSpikeDeath(Player player, MapManager mapManager) {
         for (Spike spike : mapManager.spikes) {
             if (spike.isUp && player.hitbox.overlaps(spike.hitbox)) {
-                System.out.println("💀 Dap trung gai! Reset level!");
+                System.out.println("Dap trung gai! Reset level!");
                 return true;
             }
         }

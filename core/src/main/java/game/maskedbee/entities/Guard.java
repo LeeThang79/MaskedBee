@@ -80,7 +80,7 @@ public class Guard extends Entity {
         }
     }
 
-    public void update(float deltaTime, Player player, Array<Rectangle> walls) {
+    public boolean update(float deltaTime, Player player, Array<Rectangle> walls) {
         stateTime += deltaTime;
 
         Vector2 guardCenter = getCenter(tmpCenter);
@@ -94,7 +94,7 @@ public class Guard extends Entity {
         updateAlertAndState(deltaTime, player, seeingPlayer, hearingPlayer, playerCenter);
         updateMovement(deltaTime, player, walls, seeingPlayer);
 
-        checkCatchPlayer(player);
+        return checkCatchPlayer(player);
     }
 
     private void updateAlertAndState(
@@ -131,8 +131,7 @@ public class Guard extends Entity {
             } else if (currentState == State.PATROL || currentState == State.RETURN) {
                 currentState = State.ALERT;
             }
-        }
-        else if (hearingPlayer) {
+        } else if (hearingPlayer) {
             lastKnownPos.set(playerCenter);
 
             if (currentState == State.PATROL || currentState == State.RETURN) {
@@ -145,8 +144,7 @@ public class Guard extends Entity {
             if (alertLevel > 75f && currentState != State.CHASE) {
                 alertLevel = 75f;
             }
-        }
-        else {
+        } else {
             if (currentState == State.CHASE) {
                 loseSightTimer += deltaTime;
 
@@ -154,8 +152,7 @@ public class Guard extends Entity {
                     currentState = State.SEARCH;
                     searchTimer = 0f;
                 }
-            }
-            else if (currentState == State.ALERT) {
+            } else if (currentState == State.ALERT) {
                 alertLevel -= 35f * deltaTime;
 
                 if (alertLevel <= 0f) {
@@ -163,11 +160,9 @@ public class Guard extends Entity {
                     currentState = State.RETURN;
                     targetWaypointIndex = findNearestWaypointIndex();
                 }
-            }
-            else if (currentState == State.SEARCH) {
+            } else if (currentState == State.SEARCH) {
                 alertLevel -= 22f * deltaTime;
-            }
-            else if (currentState == State.RETURN || currentState == State.PATROL) {
+            } else if (currentState == State.RETURN || currentState == State.PATROL) {
                 alertLevel -= 45f * deltaTime;
             }
         }
@@ -189,10 +184,8 @@ public class Guard extends Entity {
                 break;
 
             case ALERT:
-                // Đứng lại nhìn về hướng nghi ngờ
                 faceTo(lastKnownPos);
 
-                // Nếu nghi ngờ đủ cao thì đi kiểm tra
                 if (alertLevel > 45f) {
                     currentState = State.SEARCH;
                     searchTimer = 0f;
@@ -228,6 +221,7 @@ public class Guard extends Entity {
             case RETURN:
                 if (patrolPath == null || patrolPath.size == 0) {
                     moveToward(spawnPos, patrolSpeed, deltaTime, walls);
+
                     if (center.dst(spawnPos) <= WAYPOINT_REACH_DISTANCE) {
                         currentState = State.PATROL;
                     }
@@ -278,7 +272,6 @@ public class Guard extends Entity {
         boolean moved = tryMove(tmpDir, moveSpeed, deltaTime, walls);
 
         if (!moved) {
-            // Nếu đi thẳng bị kẹt, thử đi ngang/dọc trước
             boolean tryHorizontalFirst = Math.abs(tmpDir.x) > Math.abs(tmpDir.y);
 
             if (tryHorizontalFirst) {
@@ -301,7 +294,6 @@ public class Guard extends Entity {
         }
 
         if (!moved) {
-            // Né vật cản kiểu đơn giản: trượt sang cạnh bên
             tmpMove.set(-tmpDir.y * avoidSide, tmpDir.x * avoidSide);
             moved = tryMove(tmpMove, moveSpeed * 0.8f, deltaTime, walls);
 
@@ -358,15 +350,12 @@ public class Guard extends Entity {
     private void handleStuck() {
         if (currentState == State.PATROL && patrolPath != null && patrolPath.size > 0) {
             targetWaypointIndex = (targetWaypointIndex + 1) % patrolPath.size;
-        }
-        else if (currentState == State.RETURN && patrolPath != null && patrolPath.size > 0) {
+        } else if (currentState == State.RETURN && patrolPath != null && patrolPath.size > 0) {
             targetWaypointIndex = findNearestWaypointIndex();
-        }
-        else if (currentState == State.SEARCH) {
+        } else if (currentState == State.SEARCH) {
             currentState = State.RETURN;
             targetWaypointIndex = findNearestWaypointIndex();
-        }
-        else if (currentState == State.CHASE) {
+        } else if (currentState == State.CHASE) {
             currentState = State.SEARCH;
             searchTimer = 0f;
         }
@@ -389,11 +378,11 @@ public class Guard extends Entity {
         ) * MathUtils.radiansToDegrees;
 
         float angleDiff = Math.abs(angleToPlayer - rotation);
+
         if (angleDiff > 180f) {
             angleDiff = 360f - angleDiff;
         }
 
-        // Khi chưa chase thì phải nằm trong nón nhìn
         if (currentState != State.CHASE && angleDiff > viewAngle / 2f) {
             return false;
         }
@@ -476,19 +465,21 @@ public class Guard extends Entity {
         rotation = snapAngleTo4Directions(rawAngle);
     }
 
-    private void checkCatchPlayer(Player player) {
-        if (player.isBeeDisguised) return;
+    private boolean checkCatchPlayer(Player player) {
+        if (player.isBeeDisguised) return false;
+
         if (!this.hitbox.overlaps(player.hitbox)) {
-            return;
+            return false;
         }
 
-        // Tạm thời reset player về góc an toàn
-        player.x = 50f;
-        player.y = 50f;
-        player.hitbox.setPosition(player.x, player.y);
+        resetGuardAfterCatch();
+        return true;
+    }
 
+    private void resetGuardAfterCatch() {
         if (patrolPath != null && patrolPath.size > 0) {
             Vector2 spawnPoint = patrolPath.get(0);
+
             this.x = spawnPoint.x;
             this.y = spawnPoint.y;
             this.hitbox.setPosition(this.x, this.y);
@@ -498,6 +489,8 @@ public class Guard extends Entity {
             this.x = spawnPos.x;
             this.y = spawnPos.y;
             this.hitbox.setPosition(this.x, this.y);
+
+            targetWaypointIndex = 0;
         }
 
         currentState = State.PATROL;
@@ -505,9 +498,15 @@ public class Guard extends Entity {
         loseSightTimer = 0f;
         searchTimer = 0f;
         stuckTimer = 0f;
+        waypointPauseTimer = 0f;
 
         lastKnownPos.set(getCenter(tmpCenter));
+
+        if (patrolPath != null && patrolPath.size > 0) {
+            faceTo(patrolPath.get(targetWaypointIndex));
+        }
     }
+
     private float snapAngleTo4Directions(float angle) {
         angle = (angle + 360f) % 360f;
 
@@ -533,7 +532,6 @@ public class Guard extends Entity {
     public void drawDebug(ShapeRenderer shape, Player player) {
         Vector2 center = getCenter(tmpCenter);
 
-        // Vòng tiếng ồn của player
         if (player.noiseRadius > 0f) {
             shape.setColor(Color.CYAN);
             shape.circle(
@@ -563,14 +561,12 @@ public class Guard extends Entity {
         shape.line(center.x, center.y, x2, y2);
         shape.line(x1, y1, x2, y2);
 
-        // Vẽ điểm cuối cùng guard biết vị trí player
         if (currentState == State.CHASE || currentState == State.SEARCH || currentState == State.ALERT) {
             shape.setColor(Color.PINK);
             shape.circle(lastKnownPos.x, lastKnownPos.y, 5f);
             shape.line(center.x, center.y, lastKnownPos.x, lastKnownPos.y);
         }
 
-        // Thanh cảnh báo
         if (alertLevel > 0f) {
             shape.end();
             shape.begin(ShapeRenderer.ShapeType.Filled);

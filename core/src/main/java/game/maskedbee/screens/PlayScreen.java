@@ -28,6 +28,8 @@ public class PlayScreen implements Screen {
     public final CORE game;
     public Player myPlayer;
 
+    private static final String START_MAP = "Cocoon_Chamber.tmx";
+
     private OrthographicCamera camera;
     private Viewport viewport;
 
@@ -41,6 +43,9 @@ public class PlayScreen implements Screen {
 
     // escape: có mặt nạ và rời khỏi hive
     private String pendingExitEndingType = "escape";
+    // Chống lỗi vừa spawn xong đã bị portal kéo sang map khác hoặc guard bắt lại ngay.
+    private float portalCooldown = 0f;
+    private float guardCatchCooldown = 0f;
 
     private ShapeRenderer shapeRender;
     private BitmapFont font;
@@ -67,7 +72,11 @@ public class PlayScreen implements Screen {
     }
 
     private void spawnPlayer(String fromMap) {
-        Rectangle spawn = game.map.getSpawnPoint(fromMap);
+        Rectangle spawn = null;
+
+        if (fromMap != null && !fromMap.isEmpty()) {
+            spawn = game.map.getSpawnPoint(fromMap);
+        }
 
         if (spawn == null) {
             spawn = game.map.getPlayerSpawn();
@@ -78,11 +87,23 @@ public class PlayScreen implements Screen {
             myPlayer.y = spawn.y;
             myPlayer.hitbox.setPosition(spawn.x, spawn.y);
         } else {
-            myPlayer.x = 100;
-            myPlayer.y = 100;
-            myPlayer.hitbox.setPosition(100, 100);
-            System.out.println("Cảnh báo: Không tìm thấy điểm Spawn nào trên Map!");
+            float safeX = Math.max(16f, game.map.getMapWidth() / 2f);
+            float safeY = Math.max(16f, game.map.getMapHeight() / 2f);
+
+            myPlayer.x = safeX;
+            myPlayer.y = safeY;
+            myPlayer.hitbox.setPosition(safeX, safeY);
+
+            System.out.println("WARNING: Khong tim thay player_spawn trong map "
+                + game.map.getCurrentMapName()
+                + ", tam spawn o giua map.");
         }
+
+        myPlayer.isHidingAtStone = false;
+        myPlayer.noiseRadius = 0f;
+
+        portalCooldown = 0.45f;
+        guardCatchCooldown = 0f;
     }
 
     private void updateCamera() {
@@ -127,7 +148,7 @@ public class PlayScreen implements Screen {
 
     @Override
     public void show() {
-        game.map.loadMap("map/cocoon_chamber.tmx");
+        game.map.loadMap("map/" + START_MAP);
         recreatePuzzleLibrary();
         spawnPlayer(null);
         game.map.updateFloorHide(myPlayer);
@@ -171,6 +192,13 @@ public class PlayScreen implements Screen {
     }
 
     private void updateRunning(float delta) {
+        if (portalCooldown > 0f) {
+            portalCooldown -= delta;
+        }
+
+        if (guardCatchCooldown > 0f) {
+            guardCatchCooldown -= delta;
+        }
         if (puzzleLibrary != null) {
             puzzleLibrary.update(myPlayer.hitbox, delta);
         }
@@ -186,29 +214,31 @@ public class PlayScreen implements Screen {
             return;
         }
 
-        String nextMap = game.map.checkPortal(myPlayer.hitbox);
-        if (nextMap != null) {
-            String currentMap = game.map.getCurrentMapName();
-            // Sau khi từ chối Queen, đi vào Exit thì chưa ending ngay.
-            // Mở bảng lựa chọn Continue / Exit.
-            if (isFinalExitPortal(currentMap, nextMap)) {
-                pendingExitEndingType = getExitEndingType();
+        if (portalCooldown <= 0f) {
+            String nextMap = game.map.checkPortal(myPlayer.hitbox);
 
-                state = GameState.EXIT_CHOICE;
-                System.out.println("Exit choice opened. Ending type = " + pendingExitEndingType);
+            if (nextMap != null) {
+                String currentMap = game.map.getCurrentMapName();
+
+                if (isFinalExitPortal(currentMap, nextMap)) {
+                    pendingExitEndingType = getExitEndingType();
+                    state = GameState.EXIT_CHOICE;
+                    portalCooldown = 0.7f;
+                    System.out.println("Exit choice opened. Ending type = " + pendingExitEndingType);
+                    return;
+                }
+
+                String lastMap = currentMap;
+
+                game.map.loadMap(nextMap);
+                recreatePuzzleLibrary();
+                spawnPlayer(lastMap);
+                game.map.updateFloorHide(myPlayer);
+                updateCamera();
                 return;
             }
-
-            String lastMap = game.map.getCurrentMapName();
-
-            game.map.loadMap(nextMap);
-            recreatePuzzleLibrary();
-            spawnPlayer(lastMap);
-            game.map.updateFloorHide(myPlayer);
-            updateCamera();
-
-            return;
         }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             game.map.clearPushableStateForCurrentMap();
             game.map.resetPushables();
@@ -220,7 +250,6 @@ public class PlayScreen implements Screen {
             }
 
             spawnPlayer(resetSpawnFromMap);
-
             game.map.updateFloorHide(myPlayer);
             updateCamera();
         }
@@ -231,8 +260,15 @@ public class PlayScreen implements Screen {
 
         game.map.updateFloorHide(myPlayer);
 
-        for (Guard guard : game.map.guards) {
-            guard.update(delta, myPlayer, game.map.getWallCollision());
+        if (guardCatchCooldown <= 0f) {
+            for (Guard guard : game.map.guards) {
+                boolean caught = guard.update(delta, myPlayer, game.map.getWallCollision());
+
+                if (caught) {
+                    handleCaughtByGuard();
+                    return;
+                }
+            }
         }
         for (Boss boss : game.map.bosses) {
             boolean caught = boss.update(
@@ -250,33 +286,76 @@ public class PlayScreen implements Screen {
 
         updateCamera();
     }
+    private void handleCaughtByGuard() {
+        System.out.println("Caught by guard!");
+
+        state = GameState.RUNNING;
+        myPlayer.isBeeDisguised = false;
+        myPlayer.isHidingAtStone = false;
+        myPlayer.noiseRadius = 0f;
+
+        portalCooldown = 0.45f;
+        guardCatchCooldown = 0f;
+
+        if (game.map.hasProgressCheckpoint()) {
+            String checkpointMap = game.map.getProgressCheckpointMapName();
+            System.out.println("Respawn at solved puzzle checkpoint: " + checkpointMap);
+
+            game.map.loadMap("map/" + checkpointMap);
+            recreatePuzzleLibrary();
+            spawnPlayer(null);
+            game.map.updateFloorHide(myPlayer);
+            updateCamera();
+            return;
+        }
+
+        System.out.println("No solved puzzle checkpoint. Restart from first map.");
+        resetPlayerProgressToStart();
+
+        game.map.loadMap("map/" + START_MAP);
+        recreatePuzzleLibrary();
+        spawnPlayer(null);
+        game.map.updateFloorHide(myPlayer);
+        updateCamera();
+    }
+    private void resetPlayerProgressToStart() {
+        refusedQueenEnding = false;
+
+        myPlayer.hasMask = false;
+        myPlayer.hasActivatedMask = false;
+        myPlayer.hasMaskItem = false;
+        myPlayer.hasKeyItem = false;
+        myPlayer.currentKey = "";
+        myPlayer.isBeeDisguised = false;
+        myPlayer.isHidingAtStone = false;
+        myPlayer.noiseRadius = 0f;
+
+        game.map.clearAllProgressState();
+    }
+
     private boolean isFinalExitPortal(String currentMap, String nextMap) {
         if (currentMap == null || nextMap == null) return false;
 
         String lowerNextMap = nextMap.toLowerCase();
 
-        // Case chính của bạn:
-        // Đang ở Exit_Chamber.tmx, portal tên Exit.tmx -> nextMap = map/Exit.tmx
         if ("Exit_Chamber.tmx".equalsIgnoreCase(currentMap)
             && lowerNextMap.endsWith("exit.tmx")) {
             return true;
         }
 
-        // Dự phòng nếu sau này đặt portal cuối trực tiếp trong Queen_Chamber là Exit.tmx.
-        // Không bắt Exit_Chamber.tmx để tránh chặn nhầm cổng đi sang phòng Exit_Chamber.
-        if ("Queen_Chamber.tmx".equalsIgnoreCase(currentMap)
+        return "Queen_Chamber.tmx".equalsIgnoreCase(currentMap)
             && lowerNextMap.endsWith("exit.tmx")
-            && !lowerNextMap.contains("exit_chamber")) {
-            return true;
-        }
-
-        return false;
+            && !lowerNextMap.contains("exit_chamber");
     }
 
     private String getExitEndingType() {
         // Chưa có mặt nạ mà đi tới Exit cuối
         if (!myPlayer.hasMask) {
             return "no_mask";
+        }
+        // Có mặt nạ nhưng chưa kích hoạt ở Old Chapel
+        if (!myPlayer.hasActivatedMask) {
+            return "inactive_mask";
         }
 
         // Có mặt nạ và đã từ chối Queen
@@ -298,7 +377,12 @@ public class PlayScreen implements Screen {
         }
 
         if (!myPlayer.hasMask) {
-            System.out.println("Bạn cần có mặt nạ trước khi nói chuyện với Queen.");
+            System.out.println("Ban can co mat na truoc khi noi chuyen voi Queen.");
+            return;
+        }
+
+        if (!myPlayer.hasActivatedMask) {
+            System.out.println("Ban can kich hoat mat na o Old Chapel truoc.");
             return;
         }
 
@@ -333,6 +417,7 @@ public class PlayScreen implements Screen {
     }
     private void continueFromExitChoice() {
         state = GameState.RUNNING;
+        portalCooldown = 0.7f;
         System.out.println("Continue playing");
     }
 
@@ -359,6 +444,7 @@ public class PlayScreen implements Screen {
     private void refuseQueenChoice() {
         refusedQueenEnding = true;
         state = GameState.RUNNING;
+        portalCooldown = 0.45f;
         System.out.println("Refused queen ending. Exit is now escape ending.");
     }
 

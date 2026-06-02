@@ -73,6 +73,10 @@ public class EndingScreen implements Screen {
             drawCentered("ENDING: LOST WITHOUT THE MASK", screenWidth, screenHeight * 0.68f);
             drawCentered("You left the hive without the Queen's mask.", screenWidth, screenHeight * 0.56f);
             drawCentered("The truth remained hidden.", screenWidth, screenHeight * 0.49f);
+        } else if ("inactive_mask".equalsIgnoreCase(endingType)) {
+            drawCentered("ENDING: UNAWAKENED MASK", screenWidth, screenHeight * 0.68f);
+            drawCentered("You found the mask, but never awakened its truth.", screenWidth, screenHeight * 0.56f);
+            drawCentered("The hive let you leave, but not as yourself.", screenWidth, screenHeight * 0.49f);
         } else {
             drawCentered("ENDING", screenWidth, screenHeight * 0.68f);
             drawCentered("The story ends here.", screenWidth, screenHeight * 0.56f);
