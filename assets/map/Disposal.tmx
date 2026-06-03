@@ -230,6 +230,14 @@
    <point/>
   </object>
  </objectgroup>
+ <objectgroup id="19" name="Player_Spawn">
+  <object id="55" x="266" y="87">
+   <point/>
+  </object>
+  <object id="56" name="player_spawn" x="266" y="87">
+   <point/>
+  </object>
+ </objectgroup>
  <layer id="18" name="Overhead" width="16" height="11">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
