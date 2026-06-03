@@ -22,6 +22,7 @@ import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
+import game.maskedbee.main.AudioManager;
 import game.maskedbee.map.DialogueManager;
 import game.maskedbee.map.PuzzleLibrary;
 import game.maskedbee.map.PuzzleManager;
@@ -180,8 +181,12 @@ public class PlayScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             if (state == GameState.RUNNING) {
                 state = GameState.PAUSE;
+                // TẠM DỪNG NHẠC NỀN KHI PAUSE
+                AudioManager.getInstance().pauseBackgroundMusic();
             } else if (state == GameState.PAUSE) {
                 state = GameState.RUNNING;
+                // TIẾP TỤC PHÁT NHẠC NỀN KHI CHƠI TIẾP
+                AudioManager.getInstance().resumeBackgroundMusic();
             }
         }
 
@@ -493,6 +498,7 @@ public class PlayScreen implements Screen {
     }
 
     private void goToEnding(String endingType) {
+        AudioManager.getInstance().stopBackgroundMusic(); // tắt nhạc nền
         System.out.println("Ending type: " + endingType);
         game.setScreen(new EndingScreen(game, endingType));
     }
@@ -755,6 +761,7 @@ public class PlayScreen implements Screen {
             if (continueBtn.contains(touchPoint.x, touchPoint.y)) {
                 state = GameState.RUNNING;
             } else if (quitBtn.contains(touchPoint.x, touchPoint.y)) {
+                AudioManager.getInstance().stopBackgroundMusic(); // NGẮT NHẠC GAME KHI THOÁT RA MENU CHÍNH
                 game.setScreen(new FirstScreen(game));
             }
         }

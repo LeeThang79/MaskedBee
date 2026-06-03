@@ -8,6 +8,7 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import game.maskedbee.main.AudioManager;
 
 public class PuzzleLibrary {
     private final Array<Rectangle> wallCollision;
@@ -183,10 +184,12 @@ public class PuzzleLibrary {
             && Gdx.input.isKeyJustPressed(Input.Keys.E)) {
 
             startCurrentUnsolvedPhase();
+
+            // Âm thanh kich hoat
+            AudioManager.getInstance().playSoundEffect("audio/Book_Switch.wav", 0.5f);
             return;
         }
-
-        if (!started) return;
+        if(!started) return;
 
         // =================================================
         // NHẤN KỆ SÁCH
@@ -205,6 +208,9 @@ public class PuzzleLibrary {
                 currentInput.add(pressed);
 
                 System.out.println("Pressed: " + pressed);
+
+                // Người chơi bấm nut se phát tiếng phản hồi
+                AudioManager.getInstance().playSoundEffect("audio/Book_Switch.wav", 0.5f);
 
                 checkInput();
 
@@ -284,6 +290,8 @@ public class PuzzleLibrary {
 
         System.out.println("Library phase 1 solved - opened gold key chest path");
 
+        // Âm thanh mở rương sau khi giải phase 1
+        AudioManager.getInstance().playSoundEffect("audio/Chest_Open.wav", 0.4f);
         currentInput.clear();
 
         /*
@@ -410,6 +418,9 @@ public class PuzzleLibrary {
                 obj.setVisible(true);
 
                 System.out.println("Candle " + candleNumber);
+
+                // PHÁT ÂM THANH KHI HIỆN NẾN
+                AudioManager.getInstance().playSoundEffect("audio/Candle_Light.wav", 0.4f);
 
                 break;
             }
