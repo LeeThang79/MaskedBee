@@ -54,7 +54,7 @@
  <objectgroup id="10" name="Object_Collision">
   <object id="9" x="326.333" y="223.375" width="34.9167" height="14.375"/>
   <object id="11" x="166.542" y="224.146" width="34.9167" height="14.375"/>
-  <object id="12" x="238.542" y="144.479" width="53.9167" height="35.0417"/>
+  <object id="12" x="238.542" y="150.979" width="53.9167" height="32.5417"/>
  </objectgroup>
  <objectgroup id="11" name="Old_Corridor_Chamber">
   <object id="13" name="Old_Corridor.tmx" x="384" y="126.125" width="33.125" height="35.75"/>

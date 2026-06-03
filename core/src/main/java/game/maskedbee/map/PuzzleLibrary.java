@@ -8,6 +8,7 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
+import game.maskedbee.main.AudioManager;
 
 public class PuzzleLibrary {
     private final Array<Rectangle> wallCollision;
@@ -163,6 +164,9 @@ public class PuzzleLibrary {
 
             showCurrentCandles();
             System.out.println("Show candle sequence");
+
+            // Âm thanh kich hoat
+            AudioManager.getInstance().playSoundEffect("audio/Book_Switch.wav", 0.5f);
         }
         if(!started) return;
 
@@ -184,6 +188,9 @@ public class PuzzleLibrary {
                 currentInput.add(pressed);
 
                 System.out.println("Pressed: " + pressed);
+
+                // Người chơi bấm nut se phát tiếng phản hồi
+                AudioManager.getInstance().playSoundEffect("audio/Book_Switch.wav", 0.5f);
 
                 checkInput();
 
@@ -238,6 +245,7 @@ public class PuzzleLibrary {
                 }
 
                 System.out.println("Chest opened!");
+                AudioManager.getInstance().playSoundEffect("audio/Chest_Open.wav", 0.4f);
             }
 
             // =================================================
@@ -258,7 +266,7 @@ public class PuzzleLibrary {
                     finished = true;
                     turnOnAllCandles();
                 }
-                System.out.println("Chest opened!");
+                System.out.println("Hidden Room opened!");
             }
         }
     }
@@ -358,6 +366,9 @@ public class PuzzleLibrary {
                 obj.setVisible(true);
 
                 System.out.println("Candle " + candleNumber);
+
+                // PHÁT ÂM THANH KHI HIỆN NẾN
+                AudioManager.getInstance().playSoundEffect("audio/Candle_Light.wav", 0.4f);
 
                 break;
             }
