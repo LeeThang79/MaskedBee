@@ -3,11 +3,14 @@ package game.maskedbee.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -15,13 +18,14 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 
-
 import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
 import game.maskedbee.main.CORE;
+import game.maskedbee.map.DialogueManager;
 import game.maskedbee.map.PuzzleLibrary;
 import game.maskedbee.map.PuzzleManager;
+import game.maskedbee.map.StoryManager;
 import game.maskedbee.objects.PushableBlock;
 
 public class PlayScreen implements Screen {
@@ -40,10 +44,8 @@ public class PlayScreen implements Screen {
     private GameState state = GameState.RUNNING;
 
     private boolean refusedQueenEnding = false;
-
-    // escape: có mặt nạ và rời khỏi hive
     private String pendingExitEndingType = "escape";
-    // Chống lỗi vừa spawn xong đã bị portal kéo sang map khác hoặc guard bắt lại ngay.
+
     private float portalCooldown = 0f;
     private float guardCatchCooldown = 0f;
 
@@ -52,8 +54,12 @@ public class PlayScreen implements Screen {
     private Rectangle continueBtn;
     private Rectangle quitBtn;
 
+    private String currentPrompt = "";
+
     private PuzzleLibrary puzzleLibrary;
     private PuzzleManager puzzleManager;
+    private StoryManager storyManager;
+    private DialogueManager dialogueManager;
 
     public PlayScreen(CORE game) {
         this.game = game;
@@ -63,12 +69,21 @@ public class PlayScreen implements Screen {
         this.myPlayer = new Player(0, 0);
 
         this.shapeRender = new ShapeRenderer();
-        this.font = new BitmapFont();
+
+        FileHandle customFont = Gdx.files.internal("MaskedBee.fnt");
+        if (customFont.exists()) {
+            this.font = new BitmapFont(customFont);
+            this.font.getData().setScale(0.5f);
+        } else {
+            this.font = new BitmapFont();
+        }
 
         continueBtn = new Rectangle(0, 0, 100, 30);
         quitBtn = new Rectangle(0, 0, 100, 30);
 
         puzzleManager = new PuzzleManager();
+        dialogueManager = new DialogueManager();
+        storyManager = new StoryManager();
     }
 
     private void spawnPlayer(String fromMap) {
@@ -109,6 +124,7 @@ public class PlayScreen implements Screen {
     private void updateCamera() {
         float mapWidth = game.map.getMapWidth();
         float mapHeight = game.map.getMapHeight();
+
         float halfWidth = viewport.getWorldWidth() / 2f;
         float halfHeight = viewport.getWorldHeight() / 2f;
 
@@ -136,7 +152,6 @@ public class PlayScreen implements Screen {
     }
 
     private void reloadCurrentMapAndRespawn() {
-        // Chết do gai/reset level: gai và cần gạt về trạng thái ban đầu của map.
         game.map.clearSpikeLeverStateForCurrentMap();
 
         game.map.loadMap("map/" + game.map.getCurrentMapName());
@@ -154,6 +169,10 @@ public class PlayScreen implements Screen {
         game.map.updateFloorHide(myPlayer);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         updateCamera();
+
+        if (storyManager != null && dialogueManager != null) {
+            storyManager.checkMapEnterEvent("map/" + START_MAP, dialogueManager);
+        }
     }
 
     @Override
@@ -178,6 +197,17 @@ public class PlayScreen implements Screen {
 
         drawGame();
 
+        if (!currentPrompt.isEmpty() && state == GameState.RUNNING) {
+            game.batch.setProjectionMatrix(camera.combined);
+            game.batch.begin();
+            font.draw(game.batch, currentPrompt, myPlayer.x - 15, myPlayer.y + 45);
+            game.batch.end();
+        }
+
+        if (dialogueManager != null && state == GameState.RUNNING) {
+            dialogueManager.draw(game.batch, camera);
+        }
+
         if (state == GameState.PAUSE) {
             drawPauseMenu();
         }
@@ -199,10 +229,33 @@ public class PlayScreen implements Screen {
         if (guardCatchCooldown > 0f) {
             guardCatchCooldown -= delta;
         }
+
+        if (dialogueManager != null) {
+            boolean wasShowing = dialogueManager.isShowing;
+            dialogueManager.update(delta);
+
+            if (wasShowing) {
+                currentPrompt = "";
+                return;
+            }
+        }
+
+        if (storyManager != null && dialogueManager != null) {
+            storyManager.handleExamine(
+                myPlayer.hitbox,
+                game.map.getMap(),
+                dialogueManager,
+                game.map.getPushables(),
+                game.map.getCurrentMapName()
+            );
+        }
+
+        updateInteractionPrompt();
+
         if (puzzleLibrary != null) {
             puzzleLibrary.update(myPlayer.hitbox, delta);
         }
-        // PuzzleManager xử lý: E gạt cần/gai/cửa, F mở cửa bằng key, nhặt key, đẩy block.
+
         if (puzzleManager != null) {
             puzzleManager.update(myPlayer, game.map);
         }
@@ -224,6 +277,7 @@ public class PlayScreen implements Screen {
                     pendingExitEndingType = getExitEndingType();
                     state = GameState.EXIT_CHOICE;
                     portalCooldown = 0.7f;
+
                     System.out.println("Exit choice opened. Ending type = " + pendingExitEndingType);
                     return;
                 }
@@ -235,6 +289,11 @@ public class PlayScreen implements Screen {
                 spawnPlayer(lastMap);
                 game.map.updateFloorHide(myPlayer);
                 updateCamera();
+
+                if (storyManager != null && dialogueManager != null) {
+                    storyManager.checkMapEnterEvent(nextMap, dialogueManager);
+                }
+
                 return;
             }
         }
@@ -254,8 +313,6 @@ public class PlayScreen implements Screen {
             updateCamera();
         }
 
-        // Dùng full collision để Player bị chặn bởi tường + cửa tù + block.
-        // Hidden_Room_Collision vẫn xóa được vì PuzzleLibrary xóa nó khỏi wallCollision.
         myPlayer.update(delta, game.map.getFullCollision(), game.map.getStoneCollision());
 
         game.map.updateFloorHide(myPlayer);
@@ -270,6 +327,7 @@ public class PlayScreen implements Screen {
                 }
             }
         }
+
         for (Boss boss : game.map.bosses) {
             boolean caught = boss.update(
                 delta,
@@ -286,10 +344,13 @@ public class PlayScreen implements Screen {
 
         updateCamera();
     }
+
     private void handleCaughtByGuard() {
         System.out.println("Caught by guard!");
 
         state = GameState.RUNNING;
+        currentPrompt = "";
+
         myPlayer.isBeeDisguised = false;
         myPlayer.isHidingAtStone = false;
         myPlayer.noiseRadius = 0f;
@@ -299,6 +360,7 @@ public class PlayScreen implements Screen {
 
         if (game.map.hasProgressCheckpoint()) {
             String checkpointMap = game.map.getProgressCheckpointMapName();
+
             System.out.println("Respawn at solved puzzle checkpoint: " + checkpointMap);
 
             game.map.loadMap("map/" + checkpointMap);
@@ -306,10 +368,16 @@ public class PlayScreen implements Screen {
             spawnPlayer(null);
             game.map.updateFloorHide(myPlayer);
             updateCamera();
+
+            if (storyManager != null && dialogueManager != null) {
+                storyManager.checkMapEnterEvent("map/" + checkpointMap, dialogueManager);
+            }
+
             return;
         }
 
         System.out.println("No solved puzzle checkpoint. Restart from first map.");
+
         resetPlayerProgressToStart();
 
         game.map.loadMap("map/" + START_MAP);
@@ -317,9 +385,15 @@ public class PlayScreen implements Screen {
         spawnPlayer(null);
         game.map.updateFloorHide(myPlayer);
         updateCamera();
+
+        if (storyManager != null && dialogueManager != null) {
+            storyManager.checkMapEnterEvent("map/" + START_MAP, dialogueManager);
+        }
     }
+
     private void resetPlayerProgressToStart() {
         refusedQueenEnding = false;
+        currentPrompt = "";
 
         myPlayer.hasMask = false;
         myPlayer.hasActivatedMask = false;
@@ -349,21 +423,18 @@ public class PlayScreen implements Screen {
     }
 
     private String getExitEndingType() {
-        // Chưa có mặt nạ mà đi tới Exit cuối
         if (!myPlayer.hasMask) {
             return "no_mask";
         }
-        // Có mặt nạ nhưng chưa kích hoạt ở Old Chapel
+
         if (!myPlayer.hasActivatedMask) {
             return "inactive_mask";
         }
 
-        // Có mặt nạ và đã từ chối Queen
         if (refusedQueenEnding) {
             return "escape";
         }
 
-        // Có mặt nạ nhưng bỏ đi mà không nhận lời Queen
         return "escape";
     }
 
@@ -393,28 +464,28 @@ public class PlayScreen implements Screen {
 
             if (myPlayer.hitbox.overlaps(obj.getRectangle())) {
                 state = GameState.QUEEN_CHOICE;
+                currentPrompt = "";
                 System.out.println("Queen choice opened");
                 return;
             }
         }
     }
+
     private void handleExitChoiceLogic() {
-        // 1: tiếp tục chơi
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
             || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
 
             continueFromExitChoice();
             return;
         }
-        // 2: ra ending tương ứng
-        // - chưa có mặt nạ -> no_mask
-        // - có mặt nạ -> escape
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
             || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
 
             goToEnding(pendingExitEndingType);
         }
     }
+
     private void continueFromExitChoice() {
         state = GameState.RUNNING;
         portalCooldown = 0.7f;
@@ -425,15 +496,15 @@ public class PlayScreen implements Screen {
         System.out.println("Ending type: " + endingType);
         game.setScreen(new EndingScreen(game, endingType));
     }
+
     private void handleQueenChoiceLogic() {
-        // 1: chấp nhận thành Queen
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
             || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
 
             goToEnding("queen");
             return;
         }
-        // 2: từ chối, quay lại game
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
             || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
 
@@ -445,6 +516,7 @@ public class PlayScreen implements Screen {
         refusedQueenEnding = true;
         state = GameState.RUNNING;
         portalCooldown = 0.45f;
+
         System.out.println("Refused queen ending. Exit is now escape ending.");
     }
 
@@ -468,8 +540,12 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
+        float playerFootY = myPlayer.hitbox.y;
+
         for (PushableBlock block : game.map.getPushables()) {
-            if (block.getBounds().y > myPlayer.y) {
+            float blockFootY = block.getBounds().y;
+
+            if (blockFootY > playerFootY) {
                 block.render(game.batch);
             }
         }
@@ -477,8 +553,9 @@ public class PlayScreen implements Screen {
         myPlayer.draw(game.batch);
 
         for (PushableBlock block : game.map.getPushables()) {
-            // nếu block ở phía dưới player
-            if (block.getBounds().y <= myPlayer.y) {
+            float blockFootY = block.getBounds().y;
+
+            if (blockFootY <= playerFootY) {
                 block.render(game.batch);
             }
         }
@@ -493,7 +570,6 @@ public class PlayScreen implements Screen {
 
         game.batch.end();
 
-
         shapeRender.setProjectionMatrix(camera.combined);
         shapeRender.begin(ShapeRenderer.ShapeType.Line);
 
@@ -504,8 +580,10 @@ public class PlayScreen implements Screen {
         for (Boss boss : game.map.bosses) {
             boss.drawDebug(shapeRender);
         }
+
         shapeRender.end();
     }
+
     private void drawExitChoiceMenu() {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -531,28 +609,13 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        font.draw(
-            game.batch,
-            "Leave the hive?",
-            camera.position.x - 70,
-            camera.position.y + 42
-        );
+        font.draw(game.batch, "Leave the hive?", camera.position.x - 70, camera.position.y + 42);
+        font.draw(game.batch, "1. Continue", camera.position.x - 115, camera.position.y + 4);
+        font.draw(game.batch, "2. Exit", camera.position.x - 115, camera.position.y - 33);
 
-        font.draw(
-            game.batch,
-            "1. Continue",
-            camera.position.x - 115,
-            camera.position.y + 4
-        );
-
-        font.draw(
-            game.batch,
-            "2. Exit",
-            camera.position.x - 115,
-            camera.position.y - 33
-        );
         game.batch.end();
     }
+
     private void drawQueenChoiceMenu() {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -560,7 +623,6 @@ public class PlayScreen implements Screen {
         shapeRender.setProjectionMatrix(camera.combined);
         shapeRender.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Nền bảng
         shapeRender.setColor(0f, 0f, 0f, 0.78f);
         shapeRender.rect(
             camera.position.x - 190,
@@ -569,7 +631,6 @@ public class PlayScreen implements Screen {
             150
         );
 
-        // Ô lựa chọn
         shapeRender.setColor(Color.DARK_GRAY);
         shapeRender.rect(camera.position.x - 155, camera.position.y - 20, 310, 28);
         shapeRender.rect(camera.position.x - 155, camera.position.y - 58, 310, 28);
@@ -580,28 +641,104 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        font.draw(
-            game.batch,
-            "Queen: Become the new Queen?",
-            camera.position.x - 145,
-            camera.position.y + 45
-        );
-
-        font.draw(
-            game.batch,
-            "1. Accept",
-            camera.position.x - 120,
-            camera.position.y
-        );
-
-        font.draw(
-            game.batch,
-            "2. Refuse",
-            camera.position.x - 120,
-            camera.position.y - 38
-        );
+        font.draw(game.batch, "Queen: Become the new Queen?", camera.position.x - 145, camera.position.y + 45);
+        font.draw(game.batch, "1. Accept", camera.position.x - 120, camera.position.y);
+        font.draw(game.batch, "2. Refuse", camera.position.x - 120, camera.position.y - 38);
 
         game.batch.end();
+    }
+
+    private boolean checkLayerOverlap(String layerName, Rectangle interactRange) {
+        if (game.map.getMap() == null) return false;
+
+        MapLayer layer = game.map.getMap().getLayers().get(layerName);
+
+        if (layer == null) return false;
+
+        for (MapObject obj : layer.getObjects()) {
+            if (obj instanceof RectangleMapObject) {
+                if (interactRange.overlaps(((RectangleMapObject) obj).getRectangle())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean checkPortalPromptOverlap(Rectangle interactRange) {
+        if (game.map.getMap() == null) return false;
+
+        for (MapLayer layer : game.map.getMap().getLayers()) {
+            if (layer == null) continue;
+
+            String layerName = layer.getName();
+
+            boolean portalLayer =
+                layerName.equals("Exit")
+                    || layerName.contains("_Chamber")
+                    || layerName.contains("Corridor")
+                    || layerName.equals("SpawnPoints");
+
+            if (!portalLayer) continue;
+
+            for (MapObject obj : layer.getObjects()) {
+                if (obj instanceof RectangleMapObject) {
+                    if (interactRange.overlaps(((RectangleMapObject) obj).getRectangle())) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void updateInteractionPrompt() {
+        currentPrompt = "";
+
+        Rectangle interactRange = new Rectangle(
+            myPlayer.hitbox.x - 5f,
+            myPlayer.hitbox.y - 5f,
+            myPlayer.hitbox.width + 10f,
+            myPlayer.hitbox.height + 10f
+        );
+
+        if (game.map.getPushables() != null) {
+            for (PushableBlock block : game.map.getPushables()) {
+                if (interactRange.overlaps(block.getBounds())) {
+                    currentPrompt = "[G]";
+                    return;
+                }
+            }
+        }
+
+        if (checkLayerOverlap("ExaminePoints", interactRange)) {
+            currentPrompt = "[G]";
+            return;
+        }
+
+        if (checkLayerOverlap("Doors", interactRange)) {
+            currentPrompt = "[F]";
+            return;
+        }
+
+        if (checkLayerOverlap("Queen_Interact", interactRange)
+            || checkLayerOverlap("Chapel_Interact", interactRange)) {
+            currentPrompt = "[E]";
+            return;
+        }
+
+        for (int i = 0; i <= 5; i++) {
+            if (checkLayerOverlap("Interact_Point_" + i, interactRange)) {
+                currentPrompt = "[E]";
+                return;
+            }
+        }
+
+        if (checkPortalPromptOverlap(interactRange)) {
+            currentPrompt = "[SPACE]";
+        }
     }
 
     private void handlePauseMenuLogic() {
@@ -647,8 +784,10 @@ public class PlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
+
         font.draw(game.batch, "Continue", continueBtn.x + 20, continueBtn.y + 20);
         font.draw(game.batch, "Quit", quitBtn.x + 35, quitBtn.y + 20);
+
         game.batch.end();
     }
 

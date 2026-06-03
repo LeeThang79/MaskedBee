@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="12" nextobjectid="41">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="45">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
  <layer id="1" name="Floor" width="16" height="9">
@@ -61,6 +61,12 @@
     <property name="requiresKey" type="bool" value="true"/>
    </properties>
   </object>
+ </objectgroup>
+ <objectgroup id="12" name="ExaminePoints">
+  <object id="41" name="ritual_table" x="217.539" y="129.347" width="108.573" height="68.2013"/>
+  <object id="42" name="ritual_door" x="241.84" y="31.3569" width="62.7139" height="86.2316"/>
+  <object id="43" name="ritual_post" x="345.318" y="61.146" width="44.6836" height="106.614"/>
+  <object id="44" name="ritual_post" x="154.433" y="123.86" width="43.8997" height="108.181"/>
  </objectgroup>
  <layer id="4" name="Stone" width="16" height="9">
   <data encoding="csv">
