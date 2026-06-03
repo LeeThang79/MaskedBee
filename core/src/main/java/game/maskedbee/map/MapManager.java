@@ -615,12 +615,8 @@ public class MapManager {
                 continue;
             }
             String dest = portal.getName();
-            // player chưa đứng vào portal
-            if (!entityRect.overlaps(rect)) {
-                continue;
-            }
             // PORTAL RIÊNG
-            if ("Old_Corridor.tmx".equals(dest)) {
+            if ("Old_Corridor.tmx".equals(dest) && hasFloorHideLayer()) {
                 if (!isFloorHideOpened()) {
                     return null;
                 }
@@ -652,6 +648,9 @@ public class MapManager {
         if (hideLayer == null) return false;
 
         return !hideLayer.isVisible();
+    }
+    private boolean hasFloorHideLayer() {
+        return map != null && map.getLayers().get("Floor_Hide") != null;
     }
 
     public void openDoor(String doorName) {
@@ -829,6 +828,41 @@ public class MapManager {
                     obj.setVisible(false);
                 }
             }
+        }
+        if ("Library.tmx".equalsIgnoreCase(currentMapName)
+            && "gold_key".equalsIgnoreCase(keyName)) {
+            showLibraryChestNoKey();
+        }
+    }
+    public boolean isKeyCollected(String keyName) {
+        if (keyName == null || keyName.isEmpty()) return false;
+        return collectedKeys.contains(stateKey(keyName));
+    }
+
+    public void showLibraryChestWithKey() {
+        if (!"Library.tmx".equalsIgnoreCase(currentMapName)) return;
+
+        setLayerVisibleSafe("Chest_Close", false);
+        setLayerVisibleSafe("Chest_Open", false); // nếu map cũ còn layer này thì tắt luôn
+        setLayerVisibleSafe("Chest_Open_Key", true);
+        setLayerVisibleSafe("Chest_Open_No_Key", false);
+    }
+
+    public void showLibraryChestNoKey() {
+        if (!"Library.tmx".equalsIgnoreCase(currentMapName)) return;
+
+        setLayerVisibleSafe("Chest_Close", false);
+        setLayerVisibleSafe("Chest_Open", false); // nếu map cũ còn layer này thì tắt luôn
+        setLayerVisibleSafe("Chest_Open_Key", false);
+        setLayerVisibleSafe("Chest_Open_No_Key", true);
+    }
+
+    private void setLayerVisibleSafe(String layerName, boolean visible) {
+        if (map == null) return;
+
+        MapLayer layer = map.getLayers().get(layerName);
+        if (layer != null) {
+            layer.setVisible(visible);
         }
     }
 

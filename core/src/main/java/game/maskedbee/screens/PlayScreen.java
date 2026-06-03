@@ -236,11 +236,14 @@ public class PlayScreen implements Screen {
         }
 
         if (dialogueManager != null) {
+            //Kiểm tra xem thoại có đang bật không
             boolean wasShowing = dialogueManager.isShowing;
+
             dialogueManager.update(delta);
 
+            //Nếu có thoại thì khỏi di chuyển đi
             if (wasShowing) {
-                currentPrompt = "";
+                currentPrompt = ""; // Ẩn luôn gợi ý phím khi thoại đang mở
                 return;
             }
         }
@@ -260,7 +263,7 @@ public class PlayScreen implements Screen {
         if (puzzleLibrary != null) {
             puzzleLibrary.update(myPlayer.hitbox, delta);
         }
-
+        // PuzzleManager xử lý: E gạt cần/gai/cửa, F mở cửa bằng key, nhặt key, đẩy block.
         if (puzzleManager != null) {
             puzzleManager.update(myPlayer, game.map);
         }
@@ -277,12 +280,13 @@ public class PlayScreen implements Screen {
 
             if (nextMap != null) {
                 String currentMap = game.map.getCurrentMapName();
-
+                // Sau khi từ chối Queen, đi vào Exit thì chưa ending ngay.
+                // Mở bảng lựa chọn Continue / Exit.
                 if (isFinalExitPortal(currentMap, nextMap)) {
                     pendingExitEndingType = getExitEndingType();
+
                     state = GameState.EXIT_CHOICE;
                     portalCooldown = 0.7f;
-
                     System.out.println("Exit choice opened. Ending type = " + pendingExitEndingType);
                     return;
                 }
@@ -314,10 +318,13 @@ public class PlayScreen implements Screen {
             }
 
             spawnPlayer(resetSpawnFromMap);
+
             game.map.updateFloorHide(myPlayer);
             updateCamera();
         }
 
+        // Dùng full collision để Player bị chặn bởi tường + cửa tù + block.
+        // Hidden_Room_Collision vẫn xóa được vì PuzzleLibrary xóa nó khỏi wallCollision.
         myPlayer.update(delta, game.map.getFullCollision(), game.map.getStoneCollision());
 
         game.map.updateFloorHide(myPlayer);
@@ -348,6 +355,116 @@ public class PlayScreen implements Screen {
         }
 
         updateCamera();
+    }
+    private boolean isFinalExitPortal(String currentMap, String nextMap) {
+        if (currentMap == null || nextMap == null) return false;
+
+        String lowerNextMap = nextMap.toLowerCase();
+
+        // Case chính của bạn:
+        // Đang ở Exit_Chamber.tmx, portal tên Exit.tmx -> nextMap = map/Exit.tmx
+        if ("Exit_Chamber.tmx".equalsIgnoreCase(currentMap)
+            && lowerNextMap.endsWith("exit.tmx")) {
+            return true;
+        }
+
+        // Dự phòng nếu sau này đặt portal cuối trực tiếp trong Queen_Chamber là Exit.tmx.
+        // Không bắt Exit_Chamber.tmx để tránh chặn nhầm cổng đi sang phòng Exit_Chamber.
+        return "Queen_Chamber.tmx".equalsIgnoreCase(currentMap)
+            && lowerNextMap.endsWith("exit.tmx")
+            && !lowerNextMap.contains("exit_chamber");
+    }
+
+    private String getExitEndingType() {
+        // Chưa có mặt nạ mà đi tới Exit cuối
+        if (!myPlayer.hasMask) {
+            return "no_mask";
+        }
+
+        if (!myPlayer.hasActivatedMask) {
+            return "inactive_mask";
+        }
+
+        // Có mặt nạ và đã từ chối Queen
+        if (refusedQueenEnding) {
+            return "escape";
+        }
+
+        return "escape";
+    }
+
+    private void checkQueenInteraction() {
+        if (!"Queen_Chamber.tmx".equalsIgnoreCase(game.map.getCurrentMapName())) {
+            return;
+        }
+
+        if (!Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            return;
+        }
+
+        if (!myPlayer.hasMask) {
+            System.out.println("Ban can co mat na truoc khi noi chuyen voi Queen.");
+            return;
+        }
+
+        if (!myPlayer.hasActivatedMask) {
+            System.out.println("Ban can kich hoat mat na o Old Chapel truoc.");
+            return;
+        }
+
+        for (RectangleMapObject obj : game.map.getInteractPoints()) {
+            if (!"queen_flower".equals(obj.getName())) {
+                continue;
+            }
+
+            if (myPlayer.hitbox.overlaps(obj.getRectangle())) {
+                state = GameState.QUEEN_CHOICE;
+                currentPrompt = "";
+                System.out.println("Queen choice opened");
+                return;
+            }
+        }
+    }
+    private void handleExitChoiceLogic() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
+
+            continueFromExitChoice();
+            return;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
+
+            goToEnding(pendingExitEndingType);
+        }
+    }
+
+    private void continueFromExitChoice() {
+        state = GameState.RUNNING;
+        portalCooldown = 0.7f;
+        System.out.println("Continue playing");
+    }
+
+    private void goToEnding(String endingType) {
+        AudioManager.getInstance().stopBackgroundMusic(); // tắt nhạc nền
+        System.out.println("Ending type: " + endingType);
+        game.setScreen(new EndingScreen(game, endingType));
+    }
+
+    private void handleQueenChoiceLogic() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
+
+            goToEnding("queen");
+            return;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
+            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
+
+            refuseQueenChoice();
+        }
     }
 
     private void handleCaughtByGuard() {
@@ -410,112 +527,6 @@ public class PlayScreen implements Screen {
         myPlayer.noiseRadius = 0f;
 
         game.map.clearAllProgressState();
-    }
-
-    private boolean isFinalExitPortal(String currentMap, String nextMap) {
-        if (currentMap == null || nextMap == null) return false;
-
-        String lowerNextMap = nextMap.toLowerCase();
-
-        if ("Exit_Chamber.tmx".equalsIgnoreCase(currentMap)
-            && lowerNextMap.endsWith("exit.tmx")) {
-            return true;
-        }
-
-        return "Queen_Chamber.tmx".equalsIgnoreCase(currentMap)
-            && lowerNextMap.endsWith("exit.tmx")
-            && !lowerNextMap.contains("exit_chamber");
-    }
-
-    private String getExitEndingType() {
-        if (!myPlayer.hasMask) {
-            return "no_mask";
-        }
-
-        if (!myPlayer.hasActivatedMask) {
-            return "inactive_mask";
-        }
-
-        if (refusedQueenEnding) {
-            return "escape";
-        }
-
-        return "escape";
-    }
-
-    private void checkQueenInteraction() {
-        if (!"Queen_Chamber.tmx".equalsIgnoreCase(game.map.getCurrentMapName())) {
-            return;
-        }
-
-        if (!Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-            return;
-        }
-
-        if (!myPlayer.hasMask) {
-            System.out.println("Ban can co mat na truoc khi noi chuyen voi Queen.");
-            return;
-        }
-
-        if (!myPlayer.hasActivatedMask) {
-            System.out.println("Ban can kich hoat mat na o Old Chapel truoc.");
-            return;
-        }
-
-        for (RectangleMapObject obj : game.map.getInteractPoints()) {
-            if (!"queen_flower".equals(obj.getName())) {
-                continue;
-            }
-
-            if (myPlayer.hitbox.overlaps(obj.getRectangle())) {
-                state = GameState.QUEEN_CHOICE;
-                currentPrompt = "";
-                System.out.println("Queen choice opened");
-                return;
-            }
-        }
-    }
-
-    private void handleExitChoiceLogic() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
-            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
-
-            continueFromExitChoice();
-            return;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
-            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
-
-            goToEnding(pendingExitEndingType);
-        }
-    }
-
-    private void continueFromExitChoice() {
-        state = GameState.RUNNING;
-        portalCooldown = 0.7f;
-        System.out.println("Continue playing");
-    }
-
-    private void goToEnding(String endingType) {
-        AudioManager.getInstance().stopBackgroundMusic(); // tắt nhạc nền
-        System.out.println("Ending type: " + endingType);
-        game.setScreen(new EndingScreen(game, endingType));
-    }
-
-    private void handleQueenChoiceLogic() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
-            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
-
-            goToEnding("queen");
-            return;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
-            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
-
-            refuseQueenChoice();
-        }
     }
 
     private void refuseQueenChoice() {

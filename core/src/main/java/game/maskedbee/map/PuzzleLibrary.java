@@ -90,6 +90,8 @@ public class PuzzleLibrary {
 
         // Chest open hidden
         setLayerVisible("Chest_Open", false);
+        setLayerVisible("Chest_Open_Key", false);
+        setLayerVisible("Chest_Open_No_Key", false);
         setLayerVisible("Chest_Close", true);
     }
     private void restoreSolvedStateFromMapManager() {
@@ -466,8 +468,19 @@ public class PuzzleLibrary {
     }
 
     private void openChest() {
+        if (mapManager != null && "Library.tmx".equalsIgnoreCase(mapManager.getCurrentMapName())) {
+            if (mapManager.isKeyCollected("gold_key")) {
+                mapManager.showLibraryChestNoKey();
+            } else {
+                mapManager.showLibraryChestWithKey();
+            }
+            return;
+        }
+
         setLayerVisible("Chest_Close", false);
         setLayerVisible("Chest_Open", true);
+        setLayerVisible("Chest_Open_Key", true);
+        setLayerVisible("Chest_Open_No_Key", false);
     }
 
     // =====================================================
