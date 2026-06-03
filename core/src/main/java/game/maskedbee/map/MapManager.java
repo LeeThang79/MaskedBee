@@ -14,6 +14,7 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.maps.tiled.tiles.AnimatedTiledMapTile;
 import com.badlogic.gdx.math.Polyline;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
@@ -519,6 +520,7 @@ public class MapManager {
     }
 
     private void renderObjectLayer(MapLayer layer) {
+        AnimatedTiledMapTile.updateAnimationBaseTime();
         for (MapObject obj : layer.getObjects()) {
             if (obj.isVisible() && obj instanceof TiledMapTileMapObject) {
                 TiledMapTileMapObject tObj = (TiledMapTileMapObject) obj;
@@ -529,6 +531,7 @@ public class MapManager {
                     tObj.getTextureRegion().getRegionWidth(), tObj.getTextureRegion().getRegionHeight(),
                     tObj.getScaleX(), tObj.getScaleY(), tObj.getRotation()
                 );
+                renderer.renderObject(tObj);
             }
         }
     }
