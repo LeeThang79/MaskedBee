@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import game.maskedbee.main.CORE;
+import game.maskedbee.main.AudioManager;
 
 public class FirstScreen implements Screen {
     private final CORE game;
@@ -85,6 +86,8 @@ public class FirstScreen implements Screen {
 
         // 6. Đưa Table chính lên sân khấu
         stage.addActor(mainTable);
+
+        AudioManager.getInstance().playBackgroundMusic("audio/Memories.ogg", 0.4f);
     }
 
     private Table createMenuOption(Texture text, String name, ClickListener clickListener) {
