@@ -77,6 +77,8 @@ public class MapManager {
     private final ObjectMap<String, Boolean> savedSpikeStates = new ObjectMap<>();
     private final ObjectMap<String, Boolean> savedLeverStates = new ObjectMap<>();
 
+    private boolean wasFloorHideTriggered = false; // thêm dòng này
+
     private String stateKey(String objectName) {
         return currentMapName + ":" + objectName;
     }
@@ -975,6 +977,12 @@ public class MapManager {
         // Có player hoặc cocoon đè lên -> ẩn Floor_Hide -> hầm mở
         // Không có gì đè lên -> hiện Floor_Hide -> hầm đóng
         hideLayer.setVisible(!triggered);
+
+        // Chỉ phát âm thanh một lần khi vừa chuyển sang triggered
+        if (triggered && !wasFloorHideTriggered) {
+            AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.6f);
+        }
+        wasFloorHideTriggered = triggered;
 
         // Chỉ khi COCoon/block nằm trên trigger mới lưu checkpoint.
         // Player tự đứng lên trigger chỉ là mở tạm, không được tính là giải puzzle.

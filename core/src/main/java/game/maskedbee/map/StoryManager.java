@@ -67,7 +67,7 @@ public class StoryManager {
     public void checkNewGameIntro(DialogueManager dialogueManager) {
         if (!seenNewGameIntro) {
             String[] introText = {
-                "Tại sao mình lại ở nơi quái dị này? " +
+                "Tại sao mình lại ở nơi này? " +
                     "Phải tìm đường thoát khỏi đây..."
             };
             dialogueManager.startDialogue(introText);
