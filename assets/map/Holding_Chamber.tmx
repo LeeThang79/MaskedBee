@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="25" nextobjectid="134">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="25" nextobjectid="136">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <layer id="1" name="Wall" width="16" height="10">
   <data encoding="csv">
@@ -62,7 +62,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,18,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,38,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -71,9 +71,6 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="25" name="Text">
-  <object id="122" gid="261" x="345.333" y="126.667" width="32" height="32"/>
- </objectgroup>
  <layer id="3" name="Jail" width="16" height="10">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -315,6 +312,7 @@
   <object id="9" x="128" y="152" width="128" height="8"/>
   <object id="90" x="288" y="152" width="128" height="8"/>
   <object id="112" x="193.25" y="93.5" width="29" height="60"/>
+  <object id="135" x="322.875" y="114.545" width="16.375" height="38.9735"/>
  </objectgroup>
  <objectgroup id="8" name="Wall_Collision" locked="1">
   <object id="12" x="117" y="96" width="11" height="202"/>
@@ -343,7 +341,7 @@
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,261,0,0,0,0,
 0,0,0,0,181,182,183,184,185,186,187,188,189,0,0,0,
 0,0,0,0,0,0,0,204,0,206,207,208,209,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
