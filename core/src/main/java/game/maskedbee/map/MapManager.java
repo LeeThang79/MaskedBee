@@ -513,6 +513,17 @@ public class MapManager {
             renderer.getBatch().end();
         }
     }
+    public void renderInteractPoints(OrthographicCamera camera) {
+        if (renderer == null || map == null) return;
+        renderer.setView(camera);
+        renderer.getBatch().begin();
+        for (MapLayer layer : map.getLayers()) {
+            if (layer.getName().contains("Interact")) {
+                renderObjectLayer(layer);
+            }
+        }
+        renderer.getBatch().end();
+    }
 
     public void render(OrthographicCamera camera) {
         renderBackground(camera);
