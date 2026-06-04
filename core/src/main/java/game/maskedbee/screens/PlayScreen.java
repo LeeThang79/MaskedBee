@@ -3,6 +3,7 @@ package game.maskedbee.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -16,6 +17,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+
 import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
@@ -27,10 +29,11 @@ import game.maskedbee.map.PuzzleManager;
 import game.maskedbee.map.StoryManager;
 import game.maskedbee.objects.PushableBlock;
 
-
 public class PlayScreen implements Screen {
     public final CORE game;
     public Player myPlayer;
+
+    private static final String START_MAP = "Cocoon_Chamber.tmx";
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -42,14 +45,16 @@ public class PlayScreen implements Screen {
     private GameState state = GameState.RUNNING;
 
     private boolean refusedQueenEnding = false;
-
-    // escape: có mặt nạ và rời khỏi hive
     private String pendingExitEndingType = "escape";
+
+    private float portalCooldown = 0f;
+    private float guardCatchCooldown = 0f;
 
     private ShapeRenderer shapeRender;
     private BitmapFont font;
     private Rectangle continueBtn;
     private Rectangle quitBtn;
+
     private String currentPrompt = "";
 
     private PuzzleLibrary puzzleLibrary;
@@ -65,8 +70,14 @@ public class PlayScreen implements Screen {
         this.myPlayer = new Player(0, 0);
 
         this.shapeRender = new ShapeRenderer();
-        this.font = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
-        this.font.getData().setScale(0.5f);
+
+        FileHandle customFont = Gdx.files.internal("MaskedBee.fnt");
+        if (customFont.exists()) {
+            this.font = new BitmapFont(customFont);
+            this.font.getData().setScale(0.5f);
+        } else {
+            this.font = new BitmapFont();
+        }
 
         continueBtn = new Rectangle(0, 0, 100, 30);
         quitBtn = new Rectangle(0, 0, 100, 30);
@@ -77,7 +88,11 @@ public class PlayScreen implements Screen {
     }
 
     private void spawnPlayer(String fromMap) {
-        Rectangle spawn = game.map.getSpawnPoint(fromMap);
+        Rectangle spawn = null;
+
+        if (fromMap != null && !fromMap.isEmpty()) {
+            spawn = game.map.getSpawnPoint(fromMap);
+        }
 
         if (spawn == null) {
             spawn = game.map.getPlayerSpawn();
@@ -88,16 +103,29 @@ public class PlayScreen implements Screen {
             myPlayer.y = spawn.y;
             myPlayer.hitbox.setPosition(spawn.x, spawn.y);
         } else {
-            myPlayer.x = 100;
-            myPlayer.y = 100;
-            myPlayer.hitbox.setPosition(100, 100);
-            System.out.println("Cảnh báo: Không tìm thấy điểm Spawn nào trên Map!");
+            float safeX = Math.max(16f, game.map.getMapWidth() / 2f);
+            float safeY = Math.max(16f, game.map.getMapHeight() / 2f);
+
+            myPlayer.x = safeX;
+            myPlayer.y = safeY;
+            myPlayer.hitbox.setPosition(safeX, safeY);
+
+            System.out.println("WARNING: Khong tim thay player_spawn trong map "
+                + game.map.getCurrentMapName()
+                + ", tam spawn o giua map.");
         }
+
+        myPlayer.isHidingAtStone = false;
+        myPlayer.noiseRadius = 0f;
+
+        portalCooldown = 0.45f;
+        guardCatchCooldown = 0f;
     }
 
     private void updateCamera() {
         float mapWidth = game.map.getMapWidth();
         float mapHeight = game.map.getMapHeight();
+
         float halfWidth = viewport.getWorldWidth() / 2f;
         float halfHeight = viewport.getWorldHeight() / 2f;
 
@@ -125,7 +153,6 @@ public class PlayScreen implements Screen {
     }
 
     private void reloadCurrentMapAndRespawn() {
-        // Chết do gai/reset level: gai và cần gạt về trạng thái ban đầu của map.
         game.map.clearSpikeLeverStateForCurrentMap();
 
         game.map.loadMap("map/" + game.map.getCurrentMapName());
@@ -137,13 +164,17 @@ public class PlayScreen implements Screen {
 
     @Override
     public void show() {
-        game.map.loadMap("map/cocoon_chamber.tmx");
+        game.map.loadMap("map/" + START_MAP);
         recreatePuzzleLibrary();
         spawnPlayer(null);
         game.map.updateFloorHide(myPlayer);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         updateCamera();
         storyManager.checkNewGameIntro(dialogueManager); // KÍCH HOẠT THOẠI MỞ ĐẦU GAME
+
+        if (storyManager != null && dialogueManager != null) {
+            storyManager.checkMapEnterEvent("map/" + START_MAP, dialogueManager);
+        }
     }
 
     @Override
@@ -172,16 +203,13 @@ public class PlayScreen implements Screen {
 
         drawGame();
 
-        // VẼ NÚT GỢI Ý ĐÈ LÊN TRÊN MAP, LÊN ĐỈNH ĐẦU PLAYER
         if (!currentPrompt.isEmpty() && state == GameState.RUNNING) {
             game.batch.setProjectionMatrix(camera.combined);
             game.batch.begin();
-            // Chữ được vẽ thụt lùi lại 15 pixel (x) và bay lên 45 pixel (y) so với chân Player
             font.draw(game.batch, currentPrompt, myPlayer.x - 15, myPlayer.y + 45);
             game.batch.end();
         }
 
-        //Vẽ hội thoại lên trên cùng
         if (dialogueManager != null && state == GameState.RUNNING) {
             dialogueManager.draw(game.batch, camera);
         }
@@ -200,7 +228,15 @@ public class PlayScreen implements Screen {
     }
 
     private void updateRunning(float delta) {
-        if(dialogueManager != null) {
+        if (portalCooldown > 0f) {
+            portalCooldown -= delta;
+        }
+
+        if (guardCatchCooldown > 0f) {
+            guardCatchCooldown -= delta;
+        }
+
+        if (dialogueManager != null) {
             //Kiểm tra xem thoại có đang bật không
             boolean wasShowing = dialogueManager.isShowing;
 
@@ -212,7 +248,16 @@ public class PlayScreen implements Screen {
                 return;
             }
         }
-        storyManager.handleExamine(myPlayer.hitbox, game.map.getMap(), dialogueManager,game.map.getPushables(),game.map.getCurrentMapName());
+
+        if (storyManager != null && dialogueManager != null) {
+            storyManager.handleExamine(
+                myPlayer.hitbox,
+                game.map.getMap(),
+                dialogueManager,
+                game.map.getPushables(),
+                game.map.getCurrentMapName()
+            );
+        }
 
         updateInteractionPrompt();
 
@@ -231,29 +276,38 @@ public class PlayScreen implements Screen {
             return;
         }
 
-        String nextMap = game.map.checkPortal(myPlayer.hitbox);
-        if (nextMap != null) {
-            String currentMap = game.map.getCurrentMapName();
-            // Sau khi từ chối Queen, đi vào Exit thì chưa ending ngay.
-            // Mở bảng lựa chọn Continue / Exit.
-            if (isFinalExitPortal(currentMap, nextMap)) {
-                pendingExitEndingType = getExitEndingType();
+        if (portalCooldown <= 0f) {
+            String nextMap = game.map.checkPortal(myPlayer.hitbox);
 
-                state = GameState.EXIT_CHOICE;
-                System.out.println("Exit choice opened. Ending type = " + pendingExitEndingType);
+            if (nextMap != null) {
+                String currentMap = game.map.getCurrentMapName();
+                // Sau khi từ chối Queen, đi vào Exit thì chưa ending ngay.
+                // Mở bảng lựa chọn Continue / Exit.
+                if (isFinalExitPortal(currentMap, nextMap)) {
+                    pendingExitEndingType = getExitEndingType();
+
+                    state = GameState.EXIT_CHOICE;
+                    portalCooldown = 0.7f;
+                    System.out.println("Exit choice opened. Ending type = " + pendingExitEndingType);
+                    return;
+                }
+
+                String lastMap = currentMap;
+
+                game.map.loadMap(nextMap);
+                recreatePuzzleLibrary();
+                spawnPlayer(lastMap);
+                game.map.updateFloorHide(myPlayer);
+                updateCamera();
+
+                if (storyManager != null && dialogueManager != null) {
+                    storyManager.checkMapEnterEvent(nextMap, dialogueManager);
+                }
+
                 return;
             }
-
-            String lastMap = game.map.getCurrentMapName();
-
-            game.map.loadMap(nextMap);
-            recreatePuzzleLibrary();
-            spawnPlayer(lastMap);
-            game.map.updateFloorHide(myPlayer);
-            updateCamera();
-            storyManager.checkMapEnterEvent(nextMap, dialogueManager);
-            return;
         }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             game.map.clearPushableStateForCurrentMap();
             game.map.resetPushables();
@@ -276,9 +330,17 @@ public class PlayScreen implements Screen {
 
         game.map.updateFloorHide(myPlayer);
 
-        for (Guard guard : game.map.guards) {
-            guard.update(delta, myPlayer, game.map.getWallCollision());
+        if (guardCatchCooldown <= 0f) {
+            for (Guard guard : game.map.guards) {
+                boolean caught = guard.update(delta, myPlayer, game.map.getWallCollision());
+
+                if (caught) {
+                    handleCaughtByGuard();
+                    return;
+                }
+            }
         }
+
         for (Boss boss : game.map.bosses) {
             boolean caught = boss.update(
                 delta,
@@ -309,13 +371,9 @@ public class PlayScreen implements Screen {
 
         // Dự phòng nếu sau này đặt portal cuối trực tiếp trong Queen_Chamber là Exit.tmx.
         // Không bắt Exit_Chamber.tmx để tránh chặn nhầm cổng đi sang phòng Exit_Chamber.
-        if ("Queen_Chamber.tmx".equalsIgnoreCase(currentMap)
+        return "Queen_Chamber.tmx".equalsIgnoreCase(currentMap)
             && lowerNextMap.endsWith("exit.tmx")
-            && !lowerNextMap.contains("exit_chamber")) {
-            return true;
-        }
-
-        return false;
+            && !lowerNextMap.contains("exit_chamber");
     }
 
     private String getExitEndingType() {
@@ -324,12 +382,15 @@ public class PlayScreen implements Screen {
             return "no_mask";
         }
 
+        if (!myPlayer.hasActivatedMask) {
+            return "inactive_mask";
+        }
+
         // Có mặt nạ và đã từ chối Queen
         if (refusedQueenEnding) {
             return "escape";
         }
 
-        // Có mặt nạ nhưng bỏ đi mà không nhận lời Queen
         return "escape";
     }
 
@@ -343,7 +404,12 @@ public class PlayScreen implements Screen {
         }
 
         if (!myPlayer.hasMask) {
-            System.out.println("Bạn cần có mặt nạ trước khi nói chuyện với Queen.");
+            System.out.println("Ban can co mat na truoc khi noi chuyen voi Queen.");
+            return;
+        }
+
+        if (!myPlayer.hasActivatedMask) {
+            System.out.println("Ban can kich hoat mat na o Old Chapel truoc.");
             return;
         }
 
@@ -354,30 +420,30 @@ public class PlayScreen implements Screen {
 
             if (myPlayer.hitbox.overlaps(obj.getRectangle())) {
                 state = GameState.QUEEN_CHOICE;
+                currentPrompt = "";
                 System.out.println("Queen choice opened");
                 return;
             }
         }
     }
     private void handleExitChoiceLogic() {
-        // 1: tiếp tục chơi
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
             || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
 
             continueFromExitChoice();
             return;
         }
-        // 2: ra ending tương ứng
-        // - chưa có mặt nạ -> no_mask
-        // - có mặt nạ -> escape
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
             || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
 
             goToEnding(pendingExitEndingType);
         }
     }
+
     private void continueFromExitChoice() {
         state = GameState.RUNNING;
+        portalCooldown = 0.7f;
         System.out.println("Continue playing");
     }
 
@@ -386,15 +452,15 @@ public class PlayScreen implements Screen {
         System.out.println("Ending type: " + endingType);
         game.setScreen(new EndingScreen(game, endingType));
     }
+
     private void handleQueenChoiceLogic() {
-        // 1: chấp nhận thành Queen
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
             || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
 
             goToEnding("queen");
             return;
         }
-        // 2: từ chối, quay lại game
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
             || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
 
@@ -402,9 +468,73 @@ public class PlayScreen implements Screen {
         }
     }
 
+    private void handleCaughtByGuard() {
+        System.out.println("Caught by guard!");
+
+        state = GameState.RUNNING;
+        currentPrompt = "";
+
+        myPlayer.isBeeDisguised = false;
+        myPlayer.isHidingAtStone = false;
+        myPlayer.noiseRadius = 0f;
+
+        portalCooldown = 0.45f;
+        guardCatchCooldown = 0f;
+
+        if (game.map.hasProgressCheckpoint()) {
+            String checkpointMap = game.map.getProgressCheckpointMapName();
+
+            System.out.println("Respawn at solved puzzle checkpoint: " + checkpointMap);
+
+            game.map.loadMap("map/" + checkpointMap);
+            recreatePuzzleLibrary();
+            spawnPlayer(null);
+            game.map.updateFloorHide(myPlayer);
+            updateCamera();
+
+            if (storyManager != null && dialogueManager != null) {
+                storyManager.checkMapEnterEvent("map/" + checkpointMap, dialogueManager);
+            }
+
+            return;
+        }
+
+        System.out.println("No solved puzzle checkpoint. Restart from first map.");
+
+        resetPlayerProgressToStart();
+
+        game.map.loadMap("map/" + START_MAP);
+        recreatePuzzleLibrary();
+        spawnPlayer(null);
+        game.map.updateFloorHide(myPlayer);
+        updateCamera();
+
+        if (storyManager != null && dialogueManager != null) {
+            storyManager.checkMapEnterEvent("map/" + START_MAP, dialogueManager);
+        }
+    }
+
+    private void resetPlayerProgressToStart() {
+        refusedQueenEnding = false;
+        currentPrompt = "";
+
+        myPlayer.hasMask = false;
+        myPlayer.hasActivatedMask = false;
+        myPlayer.hasMaskItem = false;
+        myPlayer.hasKeyItem = false;
+        myPlayer.currentKey = "";
+        myPlayer.isBeeDisguised = false;
+        myPlayer.isHidingAtStone = false;
+        myPlayer.noiseRadius = 0f;
+
+        game.map.clearAllProgressState();
+    }
+
     private void refuseQueenChoice() {
         refusedQueenEnding = true;
         state = GameState.RUNNING;
+        portalCooldown = 0.45f;
+
         System.out.println("Refused queen ending. Exit is now escape ending.");
     }
 
@@ -427,19 +557,22 @@ public class PlayScreen implements Screen {
     private void drawEntities() {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
+
         float playerFootY = myPlayer.hitbox.y;
-        // ===== BLOCK PHÍA SAU PLAYER =====
+
         for (PushableBlock block : game.map.getPushables()) {
             float blockFootY = block.getBounds().y;
+
             if (blockFootY > playerFootY) {
                 block.render(game.batch);
             }
         }
 
         myPlayer.draw(game.batch);
-        // ===== BLOCK PHÍA TRƯỚC PLAYER =====
+
         for (PushableBlock block : game.map.getPushables()) {
             float blockFootY = block.getBounds().y;
+
             if (blockFootY <= playerFootY) {
                 block.render(game.batch);
             }
@@ -465,8 +598,10 @@ public class PlayScreen implements Screen {
         for (Boss boss : game.map.bosses) {
             boss.drawDebug(shapeRender);
         }
+
         shapeRender.end();
     }
+
     private void drawExitChoiceMenu() {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -492,28 +627,13 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        font.draw(
-            game.batch,
-            "Leave the hive?",
-            camera.position.x - 70,
-            camera.position.y + 42
-        );
+        font.draw(game.batch, "Leave the hive?", camera.position.x - 70, camera.position.y + 42);
+        font.draw(game.batch, "1. Continue", camera.position.x - 115, camera.position.y + 4);
+        font.draw(game.batch, "2. Exit", camera.position.x - 115, camera.position.y - 33);
 
-        font.draw(
-            game.batch,
-            "1. Continue",
-            camera.position.x - 115,
-            camera.position.y + 4
-        );
-
-        font.draw(
-            game.batch,
-            "2. Exit",
-            camera.position.x - 115,
-            camera.position.y - 33
-        );
         game.batch.end();
     }
+
     private void drawQueenChoiceMenu() {
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -521,7 +641,6 @@ public class PlayScreen implements Screen {
         shapeRender.setProjectionMatrix(camera.combined);
         shapeRender.begin(ShapeRenderer.ShapeType.Filled);
 
-        // Nền bảng
         shapeRender.setColor(0f, 0f, 0f, 0.78f);
         shapeRender.rect(
             camera.position.x - 190,
@@ -530,7 +649,6 @@ public class PlayScreen implements Screen {
             150
         );
 
-        // Ô lựa chọn
         shapeRender.setColor(Color.DARK_GRAY);
         shapeRender.rect(camera.position.x - 155, camera.position.y - 20, 310, 28);
         shapeRender.rect(camera.position.x - 155, camera.position.y - 58, 310, 28);
@@ -541,36 +659,47 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        font.draw(
-            game.batch,
-            "Queen: Become the new Queen?",
-            camera.position.x - 145,
-            camera.position.y + 45
-        );
-
-        font.draw(
-            game.batch,
-            "1. Accept",
-            camera.position.x - 120,
-            camera.position.y
-        );
-
-        font.draw(
-            game.batch,
-            "2. Refuse",
-            camera.position.x - 120,
-            camera.position.y - 38
-        );
+        font.draw(game.batch, "Queen: Become the new Queen?", camera.position.x - 145, camera.position.y + 45);
+        font.draw(game.batch, "1. Accept", camera.position.x - 120, camera.position.y);
+        font.draw(game.batch, "2. Refuse", camera.position.x - 120, camera.position.y - 38);
 
         game.batch.end();
     }
 
-    // QUÉT BẢN ĐỒ ĐỂ HIỂN THỊ NÚT BẤM
-    // HÀM HỖ TRỢ
     private boolean checkLayerOverlap(String layerName, Rectangle interactRange) {
+        if (game.map.getMap() == null) return false;
+
         MapLayer layer = game.map.getMap().getLayers().get(layerName);
 
-        if (layer != null) {
+        if (layer == null) return false;
+
+        for (MapObject obj : layer.getObjects()) {
+            if (obj instanceof RectangleMapObject) {
+                if (interactRange.overlaps(((RectangleMapObject) obj).getRectangle())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean checkPortalPromptOverlap(Rectangle interactRange) {
+        if (game.map.getMap() == null) return false;
+
+        for (MapLayer layer : game.map.getMap().getLayers()) {
+            if (layer == null) continue;
+
+            String layerName = layer.getName();
+
+            boolean portalLayer =
+                layerName.equals("Exit")
+                    || layerName.contains("_Chamber")
+                    || layerName.contains("Corridor")
+                    || layerName.equals("SpawnPoints");
+
+            if (!portalLayer) continue;
+
             for (MapObject obj : layer.getObjects()) {
                 if (obj instanceof RectangleMapObject) {
                     if (interactRange.overlaps(((RectangleMapObject) obj).getRectangle())) {
@@ -579,47 +708,54 @@ public class PlayScreen implements Screen {
                 }
             }
         }
+
         return false;
     }
 
     private void updateInteractionPrompt() {
         currentPrompt = "";
 
-        // Tạo vùng cảm biến
         Rectangle interactRange = new Rectangle(
-            myPlayer.hitbox.x - 5, myPlayer.hitbox.y - 5,
-            myPlayer.hitbox.width + 10, myPlayer.hitbox.height + 10
+            myPlayer.hitbox.x - 5f,
+            myPlayer.hitbox.y - 5f,
+            myPlayer.hitbox.width + 10f,
+            myPlayer.hitbox.height + 10f
         );
 
-        // QUÉT ĐIỂM ĐIỀU TRA VẬT ĐỘNG PUSHABLE
         if (game.map.getPushables() != null) {
             for (PushableBlock block : game.map.getPushables()) {
                 if (interactRange.overlaps(block.getBounds())) {
-                    currentPrompt = "[G]"; return;
+                    currentPrompt = "[G]";
+                    return;
                 }
             }
         }
 
-        // QUÉT ĐIỂM ĐIỀU TRA VẬT TĨNH
         if (checkLayerOverlap("ExaminePoints", interactRange)) {
-            currentPrompt = "[G]"; return;
+            currentPrompt = "[G]";
+            return;
         }
 
-        // QUÉT CỬA KHÓA
         if (checkLayerOverlap("Doors", interactRange)) {
-            currentPrompt = "[F]"; return;
+            currentPrompt = "[F]";
+            return;
         }
 
-        // QUÉT CẦN GẠT / GIẢI ĐỐ
+        if (checkLayerOverlap("Queen_Interact", interactRange)
+            || checkLayerOverlap("Chapel_Interact", interactRange)) {
+            currentPrompt = "[E]";
+            return;
+        }
+
         for (int i = 0; i <= 5; i++) {
             if (checkLayerOverlap("Interact_Point_" + i, interactRange)) {
-                currentPrompt = "[E]"; return;
+                currentPrompt = "[E]";
+                return;
             }
         }
 
-        // QUÉT CỬA QUA MÀN
-        if (checkLayerOverlap("SpawnPoints", interactRange)) {
-            currentPrompt = "[SPACE]"; return;
+        if (checkPortalPromptOverlap(interactRange)) {
+            currentPrompt = "[SPACE]";
         }
     }
 
@@ -667,9 +803,10 @@ public class PlayScreen implements Screen {
 
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
-        font.getData().setScale(0.5f);
+
         font.draw(game.batch, "Continue", continueBtn.x + 20, continueBtn.y + 20);
         font.draw(game.batch, "Quit", quitBtn.x + 35, quitBtn.y + 20);
+
         game.batch.end();
     }
 
