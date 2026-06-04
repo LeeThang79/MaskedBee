@@ -96,7 +96,17 @@ public class MapManager {
             + Math.round(obj.getX()) + ":"
             + Math.round(obj.getY());
     }
-
+    public void renderInteractPoints(OrthographicCamera camera) {
+        if (renderer == null || map == null) return;
+        renderer.setView(camera);
+        renderer.getBatch().begin();
+        for (MapLayer layer : map.getLayers()) {
+            if (layer.getName().contains("Interact")) {
+                renderObjectLayer(layer);
+            }
+        }
+        renderer.getBatch().end();
+    }
 
 
     public void loadMap(String fileName) {
@@ -509,9 +519,10 @@ public class MapManager {
                     && !n.equals("Overhead")
                     && !n.equals("Guards")
                     && !n.equals("Pushable")
-                    && !n.equals("Small_Cocon")
+                    && !n.equals("Small_Cocoon")
                     && !n.equals("Keys")
-                    && !n.equals("Hide_Trigger")) {
+                    && !n.equals("Hide_Trigger")
+                    && !n.contains("Interact_Point_0")) {
                     renderObjectLayer(layer);
                 }
             }
@@ -533,6 +544,14 @@ public class MapManager {
             }
             renderer.getBatch().end();
         }
+        // Interact layers
+        renderer.getBatch().begin();
+        for (MapLayer layer : map.getLayers()) {
+            if (layer.getName().contains("Interact_Point_0")) {
+                renderObjectLayer(layer);
+            }
+        }
+        renderer.getBatch().end();
     }
 
     public void render(OrthographicCamera camera) {
