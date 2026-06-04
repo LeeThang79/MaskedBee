@@ -99,7 +99,7 @@
   <object id="167" x="416" y="192" width="32" height="11"/>
  </objectgroup>
  <objectgroup id="13" name="Player_Spawn">
-  <object id="132" name="Player_Spawn" x="245" y="180">
+  <object id="132" name="player_spawn" x="245" y="180">
    <point/>
   </object>
  </objectgroup>

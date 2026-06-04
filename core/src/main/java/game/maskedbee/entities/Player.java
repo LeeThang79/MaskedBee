@@ -24,6 +24,7 @@ public class Player extends Entity {
     public float noiseRadius = 0f;
     // Chìa khóa hiện tại Player đang giữ
     public boolean hasMask = false;
+    public boolean hasActivatedMask = false;
     public boolean isBeeDisguised = false;
     public String currentKey = "";
 
@@ -171,7 +172,7 @@ public class Player extends Entity {
                 System.out.println("Bee disguise: " + isBeeDisguised);
             } else {
                 isBeeDisguised = false;
-                System.out.println("Bạn chưa có mặt nạ nên chưa thể mặc bee.");
+                System.out.println("Ban chua co mat na nen chua the mac bee.");
             }
         }
         // Bấm F để vào / thoát núp cột
