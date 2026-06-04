@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="25" nextobjectid="134">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="26" nextobjectid="135">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <layer id="1" name="Wall" width="16" height="10">
   <data encoding="csv">
@@ -310,6 +310,9 @@
   <object id="93" name="player_spawn" x="192" y="256">
    <point/>
   </object>
+ </objectgroup>
+ <objectgroup id="25" name="Prisoner_Interact">
+  <object id="134" name="prisoner" x="320" y="128" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="6" name="Jail_Collision">
   <object id="9" x="128" y="152" width="128" height="8"/>
