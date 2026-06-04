@@ -460,7 +460,7 @@ public class MapManager {
         return null;
     }
 
-    public void renderBackground(OrthographicCamera camera) {
+    public void renderBackground(OrthographicCamera camera, boolean isMasked) {
         if (renderer == null || map == null) return;
 
         renderer.setView(camera);
@@ -469,6 +469,18 @@ public class MapManager {
         for (MapLayer layer : map.getLayers()) {
             if (layer.isVisible() && layer instanceof TiledMapTileLayer) {
                 String layerName = layer.getName();
+
+                // ================================================================
+                // LOGIC LỌC LAYER THEO MẶT NẠ
+                // ================================================================
+                if (layerName.equals("Queen_Blood") && !isMasked) {
+                    continue; // Nếu KHÔNG đeo mặt nạ -> Không vẽ Queen_Blood
+                }
+                if (layerName.equals("Blood") && isMasked) {
+                    continue; // Nếu đeo mặt nạ -> Không vẽ Blood
+                }
+                // ================================================================
+
                 if (!layerName.equals("Overhead") && !layerName.equals("Small_Cocon")) {
                     renderer.renderTileLayer((TiledMapTileLayer) layer);
                 }
@@ -497,12 +509,18 @@ public class MapManager {
         renderer.getBatch().end();
     }
 
-    public void renderForeground(OrthographicCamera camera) {
+    public void renderForeground(OrthographicCamera camera, boolean isMasked) {
         if (renderer == null || map == null) return;
 
         renderer.setView(camera);
         MapLayer overhead = map.getLayers().get("Overhead");
         if (overhead != null && overhead.isVisible()) {
+
+            // Kiểm tra nếu layer Overhead hoặc các sub-layer chứa tên máu theo cơ chế mặt nạ
+            String layerName = overhead.getName();
+            if (layerName.equals("Queen_Blood") && !isMasked) return;
+            if (layerName.equals("Blood") && isMasked) return;
+
             renderer.getBatch().begin();
             if (overhead instanceof TiledMapTileLayer) {
                 renderer.renderTileLayer((TiledMapTileLayer) overhead);
@@ -513,9 +531,9 @@ public class MapManager {
         }
     }
 
-    public void render(OrthographicCamera camera) {
-        renderBackground(camera);
-        renderForeground(camera);
+    public void render(OrthographicCamera camera, boolean isMasked) {
+        renderBackground(camera, isMasked);
+        renderForeground(camera, isMasked);
     }
 
     private void renderObjectLayer(MapLayer layer) {

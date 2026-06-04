@@ -143,6 +143,7 @@ public class PlayScreen implements Screen {
         game.map.updateFloorHide(myPlayer);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         updateCamera();
+        storyManager.checkNewGameIntro(dialogueManager); // KÍCH HOẠT THOẠI MỞ ĐẦU GAME
     }
 
     @Override
@@ -413,13 +414,13 @@ public class PlayScreen implements Screen {
         float sortY = game.map.getSortY();
 
         if (myPlayer.y < sortY) {
-            game.map.renderBackground(camera);
-            game.map.renderForeground(camera);
+            game.map.renderBackground(camera, myPlayer.isBeeDisguised);
+            game.map.renderForeground(camera, myPlayer.isBeeDisguised);
             drawEntities();
         } else {
-            game.map.renderBackground(camera);
+            game.map.renderBackground(camera, myPlayer.isBeeDisguised);
             drawEntities();
-            game.map.renderForeground(camera);
+            game.map.renderForeground(camera, myPlayer.isBeeDisguised);
         }
     }
 

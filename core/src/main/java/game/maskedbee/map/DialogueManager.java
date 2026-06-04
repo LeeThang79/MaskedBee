@@ -28,7 +28,7 @@ public class DialogueManager {
     public DialogueManager() {
         this.shapeRenderer = new ShapeRenderer();
         this.font = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
-        this.font.getData().setScale(0.3f);
+        this.font.getData().setScale(0.4f);
         this.dialogueLines = new Array<>();
     }
 
@@ -93,7 +93,7 @@ public class DialogueManager {
         float viewWidth = camera.viewportWidth;
         float viewHeight = camera.viewportHeight;
 
-        float boxWidth = viewWidth * 0.8f; // Rộng 80% màn hình
+        float boxWidth = viewWidth * 0.9f; // Rộng 80% màn hình
         float boxHeight = 80f;
         float boxX = camX - (boxWidth / 2f);
         float boxY = camY - (viewHeight / 2f) + 10f; // Cách đáy 10 pixel
@@ -140,17 +140,37 @@ public class DialogueManager {
         // Chữ cho khung nhỏ (Có thể ép nhỏ font xuống một chút cho đẹp)
         font.getData().setScale(originalScale * 0.8f);
         // Vì font bạn đã ép qua Hiero nên giờ gõ tiếng Việt có dấu vô tư!
-        font.draw(batch, "Bấm G để tiếp tục", smallBoxX + 10f, smallBoxY + smallBoxHeight - 6f);
+        font.draw(batch, "Cô gái bí ẩn", smallBoxX + 10f, smallBoxY + smallBoxHeight - 6f);
 
         // Trả lại cỡ chữ bình thường và vẽ chữ cho khung to
         font.getData().setScale(originalScale);
-        font.draw(batch, currentTextToDraw, boxX + 10f, boxY + boxHeight - 10f);
+        // Dòng mới: Tự động xuống dòng khi chữ chạm vách khung thoại
+        font.draw(
+            batch,
+            currentTextToDraw,
+            boxX + 15f,                          // Cách lề trái 15px
+            boxY + boxHeight - 15f,              // Cách lề trên 15px
+            boxWidth - 30f,                      // Chiều rộng tối đa của vùng chữ (trừ hao 2 bên viền)
+            com.badlogic.gdx.utils.Align.left,   // Căn lề trái
+            true                                 // Bật tính năng tự động xuống dòng (Wrap)
+        );
 
-        // Vẽ nút nhấp nháy báo hiệu "Bấm tiếp" ở góc phải
         if (characterIndex >= dialogueLines.get(currentLineIndex).length()) {
+            // Thu nhỏ font một chút để dòng hướng dẫn trông tinh tế hơn
+            font.getData().setScale(originalScale * 0.75f);
+
+            // Toạ độ X: Lùi lại khoảng 95 pixel so với mép phải khung to (Vừa đủ cho cụm chữ)
+            float promptX = boxX + boxWidth - 90f;
+            // Toạ độ Y: Cách cạnh đáy khung to 15 pixel
+            float promptY = boxY + 15f;
+
+            // Tạo hiệu ứng nhấp nháy theo thời gian thực (Cứ 500ms đổi trạng thái ẩn/hiện)
             if ((System.currentTimeMillis() / 500) % 2 == 0) {
-                font.draw(batch, "▼", boxX + boxWidth - 20f, boxY + 20f);
+                font.draw(batch, "Bấm G để tiếp tục", promptX, promptY);
             }
+
+            // Trả lại scale gốc để tránh lỗi size font ở frame tiếp theo
+            font.getData().setScale(originalScale);
         }
         batch.end();
     }

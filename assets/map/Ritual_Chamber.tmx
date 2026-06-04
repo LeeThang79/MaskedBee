@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="13" nextobjectid="45">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="45">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <tileset firstgid="301" source="stone.tsx"/>
- <layer id="1" name="Floor" width="16" height="9">
+ <tileset firstgid="325" source="bookself.tsx"/>
+ <layer id="1" name="Floor" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,
@@ -15,7 +16,7 @@
 0,0,0,0,0,0,0,0,41,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="2" name="Wall" width="16" height="9">
+ <layer id="2" name="Wall" width="16" height="9" locked="1">
   <data encoding="csv">
 44,44,44,28,22,22,22,22,22,22,22,22,22,27,44,44,
 44,44,44,6,42,42,42,42,42,42,42,42,42,26,44,44,
@@ -28,7 +29,20 @@
 44,44,44,8,2,2,2,4,0,1,2,2,2,7,44,44
 </data>
  </layer>
- <layer id="3" name="Door_Open" width="16" height="9">
+ <layer id="13" name="Blood" width="16" height="9" locked="1">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,398,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,412,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="Door_Open" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,31,0,0,0,0,0,0,0,
@@ -54,7 +68,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="13" name="Doors">
+ <objectgroup id="13" name="Doors" locked="1">
   <object id="41" name="door_exit" x="256" y="32" width="32" height="64">
    <properties>
     <property name="keyName" value="gold_key"/>
@@ -62,13 +76,13 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="12" name="ExaminePoints">
+ <objectgroup id="12" name="ExaminePoints" locked="1">
   <object id="41" name="ritual_table" x="217.539" y="129.347" width="108.573" height="68.2013"/>
   <object id="42" name="ritual_door" x="241.84" y="31.3569" width="62.7139" height="86.2316"/>
   <object id="43" name="ritual_post" x="345.318" y="119.813" width="44.6836" height="47.9473"/>
   <object id="44" name="ritual_post" x="154.433" y="180.527" width="43.8997" height="51.5143"/>
  </objectgroup>
- <layer id="4" name="Stone" width="16" height="9">
+ <layer id="4" name="Stone" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -86,7 +100,7 @@
   <object id="3" x="224" y="160" width="96" height="32"/>
   <object id="45" x="352" y="128" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="9" name="Wall_Collision">
+ <objectgroup id="9" name="Wall_Collision" locked="1">
   <object id="12" x="128" y="64" width="127.5" height="32"/>
   <object id="15" x="288" y="64" width="128" height="32"/>
   <object id="16" x="128" y="256" width="128" height="11.136"/>
@@ -100,7 +114,7 @@
   <object id="41" x="117" y="64" width="11" height="96"/>
   <object id="42" x="96" y="160" width="2" height="32"/>
   <object id="43" x="256" y="286" width="32" height="2"/>
-  <object id="44" x="256" y="75" width="32" height="5"/>
+  <object id="44" x="255.545" y="84" width="32.4545" height="5"/>
  </objectgroup>
  <objectgroup id="6" name="Cocoon_Chamber" locked="1">
   <object id="30" name="Cocoon_Chamber.tmx" x="96" y="160" width="32" height="32"/>
@@ -108,11 +122,11 @@
  <objectgroup id="7" name="Corridor_Chamber" locked="1">
   <object id="29" name="Corridor.tmx" x="256" y="256" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="8" name="Holding_Chamber">
+ <objectgroup id="8" name="Holding_Chamber" locked="1">
   <object id="28" name="Holding_Chamber.tmx" x="256" y="80" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="10" name="SpawnPoints">
-  <object id="31" name="Holding_Chamber.tmx" x="272" y="121">
+ <objectgroup id="10" name="SpawnPoints" locked="1">
+  <object id="31" name="Holding_Chamber.tmx" x="258.045" y="104.33">
    <point/>
   </object>
   <object id="33" name="Corridor.tmx" x="266" y="277">
