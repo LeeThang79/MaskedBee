@@ -870,12 +870,6 @@ public class PlayScreen implements Screen {
                 return;
             }
         }
-        for (RectangleMapObject obj : game.map.getInteractPoints()) {
-            if (obj != null && interactRange.overlaps(obj.getRectangle())) {
-                currentPrompt = "[E]";
-                return;
-            }
-        }
 
         if (checkPortalPromptOverlap(interactRange)) {
             currentPrompt = "[SPACE]";
