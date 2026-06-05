@@ -48,6 +48,11 @@ public class PlayScreen implements Screen {
     private GameState state = GameState.RUNNING;
 
     private boolean refusedQueenEnding = false;
+    private boolean rescuedPrisoner = false;
+
+    private boolean waxCountdownStarted = false;
+    private float waxCountdownTimer = 0f;
+    private static final float WAX_ESCAPE_TIME = 120f;
     private String pendingExitEndingType = "escape";
 
     private float portalCooldown = 0f;
@@ -241,6 +246,9 @@ public class PlayScreen implements Screen {
             menuFont.draw(game.batch, currentPrompt, myPlayer.x - 15, myPlayer.y + 45);
             game.batch.end();
         }
+        if (waxCountdownStarted && state == GameState.RUNNING) {
+            drawWaxCountdownTimer();
+        }
 
         if (dialogueManager != null && state == GameState.RUNNING) {
             dialogueManager.draw(game.batch, camera);
@@ -266,6 +274,9 @@ public class PlayScreen implements Screen {
 
         if (guardCatchCooldown > 0f) {
             guardCatchCooldown -= delta;
+        }
+        if (updateWaxCountdown(delta)) {
+            return;
         }
 
         if (dialogueManager != null) {
@@ -300,6 +311,7 @@ public class PlayScreen implements Screen {
         if (puzzleManager != null) {
             puzzleManager.update(myPlayer, game.map);
         }
+        handlePrisonerAndWaxEndingInteraction();
 
         checkQueenInteraction();
 
@@ -316,8 +328,16 @@ public class PlayScreen implements Screen {
                 // Sau khi từ chối Queen, đi vào Exit thì chưa ending ngay.
                 // Mở bảng lựa chọn Continue / Exit.
                 if (isFinalExitPortal(currentMap, nextMap)) {
-                    pendingExitEndingType = getExitEndingType();
+                    // Nếu đang chạy timer Wax Lab thì thoát kịp -> ending riêng
+                    if (waxCountdownStarted) {
+                        waxCountdownStarted = false;
+                        waxCountdownTimer = 0f;
 
+                        goToEnding("lab_escape");
+                        return;
+                    }
+
+                    pendingExitEndingType = getExitEndingType();
                     state = GameState.EXIT_CHOICE;
                     portalCooldown = 0.7f;
                     System.out.println("Exit choice opened. Ending type = " + pendingExitEndingType);
@@ -389,6 +409,25 @@ public class PlayScreen implements Screen {
 
         updateCamera();
     }
+    private void drawWaxCountdownTimer() {
+        int secondsLeft = Math.max(0, (int) Math.ceil(waxCountdownTimer));
+        int minutes = secondsLeft / 60;
+        int seconds = secondsLeft % 60;
+
+        String text = String.format("SELF-DESTRUCT %02d:%02d", minutes, seconds);
+
+        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.begin();
+
+        font.draw(
+            game.batch,
+            text,
+            camera.position.x - viewport.getWorldWidth() / 2f + 12f,
+            camera.position.y + viewport.getWorldHeight() / 2f - 12f
+        );
+
+        game.batch.end();
+    }
     private boolean isFinalExitPortal(String currentMap, String nextMap) {
         if (currentMap == null || nextMap == null) return false;
 
@@ -424,6 +463,82 @@ public class PlayScreen implements Screen {
         }
 
         return "escape";
+    }
+    private void handlePrisonerAndWaxEndingInteraction() {
+        if (!Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+            return;
+        }
+
+        String currentMap = game.map.getCurrentMapName();
+
+        // 1. Cứu tù nhân ở Holding_Chamber
+        if ("Holding_Chamber.tmx".equalsIgnoreCase(currentMap)) {
+            if (isNearInteractObject("prisoner", "prisoner_interact")) {
+                rescuedPrisoner = true;
+                System.out.println("Prisoner rescued. Wax pump can now be activated.");
+                return;
+            }
+        }
+
+        // 2. Kích hoạt Wax_Pumb sau khi đã cứu tù nhân
+        if ("Wax_Pumb.tmx".equalsIgnoreCase(currentMap)
+            || "Wax_Pump.tmx".equalsIgnoreCase(currentMap)) {
+
+            if (!isNearInteractObject("wax_star", "wax_control", "wax_vent", "wax_pump")) {
+                return;
+            }
+
+            if (!rescuedPrisoner) {
+                System.out.println("You need to rescue the prisoner first.");
+                return;
+            }
+
+            if (waxCountdownStarted) {
+                System.out.println("Countdown already started.");
+                return;
+            }
+
+            waxCountdownStarted = true;
+            waxCountdownTimer = WAX_ESCAPE_TIME;
+
+            System.out.println("Wax lab self-destruct started! Escape in 2 minutes.");
+        }
+    }
+
+    private boolean isNearInteractObject(String... names) {
+        for (RectangleMapObject obj : game.map.getInteractPoints()) {
+            if (obj == null || obj.getName() == null) {
+                continue;
+            }
+
+            for (String name : names) {
+                if (name.equalsIgnoreCase(obj.getName())
+                    && myPlayer.hitbox.overlaps(obj.getRectangle())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private boolean updateWaxCountdown(float delta) {
+        if (!waxCountdownStarted) {
+            return false;
+        }
+
+        waxCountdownTimer -= delta;
+
+        if (waxCountdownTimer <= 0f) {
+            waxCountdownStarted = false;
+            waxCountdownTimer = 0f;
+
+            System.out.println("Wax lab exploded!");
+            goToEnding("lab_explosion");
+            return true;
+        }
+
+        return false;
     }
 
     private void checkQueenInteraction() {
@@ -560,6 +675,9 @@ public class PlayScreen implements Screen {
     private void resetPlayerProgressToStart() {
         refusedQueenEnding = false;
         currentPrompt = "";
+        rescuedPrisoner = false;
+        waxCountdownStarted = false;
+        waxCountdownTimer = 0f;
 
         myPlayer.hasMask = false;
         myPlayer.hasActivatedMask = false;

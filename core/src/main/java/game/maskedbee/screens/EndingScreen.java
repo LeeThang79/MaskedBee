@@ -77,7 +77,16 @@ public class EndingScreen implements Screen {
             drawCentered("ENDING: UNAWAKENED MASK", screenWidth, screenHeight * 0.68f);
             drawCentered("You found the mask, but never awakened its truth.", screenWidth, screenHeight * 0.56f);
             drawCentered("The hive let you leave, but not as yourself.", screenWidth, screenHeight * 0.49f);
-        } else {
+        } else if ("lab_escape".equalsIgnoreCase(endingType)) {
+            drawCentered("ENDING: ESCAPE FROM THE WAX LAB", screenWidth, screenHeight * 0.68f);
+            drawCentered("You freed the prisoner and triggered the wax pump.", screenWidth, screenHeight * 0.56f);
+            drawCentered("The hive collapsed behind you as you escaped.", screenWidth, screenHeight * 0.49f);
+        }
+        else if ("lab_explosion".equalsIgnoreCase(endingType)) {
+            drawCentered("ENDING: MELTDOWN", screenWidth, screenHeight * 0.68f);
+            drawCentered("The wax lab exploded before you could escape.", screenWidth, screenHeight * 0.56f);
+            drawCentered("Your journey ends in the burning hive.", screenWidth, screenHeight * 0.49f);
+        }else {
             drawCentered("ENDING", screenWidth, screenHeight * 0.68f);
             drawCentered("The story ends here.", screenWidth, screenHeight * 0.56f);
         }

@@ -308,11 +308,10 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="25" name="ExaminePoints" locked="1">
-  <object id="136" name="holding_special" x="350.818" y="67" width="34.2727" height="27.9091"/>
-  <object id="137" name="holding_skull" x="192.182" y="92.7614" width="34.7273" height="34.6932"/>
+ <objectgroup id="25" name="Prisoner_Interact">
+  <object id="134" name="prisoner" x="320" y="128" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="6" name="Jail_Collision" locked="1">
+ <objectgroup id="6" name="Jail_Collision">
   <object id="9" x="128" y="152" width="128" height="8"/>
   <object id="90" x="288" y="152" width="128" height="8"/>
   <object id="112" x="193.25" y="93.5" width="29" height="60"/>
