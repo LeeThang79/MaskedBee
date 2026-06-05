@@ -34,22 +34,11 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="16" name="ExaminePoints" visible="0">
-  <object id="38" name="wax_tank" x="218.387" y="36.3172" width="84.7402" height="138.974"/>
-  <object id="39" name="wax_venti" x="181.102" y="134.132" width="24.6957" height="28.5695"/>
-  <object id="40" name="wax_pipe" x="160.764" y="38.2541" width="14.0427" height="62.4656"/>
-  <object id="41" name="wax_pipe" x="191.997" y="38.012" width="14.0427" height="62.4656"/>
-  <object id="42" name="wax_pipe" x="338.718" y="38.012" width="14.0427" height="33.4118"/>
-  <object id="43" name="wax_pipe" x="351.758" y="49.0672" width="14.0427" height="33.4118" rotation="270.281"/>
-  <object id="44" name="wax_pipe" x="127.566" y="49.9936" width="14.0427" height="39.2218" rotation="270.228"/>
-  <object id="46" name="wax_pipe" x="328.065" y="75.7819" width="19.8535" height="63.434"/>
-  <object id="47" name="wax_pipe" x="345.335" y="89.0844" width="21.2441" height="38.8219" rotation="270.662"/>
-  <object id="48" name="wax_pipe" x="346.255" y="119.563" width="21.2441" height="38.8219" rotation="270.662"/>
-  <object id="49" name="wax_pipe" x="345.287" y="184.934" width="21.2441" height="38.8219" rotation="270.662"/>
+ <objectgroup id="16" name="ExaminePoints" locked="1">
+  <object id="38" name="wax_tank" x="218.387" y="129.451" width="84.7402" height="45.8401"/>
+  <object id="39" name="wax_venti" x="181.102" y="134.132" width="27.0595" height="28.5695"/>
   <object id="50" name="wax_pipe" x="347.244" y="219.673" width="21.2441" height="47.0927" rotation="180.33"/>
-  <object id="51" name="wax_pipe" x="275.092" y="191.568" width="16.3853" height="51.3942" rotation="270.662"/>
-  <object id="52" name="wax_pipe" x="247.205" y="180.604" width="13.9644" height="35.9279" rotation="292.493"/>
-  <object id="53" name="wax_pipe" x="304.557" y="156.19" width="16.8863" height="39.8742" rotation="270.662"/>
+  <object id="51" name="wax_pipe" x="253.799" y="191.322" width="16.3853" height="72.6889" rotation="270.662"/>
   <object id="54" name="wax_pipe" x="129.804" y="154.912" width="13.4802" height="41.7271" rotation="270.662"/>
  </objectgroup>
  <objectgroup id="5" name="Queen_Chamber" locked="1">
@@ -97,7 +86,7 @@
  <layer id="6" name="Pumb" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,14,15,16,17,18,0,0,0,0,0,
+0,0,0,0,0,0,14,15,16,17,0,0,0,0,0,0,
 0,0,0,0,0,0,0,35,36,37,0,0,0,0,0,0,
 0,0,0,0,0,0,54,55,56,57,58,0,0,0,0,0,
 0,0,0,0,72,73,74,75,76,77,78,0,0,0,0,0,

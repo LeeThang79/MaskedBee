@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="25" nextobjectid="136">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="26" nextobjectid="138">
  <tileset firstgid="1" source="wallfloor.tsx"/>
- <layer id="1" name="Wall" width="16" height="10">
+ <layer id="1" name="Wall" width="16" height="10" locked="1">
   <data encoding="csv">
 44,44,44,28,23,23,23,23,23,23,23,23,23,27,44,44,
 44,44,44,6,42,42,42,42,42,42,42,42,42,26,44,44,
@@ -15,7 +15,7 @@
 44,44,44,8,2,2,2,4,0,1,2,2,2,7,44,44
 </data>
  </layer>
- <layer id="24" name="Ventilation" width="16" height="10">
+ <layer id="24" name="Ventilation" width="16" height="10" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -29,7 +29,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="2" name="Ground" width="16" height="10">
+ <layer id="2" name="Ground" width="16" height="10" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -43,7 +43,7 @@
 0,0,0,0,0,0,0,0,41,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="24" name="Block" width="16" height="10">
+ <layer id="24" name="Block" width="16" height="10" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -57,7 +57,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="23" name="Prisoner" width="16" height="10">
+ <layer id="23" name="Prisoner" width="16" height="10" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -71,11 +71,11 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="3" name="Jail" width="16" height="10">
+ <layer id="3" name="Jail" width="16" height="10" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,261,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,201,202,203,0,205,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -85,7 +85,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="16" name="Door">
+ <objectgroup id="16" name="Door" locked="1">
   <object id="80" name="jail_door" gid="210" x="256" y="128" width="32" height="32">
    <properties>
     <property name="isOpen" type="bool" value="false"/>
@@ -97,7 +97,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="15" name="Switch">
+ <objectgroup id="15" name="Switch" locked="1">
   <object id="77" gid="126" x="128" y="256" width="32" height="32">
    <properties>
     <property name="color" value="blue"/>
@@ -125,7 +125,7 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="14" name="Spikes">
+ <objectgroup id="14" name="Spikes" locked="1">
   <object id="34" gid="171" x="588.5" y="203.5" width="32" height="32"/>
   <object id="35" gid="171" x="583" y="246" width="32" height="32"/>
   <object id="64" gid="169" x="224" y="224" width="32" height="32">
@@ -297,14 +297,14 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="5" name="Ritual_Chamber">
+ <objectgroup id="5" name="Ritual_Chamber" locked="1">
   <object id="24" name="Ritual_Chamber.tmx" x="256" y="288" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="18" name="Player_Spawn">
-  <object id="91" name="player_spawn" x="192" y="256">
+ <objectgroup id="18" name="Player_Spawn" locked="1">
+  <object id="91" name="player_spawn" x="196.75" y="284.75">
    <point/>
   </object>
-  <object id="93" name="player_spawn" x="192" y="256">
+  <object id="93" name="player_spawn" x="196.75" y="284.75">
    <point/>
   </object>
  </objectgroup>
@@ -328,23 +328,23 @@
   <object id="100" x="160" y="266" width="28" height="22"/>
   <object id="101" x="320" y="169" width="28" height="22"/>
  </objectgroup>
- <objectgroup id="7" name="Jail_Door_Collision">
+ <objectgroup id="7" name="Jail_Door_Collision" locked="1">
   <object id="11" name="jail_door_hitbox" x="256" y="140" width="32" height="20">
    <properties>
     <property name="Name" value="jail_door_hitbox"/>
    </properties>
   </object>
  </objectgroup>
- <objectgroup id="9" name="SpawnPoints">
-  <object id="25" name="Ritual_Chamber.tmx" x="271.096" y="279.251">
+ <objectgroup id="9" name="SpawnPoints" locked="1">
+  <object id="25" name="Ritual_Chamber.tmx" x="259.096" y="304.126">
    <point/>
   </object>
  </objectgroup>
- <layer id="20" name="Overhead" width="16" height="10">
+ <layer id="20" name="Overhead" width="16" height="10" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,261,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,181,182,183,184,185,186,187,188,189,0,0,0,
 0,0,0,0,0,0,0,204,0,206,207,208,209,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
