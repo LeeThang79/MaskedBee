@@ -27,10 +27,6 @@ public class FirstScreen implements Screen {
     private Viewport viewport;
     private OrthographicCamera camera;
     private Texture background;
-    private Texture masked;
-    private Texture newGame;
-    private Texture options;
-    private Texture quit;
     private Texture pointer;
 
     private BitmapFont fontMenu;
@@ -58,8 +54,6 @@ public class FirstScreen implements Screen {
 
         stage = new Stage(viewport, game.batch);
         Gdx.input.setInputProcessor(stage); // Cho phép sân khấu nhận tương tác chuột/phím
-
-        //font = new BitmapFont();
 
         // =========================================================================
         // KHỞI TẠO VÀ GENERATE FONT TỪ FILE .TTF
