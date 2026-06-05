@@ -22,8 +22,8 @@ public class Boss extends Entity {
 
     public State currentState = State.PATROL;
 
-    public float patrolSpeed = 40f;
-    public float chaseSpeed = 70f;
+    public float patrolSpeed = 45f;
+    public float chaseSpeed = 185f;
 
     public float visionRadius = 130f;
     public float viewAngle = 60f;
@@ -33,7 +33,7 @@ public class Boss extends Entity {
     private float lostSightTimer = 0f;
     private float searchTimer = 0f;
 
-    private static final float ALERT_TIME = 0.35f;
+    private static final float ALERT_TIME = 0f;
     private static final float LOSE_SIGHT_TIME = 1.2f;
     private static final float SEARCH_TIME = 1.6f;
 
@@ -45,7 +45,14 @@ public class Boss extends Entity {
     private int targetWaypointIndex = 0;
 
     private Animation<TextureRegion> walkAnimation;
-    private boolean isFacingRight = true;
+
+    /*
+     * Nếu ảnh gốc ritualer_1.png đang quay sang TRÁI thì để false.
+     * Nếu ảnh gốc ritualer_1.png đang quay sang PHẢI thì đổi thành true.
+     */
+    private static final boolean SPRITE_FACES_RIGHT_BY_DEFAULT = false;
+
+    private boolean isFacingRight = false;
 
     public Boss(float startX, float startY, Array<Vector2> patrolPath) {
         super(startX, startY, 24, 28, 40f);
@@ -86,25 +93,17 @@ public class Boss extends Entity {
         Vector2 bossCenter = getCenter(tmpCenter);
         Vector2 playerCenter = getPlayerCenter(player, tmpTarget);
 
+        // Nhìn thấy Player là đuổi luôn, không qua ALERT nữa
         if (canSeePlayer) {
             lastKnownPlayerPos.set(playerCenter);
             lostSightTimer = 0f;
             searchTimer = 0f;
+            alertTimer = 0f;
 
-            if (currentState == State.PATROL || currentState == State.SEARCH) {
-                currentState = State.ALERT;
-                alertTimer = 0f;
-            }
+            currentState = State.CHASE;
         }
 
-        if (currentState == State.ALERT) {
-            faceTo(playerCenter);
-            alertTimer += deltaTime;
-
-            if (alertTimer >= ALERT_TIME) {
-                currentState = State.CHASE;
-            }
-        } else if (currentState == State.CHASE) {
+        if (currentState == State.CHASE) {
             if (canSeePlayer) {
                 lastKnownPlayerPos.set(playerCenter);
                 moveToward(lastKnownPlayerPos, chaseSpeed, deltaTime, walls);
@@ -137,7 +136,7 @@ public class Boss extends Entity {
         }
 
         // Boss bắt Player: mặt nạ bee không có tác dụng.
-        // Nhưng nếu Player đang trong Skull_Collision thì coi như đang núp, không bị bắt.
+        // Nếu Player đang trong Skull_Collision thì coi như đang núp, không bị bắt.
         if (!playerHiddenInSkull && this.hitbox.overlaps(player.hitbox)) {
             return true;
         }
@@ -179,6 +178,8 @@ public class Boss extends Entity {
 
         rotation = MathUtils.atan2(dy, dx) * MathUtils.radiansToDegrees;
 
+        // Boss đi sang phải thì isFacingRight = true.
+        // Boss đi sang trái thì isFacingRight = false.
         if (Math.abs(dx) > 0.05f) {
             isFacingRight = dx >= 0f;
         }
@@ -307,9 +308,20 @@ public class Boss extends Entity {
     public void draw(SpriteBatch batch) {
         TextureRegion frame = walkAnimation.getKeyFrame(stateTime, true);
 
-        if (!isFacingRight && !frame.isFlipX()) {
-            frame.flip(true, false);
-        } else if (isFacingRight && frame.isFlipX()) {
+        /*
+         * Logic lật ảnh:
+         *
+         * Nếu sprite gốc quay sang trái:
+         * - Muốn nhìn trái  -> không flip
+         * - Muốn nhìn phải -> flip
+         *
+         * Nếu sprite gốc quay sang phải:
+         * - Muốn nhìn phải -> không flip
+         * - Muốn nhìn trái  -> flip
+         */
+        boolean shouldFlipX = isFacingRight != SPRITE_FACES_RIGHT_BY_DEFAULT;
+
+        if (frame.isFlipX() != shouldFlipX) {
             frame.flip(true, false);
         }
 

@@ -686,11 +686,11 @@ public class MapManager {
 
         if (!alreadyOpened) {
             AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.5f);
-        }
-        openedDoors.add(stateKey(doorName));
-        applyDoorOpened(doorName);
+            openedDoors.add(stateKey(doorName));
+            applyDoorOpened(doorName);
 
-        System.out.println("🚪 Door opened: " + doorName);
+            System.out.println("🚪 Door opened: " + doorName);
+        }
     }
     private boolean shouldSaveCheckpointForDoor(String doorName) {
         if (doorName == null) return false;

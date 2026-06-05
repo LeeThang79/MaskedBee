@@ -33,7 +33,7 @@ public class PlayScreen implements Screen {
     public final CORE game;
     public Player myPlayer;
 
-    private static final String START_MAP = "Cocoon_Chamber.tmx";
+    private static final String START_MAP = "Library.tmx";
 
     private OrthographicCamera camera;
     private Viewport viewport;
