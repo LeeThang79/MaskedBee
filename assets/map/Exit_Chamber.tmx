@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="17" nextobjectid="46">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="18" nextobjectid="46">
  <tileset firstgid="1" source="wall_paid.tsx"/>
  <tileset firstgid="197" source="floor_paid.tsx"/>
  <tileset firstgid="295" source="wallfloor.tsx"/>
  <tileset firstgid="595" source="bookself.tsx"/>
- <layer id="2" name="Floor" width="16" height="9">
+ <layer id="2" name="Floor" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -17,12 +17,12 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="15" name="Boss">
+ <objectgroup id="15" name="Boss" locked="1">
   <object id="45" name="boss" x="424.103" y="167.368">
    <polygon points="0,0 -72.121,9.01512 -104.262,40.3721 -168.152,-18.8142 -231.649,48.2113 -330.816,20.774 -315.529,-13.7187 -208.916,-0.783923 -130.523,-12.5428 -86.6235,-59.1862 -50.5631,-3.52766"/>
   </object>
  </objectgroup>
- <layer id="1" name="Wall" width="16" height="9">
+ <layer id="1" name="Wall" width="16" height="9" locked="1">
   <data encoding="csv">
 16,5,141,142,141,142,141,142,141,142,141,142,141,142,7,16,
 16,17,106,107,94,109,110,122,122,109,110,94,106,107,15,16,
@@ -35,7 +35,7 @@
 16,33,143,144,143,144,143,144,143,144,143,144,143,144,35,16
 </data>
  </layer>
- <layer id="6" name="Skull" width="16" height="9">
+ <layer id="6" name="Skull" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -48,7 +48,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="16" name="Star" width="16" height="9">
+ <layer id="16" name="Star" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -61,7 +61,20 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="11" name="Skull_Collision">
+ <layer id="17" name="Blood" width="16" height="9" locked="1">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,672,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="11" name="Skull_Collision" locked="1">
   <object id="32" x="164.432" y="127.295" width="53.75" height="23.25"/>
   <object id="34" x="100.898" y="222.801" width="53.75" height="23.25"/>
   <object id="35" x="228.58" y="191.648" width="53.75" height="23.25"/>
@@ -74,7 +87,7 @@
   <object id="42" x="417.997" y="238.716" width="31.2554" height="17.0682"/>
   <object id="43" x="192.19" y="240.011" width="31.2554" height="17.0682"/>
  </objectgroup>
- <objectgroup id="7" name="Wall_Collision">
+ <objectgroup id="7" name="Wall_Collision" locked="1">
   <object id="1" x="29.5" y="161.75" width="34" height="104.25"/>
   <object id="2" x="36" y="256" width="424.5" height="13"/>
   <object id="4" x="448.989" y="194" width="33.2614" height="75"/>
@@ -84,18 +97,18 @@
   <object id="9" x="28.3333" y="69.5833" width="34.3333" height="59.75"/>
   <object id="10" x="48.0833" y="62" width="413.917" height="32.6667"/>
  </objectgroup>
- <objectgroup id="14" name="ExaminePoints">
+ <objectgroup id="14" name="ExaminePoints" locked="1">
   <object id="44" name="exit_special" x="133.267" y="219.499" width="25.4775" height="28.6132"/>
  </objectgroup>
- <objectgroup id="8" name="SpawnPoints">
-  <object id="11" name="Old_Corridor.tmx" x="107.628" y="153.33">
+ <objectgroup id="8" name="SpawnPoints" locked="1">
+  <object id="11" name="Old_Corridor.tmx" x="38.628" y="157.58">
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="9" name="Old_Corridor_Chamber">
+ <objectgroup id="9" name="Old_Corridor_Chamber" locked="1">
   <object id="15" name="Old_Corridor.tmx" x="30.5455" y="129.273" width="32" height="32.3636"/>
  </objectgroup>
- <objectgroup id="10" name="Exit">
+ <objectgroup id="10" name="Exit" locked="1">
   <object id="16" name="Exit.tmx" x="460" y="128" width="20" height="64"/>
  </objectgroup>
 </map>

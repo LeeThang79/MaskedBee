@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="14" nextobjectid="19">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="16" nextobjectid="19">
  <tileset firstgid="1" source="floor_paid.tsx"/>
  <tileset firstgid="99" source="wall_paid.tsx"/>
  <tileset firstgid="295" source="wallfloor.tsx"/>
  <tileset firstgid="595" source="bookself.tsx"/>
- <layer id="1" name="Wall" width="16" height="9">
+ <layer id="1" name="Wall" width="16" height="9" locked="1">
   <data encoding="csv">
 114,114,114,114,114,114,114,114,114,114,114,114,114,114,114,114,
 114,114,114,114,103,104,104,104,104,104,104,105,114,114,114,114,
@@ -30,7 +30,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="3" name="Wall_Collision" visible="0">
+ <objectgroup id="3" name="Wall_Collision" locked="1">
   <object id="1" x="160" y="96" width="96" height="32"/>
   <object id="3" x="352" y="96" width="9.928" height="139"/>
   <object id="4" x="149" y="96" width="11" height="139"/>
@@ -40,24 +40,21 @@
   <object id="8" x="236" y="32" width="20" height="96"/>
   <object id="15" x="236" y="29" width="72" height="3"/>
  </objectgroup>
- <objectgroup id="13" name="ExaminePoints">
+ <objectgroup id="13" name="ExaminePoints" locked="1">
   <object id="17" name="hidden_niche" x="164" y="98.5" width="23" height="35.5"/>
-  <object id="18" name="hidden_niche" x="164.5" y="66" width="23" height="31"/>
   <object id="19" name="hidden_niche" x="289" y="102.5" width="65.5" height="31"/>
-  <object id="20" name="hidden_niche" x="288.75" y="59.5" width="65.5" height="31"/>
-  <object id="21" name="hidden_niche" x="192.25" y="62" width="65.5" height="31"/>
   <object id="22" name="hidden_coffin" x="222.75" y="150" width="50" height="41.5"/>
   <object id="24" name="hidden_special" x="198.5" y="96.5" width="24.5" height="31"/>
  </objectgroup>
- <objectgroup id="5" name="Library_Chamber" visible="0">
+ <objectgroup id="5" name="Library_Chamber" locked="1">
   <object id="9" name="Library.tmx" x="261" y="32" width="22" height="20"/>
  </objectgroup>
- <objectgroup id="6" name="SpawnPoints" visible="0">
+ <objectgroup id="6" name="SpawnPoints" locked="1">
   <object id="11" name="Library.tmx" x="266" y="53">
    <point/>
   </object>
  </objectgroup>
- <layer id="2" name="Floor" width="16" height="9">
+ <layer id="2" name="Floor" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -70,26 +67,26 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="9" name="Coffin" width="16" height="9">
+ <layer id="9" name="Coffin" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,698,698,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,698,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,696,697,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,691,692,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="11" name="Coffin_Collision">
+ <objectgroup id="11" name="Coffin_Collision" locked="1">
   <object id="12" x="224" y="160" width="46.0936" height="31.6366"/>
  </objectgroup>
  <objectgroup id="13" name="Mask_Interact" locked="1">
   <object id="18" name="mask_coffin" x="209" y="139" width="74" height="65"/>
  </objectgroup>
- <layer id="10" name="Item" width="16" height="9">
+ <layer id="10" name="Item" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -102,13 +99,26 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="12" name="Overhead" width="16" height="9">
+ <layer id="15" name="Text" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,555,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,682,683,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="12" name="Overhead" width="16" height="9" locked="1">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,677,678,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

@@ -77,6 +77,8 @@ public class MapManager {
     private final ObjectMap<String, Boolean> savedSpikeStates = new ObjectMap<>();
     private final ObjectMap<String, Boolean> savedLeverStates = new ObjectMap<>();
 
+    private boolean wasFloorHideTriggered = false; // thêm dòng này
+
     private String stateKey(String objectName) {
         return currentMapName + ":" + objectName;
     }
@@ -492,7 +494,7 @@ public class MapManager {
         return null;
     }
 
-    public void renderBackground(OrthographicCamera camera) {
+    public void renderBackground(OrthographicCamera camera, boolean isMasked) {
         if (renderer == null || map == null) return;
 
         renderer.setView(camera);
@@ -501,6 +503,18 @@ public class MapManager {
         for (MapLayer layer : map.getLayers()) {
             if (layer.isVisible() && layer instanceof TiledMapTileLayer) {
                 String layerName = layer.getName();
+
+                // ================================================================
+                // LOGIC LỌC LAYER THEO MẶT NẠ
+                // ================================================================
+                if (layerName.equals("Queen_Blood") && !isMasked) {
+                    continue; // Nếu KHÔNG đeo mặt nạ -> Không vẽ Queen_Blood
+                }
+                if (layerName.equals("Blood") && isMasked) {
+                    continue; // Nếu đeo mặt nạ -> Không vẽ Blood
+                }
+                // ================================================================
+
                 if (!layerName.equals("Overhead") && !layerName.equals("Small_Cocon")) {
                     renderer.renderTileLayer((TiledMapTileLayer) layer);
                 }
@@ -530,12 +544,18 @@ public class MapManager {
         renderer.getBatch().end();
     }
 
-    public void renderForeground(OrthographicCamera camera) {
+    public void renderForeground(OrthographicCamera camera, boolean isMasked) {
         if (renderer == null || map == null) return;
 
         renderer.setView(camera);
         MapLayer overhead = map.getLayers().get("Overhead");
         if (overhead != null && overhead.isVisible()) {
+
+            // Kiểm tra nếu layer Overhead hoặc các sub-layer chứa tên máu theo cơ chế mặt nạ
+            String layerName = overhead.getName();
+            if (layerName.equals("Queen_Blood") && !isMasked) return;
+            if (layerName.equals("Blood") && isMasked) return;
+
             renderer.getBatch().begin();
             if (overhead instanceof TiledMapTileLayer) {
                 renderer.renderTileLayer((TiledMapTileLayer) overhead);
@@ -554,9 +574,9 @@ public class MapManager {
         renderer.getBatch().end();
     }
 
-    public void render(OrthographicCamera camera) {
-        renderBackground(camera);
-        renderForeground(camera);
+    public void render(OrthographicCamera camera, boolean isMasked) {
+        renderBackground(camera, isMasked);
+        renderForeground(camera, isMasked);
     }
 
     private void renderObjectLayer(MapLayer layer) {
@@ -976,6 +996,12 @@ public class MapManager {
         // Có player hoặc cocoon đè lên -> ẩn Floor_Hide -> hầm mở
         // Không có gì đè lên -> hiện Floor_Hide -> hầm đóng
         hideLayer.setVisible(!triggered);
+
+        // Chỉ phát âm thanh một lần khi vừa chuyển sang triggered
+        if (triggered && !wasFloorHideTriggered) {
+            AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.6f);
+        }
+        wasFloorHideTriggered = triggered;
 
         // Chỉ khi COCoon/block nằm trên trigger mới lưu checkpoint.
         // Player tự đứng lên trigger chỉ là mở tạm, không được tính là giải puzzle.

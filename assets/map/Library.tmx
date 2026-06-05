@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="44" nextobjectid="99">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="45" nextobjectid="99">
  <tileset firstgid="1" source="bookself.tsx"/>
  <tileset firstgid="211" source="wall_paid.tsx"/>
  <tileset firstgid="407" source="floor_paid.tsx"/>
  <tileset firstgid="505" source="wallfloor.tsx"/>
  <tileset firstgid="805" source="candle.tsx"/>
- <layer id="1" name="Wall" width="16" height="14">
+ <layer id="1" name="Wall" width="16" height="14" locked="1">
   <data encoding="csv">
 226,226,226,215,216,216,216,216,216,216,216,216,216,217,226,226,
 226,226,226,229,251,220,220,220,220,220,220,220,260,231,226,226,
@@ -23,7 +23,7 @@
 226,226,226,243,244,244,244,244,244,244,244,244,244,245,226,226
 </data>
  </layer>
- <layer id="3" name="Floor" width="16" height="14">
+ <layer id="3" name="Floor" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -41,7 +41,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="15" name="Hide_Floor" width="16" height="14">
+ <layer id="15" name="Hide_Floor" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -59,7 +59,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="2" name="Bookself" width="16" height="14">
+ <layer id="2" name="Bookself" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -95,7 +95,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="41" name="Book" width="16" height="14">
+ <layer id="41" name="Book" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -113,13 +113,31 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="11" name="Corridor_Chamber">
+ <layer id="44" name="Queen_Blood" width="16" height="14" locked="1">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,156,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="11" name="Corridor_Chamber" locked="1">
   <object id="75" name="Corridor.tmx" x="415.258" y="321.566" width="32.3105" height="31.5412"/>
  </objectgroup>
- <objectgroup id="41" name="Keys">
+ <objectgroup id="41" name="Keys" locked="1">
   <object id="92" name="gold_key" x="256" y="96" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="12" name="Wall_Collision">
+ <objectgroup id="12" name="Wall_Collision" locked="1">
   <object id="45" x="117" y="160" width="11" height="268"/>
   <object id="46" x="117" y="417" width="310" height="11"/>
   <object id="48" x="416" y="18" width="32" height="302"/>
@@ -131,7 +149,7 @@
   <object id="152" x="445" y="320" width="3" height="32"/>
   <object id="95" x="126.5" y="359" width="126.333" height="64.1667"/>
  </objectgroup>
- <objectgroup id="13" name="Self_Collision">
+ <objectgroup id="13" name="Self_Collision" locked="1">
   <object id="57" x="128" y="192" width="190" height="32"/>
   <object id="60" x="352" y="192" width="64" height="31.5"/>
   <object id="62" x="128" y="288" width="64" height="32.5"/>
@@ -141,16 +159,12 @@
   <object id="93" x="288" y="96" width="128" height="32"/>
   <object id="94" x="256.667" y="94.6667" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="38" name="Hidden_Room_Collision">
+ <objectgroup id="38" name="Hidden_Room_Collision" locked="1">
   <object id="84" x="116" y="128" width="12" height="32"/>
  </objectgroup>
- <objectgroup id="43" name="ExaminePoints">
+ <objectgroup id="43" name="ExaminePoints" locked="1">
   <object id="93" name="library_bookcase" x="131.667" y="72" width="59" height="55.3333"/>
-  <object id="97" name="library_bookcase" x="301.833" y="73" width="48.3333" height="55.3333"/>
   <object id="98" name="library_bookcase" x="131.5" y="167.667" width="59" height="55.3333"/>
-  <object id="99" name="library_bookcase" x="258.833" y="169.333" width="59" height="55.3333"/>
-  <object id="100" name="library_bookcase" x="355.167" y="168" width="59" height="55.3333"/>
-  <object id="101" name="library_bookcase" x="227.833" y="264.667" width="59" height="55.3333"/>
   <object id="102" name="library_bookcase" x="354.167" y="263.667" width="59" height="55.3333"/>
   <object id="103" name="library_chest" x="251.667" y="75.3333" width="42.3333" height="57.6667"/>
   <object id="104" name="library_table" x="309.333" y="368.667" width="83.3333" height="48.3333"/>
@@ -159,23 +173,36 @@
  <objectgroup id="26" name="Hidden_Room_Chamber" locked="1">
   <object id="118" name="Hidden_Room.tmx" x="96" y="128" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="14" name="SpawnPoints">
-  <object id="76" name="Corridor.tmx" x="395" y="347">
+ <objectgroup id="14" name="SpawnPoints" locked="1">
+  <object id="76" name="Corridor.tmx" x="410.455" y="350.273">
    <point/>
   </object>
-  <object id="78" name="Hidden_Room.tmx" x="150.765" y="152.384">
-   <point/>
-  </object>
- </objectgroup>
- <objectgroup id="42" name="Player_Spawn">
-  <object id="98" name="player_spawn" x="384" y="352">
+  <object id="78" name="Hidden_Room.tmx" x="130.401" y="157.475">
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="39" name="Chest_Collision">
+ <objectgroup id="39" name="Chest_Collision" locked="1">
   <object id="90" name="gold_key_chest_block" x="256" y="104" width="32" height="24"/>
  </objectgroup>
- <layer id="42" name="Chest_Open_No_Key" width="16" height="14">
+ <layer id="42" name="Chest_Open_No_Key" width="16" height="14" locked="1">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,114,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,128,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="31" name="Chest_Open_Key" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -193,25 +220,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="31" name="Chest_Open_Key" width="16" height="14">
-  <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,116,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,130,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-</data>
- </layer>
- <layer id="24" name="Chest_Close" width="16" height="14">
+ <layer id="24" name="Chest_Close" width="16" height="14" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -229,10 +238,6 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="52" name="Interact_Point_0" locked="1">
-  <object id="108" gid="536" x="319.571" y="352.62" width="32" height="32"/>
-  <object id="109" x="319.047" y="358.451" width="64.8262" height="33.0487"/>
- </objectgroup>
  <objectgroup id="53" name="Interact_Point_1" locked="1">
   <object id="110" x="136.008" y="311.42" width="54.6574" height="22.8798"/>
   <object id="111" gid="556" x="159.412" y="287.793" width="32" height="32"/>
@@ -267,7 +272,7 @@
   <object id="140" name="candle_3" gid="2" x="288" y="33.3333" width="32" height="32"/>
   <object id="142" name="candle_4" gid="2" x="354" y="32.6667" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="43" name="Text">
+ <objectgroup id="43" name="Text" locked="1">
   <object id="97" gid="765" x="192" y="352" width="32" height="32"/>
  </objectgroup>
  <layer id="58" name="Overhead" width="16" height="14" locked="1">
@@ -288,4 +293,8 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="52" name="Interact_Point_0" locked="1">
+  <object id="108" gid="536" x="319.571" y="352.62" width="32" height="32"/>
+  <object id="109" x="319.047" y="358.451" width="64.8262" height="33.0487"/>
+ </objectgroup>
 </map>

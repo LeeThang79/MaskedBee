@@ -3,16 +3,18 @@ package game.maskedbee.screens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -28,6 +30,7 @@ import game.maskedbee.map.PuzzleLibrary;
 import game.maskedbee.map.PuzzleManager;
 import game.maskedbee.map.StoryManager;
 import game.maskedbee.objects.PushableBlock;
+
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -56,6 +59,9 @@ public class PlayScreen implements Screen {
     private float guardCatchCooldown = 0f;
 
     private ShapeRenderer shapeRender;
+    private BitmapFont titleFont; // Dùng cho chữ TẠM DỪNG
+    private BitmapFont menuFont; // Dùng cho các tùy chọn
+    private BitmapFont hintFont; // Dùng cho dòng "Bấm Space để chọn"
     private BitmapFont font;
     private Rectangle continueBtn;
     private Rectangle quitBtn;
@@ -67,6 +73,13 @@ public class PlayScreen implements Screen {
     private StoryManager storyManager;
     private DialogueManager dialogueManager;
 
+    private FreeTypeFontGenerator fontGenerator;
+
+    private int pauseSelectedIndex = 0; // bien de lua chon bang ban phim
+    private int queenSelectedIndex = 0; // bien de lua chon bang ban phim
+    private int exitSelectedIndex = 0;  // bien de lua chon bang ban phim
+    private Texture arrowTexture; // Mui ten khi chon cac lua chon
+
     public PlayScreen(CORE game) {
         this.game = game;
         this.camera = new OrthographicCamera();
@@ -76,13 +89,27 @@ public class PlayScreen implements Screen {
 
         this.shapeRender = new ShapeRenderer();
 
-        FileHandle customFont = Gdx.files.internal("MaskedBee.fnt");
-        if (customFont.exists()) {
-            this.font = new BitmapFont(customFont);
-            this.font.getData().setScale(0.5f);
-        } else {
-            this.font = new BitmapFont();
-        }
+        // Cau hinh font moi
+        this.fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("MaskedBee.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        parameter.size = 13;
+        parameter.color = com.badlogic.gdx.graphics.Color.WHITE;
+        parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS
+            + "áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđĐ\n" +
+            "ÁÀẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÉÈẺẼẸÊẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÚÙỦŨỤƯỨỪỬỮỰÝỲỶỸY";
+        // 1. Tạo font cho Tiêu đề (Size lớn hơn, ví dụ: 18 hoặc 20 tùy bạn thấy vừa mắt)
+        parameter.minFilter = Texture.TextureFilter.Nearest;
+        parameter.magFilter = Texture.TextureFilter.Nearest;
+
+        parameter.size = 28;
+        this.titleFont = fontGenerator.generateFont(parameter);
+
+        // 2. Tạo font cho Menu (Size nhỏ hơn, ví dụ: 12)
+        parameter.size = 18;
+        this.menuFont = fontGenerator.generateFont(parameter);
+
+        parameter.size = 12;
+        this.hintFont = fontGenerator.generateFont(parameter);
 
         continueBtn = new Rectangle(0, 0, 100, 30);
         quitBtn = new Rectangle(0, 0, 100, 30);
@@ -169,12 +196,18 @@ public class PlayScreen implements Screen {
 
     @Override
     public void show() {
+        // Khởi tạo texture mui ten ở đây để an toàn cho đồ họa
+        if (arrowTexture == null) {
+            arrowTexture = new Texture(Gdx.files.internal("menu/pointer.png"));
+        }
+
         game.map.loadMap("map/" + START_MAP);
         recreatePuzzleLibrary();
         spawnPlayer(null);
         game.map.updateFloorHide(myPlayer);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         updateCamera();
+        storyManager.checkNewGameIntro(dialogueManager); // KÍCH HOẠT THOẠI MỞ ĐẦU GAME
 
         if (storyManager != null && dialogueManager != null) {
             storyManager.checkMapEnterEvent("map/" + START_MAP, dialogueManager);
@@ -210,7 +243,7 @@ public class PlayScreen implements Screen {
         if (!currentPrompt.isEmpty() && state == GameState.RUNNING) {
             game.batch.setProjectionMatrix(camera.combined);
             game.batch.begin();
-            font.draw(game.batch, currentPrompt, myPlayer.x - 15, myPlayer.y + 45);
+            menuFont.draw(game.batch, currentPrompt, myPlayer.x - 15, myPlayer.y + 45);
             game.batch.end();
         }
         if (waxCountdownStarted && state == GameState.RUNNING) {
@@ -541,17 +574,21 @@ public class PlayScreen implements Screen {
         }
     }
     private void handleExitChoiceLogic() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
-            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
-
-            continueFromExitChoice();
-            return;
+        // 1. ĐIỀU KHIỂN DI CHUYỂN LÊN/XUỐNG bằng biến exitSelectedIndex riêng biệt
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            exitSelectedIndex = 0; // Chọn "Thoát"
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            exitSelectedIndex = 1; // Chọn "Quay lại"
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
-            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
-
-            goToEnding(pendingExitEndingType);
+        // 2. XÁC NHẬN LỰA CHỌN (Khong dung chuot, chi dung phim)
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            if (exitSelectedIndex == 0) {
+                goToEnding(pendingExitEndingType);
+            } else if (exitSelectedIndex == 1) {
+                continueFromExitChoice();
+            }
         }
     }
 
@@ -568,17 +605,24 @@ public class PlayScreen implements Screen {
     }
 
     private void handleQueenChoiceLogic() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
-            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_1)) {
-
-            goToEnding("queen");
-            return;
+        // 1. ĐIỀU KHIỂN DI CHUYỂN LÊN/XUỐNG (Bằng W/S hoặc Mũi tên)
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            queenSelectedIndex = 0; // Chọn "Có" (nằm trên)
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            queenSelectedIndex = 1; // Chọn "Không" (nằm dưới)
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)
-            || Gdx.input.isKeyJustPressed(Input.Keys.NUMPAD_2)) {
-
-            refuseQueenChoice();
+        // 2. XÁC NHẬN LỰA CHỌN (Khong dung chuot, chi dung phim)
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            if (queenSelectedIndex == 0) {
+                // Đã chọn "Có"
+                goToEnding("queen");
+            } else if (queenSelectedIndex == 1) {
+                // Đã chọn "Không"
+                refuseQueenChoice();
+                queenSelectedIndex = 0; // Reset lại index cho lần sau nếu cần
+            }
         }
     }
 
@@ -661,13 +705,13 @@ public class PlayScreen implements Screen {
         float sortY = game.map.getSortY();
 
         if (myPlayer.y < sortY) {
-            game.map.renderBackground(camera);
-            game.map.renderForeground(camera);
+            game.map.renderBackground(camera, myPlayer.isBeeDisguised);
+            game.map.renderForeground(camera, myPlayer.isBeeDisguised);
             drawEntities();
         } else {
-            game.map.renderBackground(camera);
+            game.map.renderBackground(camera, myPlayer.isBeeDisguised);
             drawEntities();
-            game.map.renderForeground(camera);
+            game.map.renderForeground(camera, myPlayer.isBeeDisguised);
         }
     }
 
@@ -720,66 +764,144 @@ public class PlayScreen implements Screen {
     }
 
     private void drawExitChoiceMenu() {
+        // VE LAI KHUNG CHON GIONG DIALOGUE
+        // TÍNH TOÁN VỊ TRÍ KHUNG
+        float camX = camera.position.x;
+        float camY = camera.position.y;
+        float viewWidth = camera.viewportWidth;
+        float viewHeight = camera.viewportHeight;
+
+        float boxWidth = viewWidth * 0.9f; // Rộng 90% màn hình
+        float boxHeight = 80f;
+        float boxX = camX - (boxWidth / 2f);
+        float boxY = camY - (viewHeight / 2f) + 10f; // Cách đáy 10 pixel
+
+        // 2. VẼ KHUNG NỀN
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
         shapeRender.setProjectionMatrix(camera.combined);
         shapeRender.begin(ShapeRenderer.ShapeType.Filled);
-
-        shapeRender.setColor(0f, 0f, 0f, 0.78f);
-        shapeRender.rect(
-            camera.position.x - 185,
-            camera.position.y - 70,
-            370,
-            140
-        );
-
-        shapeRender.setColor(Color.DARK_GRAY);
-        shapeRender.rect(camera.position.x - 150, camera.position.y - 15, 300, 28);
-        shapeRender.rect(camera.position.x - 150, camera.position.y - 52, 300, 28);
-
+        // Nền đen mờ
+        shapeRender.setColor(0, 0, 0, 0.8f);
+        shapeRender.rect(boxX, boxY, boxWidth, boxHeight); // Khung to
+        // Viền trắng
+        shapeRender.setColor(Color.WHITE);
+        // Viền khung to (chỉ vẽ viền dưới và viền trên giống hàm draw)
+        shapeRender.rectLine(boxX, boxY, boxX + boxWidth, boxY, 2f);
+        shapeRender.rectLine(boxX, boxY + boxHeight, boxX + boxWidth, boxY + boxHeight, 2f);
         shapeRender.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
+        // 3. VẼ CHỮ VÀ CÁC LỰA CHỌN (Dùng SpriteBatch)
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        font.draw(game.batch, "Leave the hive?", camera.position.x - 70, camera.position.y + 42);
-        font.draw(game.batch, "1. Continue", camera.position.x - 115, camera.position.y + 4);
-        font.draw(game.batch, "2. Exit", camera.position.x - 115, camera.position.y - 33);
+        menuFont.getData().setScale(0.7f);
 
+        // Tọa độ gốc để vẽ chữ bên trong hộp thoại
+        float textStartX = boxX + 20f;
+        float textStartY = boxY + boxHeight - 10f;
+        float arrowWidth = 14f;
+        float arrowHeight = 14f;
+
+        // --- VẼ CÂU HỎI ---
+        menuFont.setColor(Color.WHITE);
+        menuFont.draw(game.batch, "Bạn muốn thoát khỏi đây?", textStartX, textStartY, boxWidth - 40f, Align.left, true);
+
+        // --- LỰA CHỌN 1: CÓ (Vẽ thấp xuống 22 pixel) ---
+        float optionYesY = textStartY - 22f;
+        if (exitSelectedIndex == 0) {
+            // Vẽ mũi tên ngay trước chữ "Có"
+            game.batch.draw(arrowTexture, textStartX, optionYesY - 11f, arrowWidth, arrowHeight);
+        } else {
+            menuFont.setColor(Color.WHITE);
+        }
+        // Dịch chữ sang phải một chút (20px) để nhường chỗ cho mũi tên
+        menuFont.draw(game.batch, "Thoát", textStartX + 20f, optionYesY, boxWidth - 60f, Align.left, true);
+
+        // --- LỰA CHỌN 2: KHÔNG (Vẽ thấp xuống tiếp 20 pixel) ---
+        float optionNoY = optionYesY - 20f;
+        if (exitSelectedIndex == 1) {
+            // Vẽ mũi tên ngay trước chữ "Không"
+            game.batch.draw(arrowTexture, textStartX, optionNoY - 11f, arrowWidth, arrowHeight);
+        } else {
+            menuFont.setColor(Color.WHITE);
+        }
+        menuFont.draw(game.batch, "Ở lại", textStartX + 20f, optionNoY, boxWidth - 60f, Align.left, true);
+
+        // Trả lại scale mặc định của font tránh ảnh hưởng chỗ khác
+        menuFont.getData().setScale(0.5f);
         game.batch.end();
     }
 
     private void drawQueenChoiceMenu() {
+        // VE LAI KHUNG CHON CHO GIONG DIALOGUE
+        // TÍNH TOÁN VỊ TRÍ KHUNG
+        float camX = camera.position.x;
+        float camY = camera.position.y;
+        float viewWidth = camera.viewportWidth;
+        float viewHeight = camera.viewportHeight;
+
+        float boxWidth = viewWidth * 0.9f; // Rộng 90% màn hình
+        float boxHeight = 80f;
+        float boxX = camX - (boxWidth / 2f);
+        float boxY = camY - (viewHeight / 2f) + 10f; // Cách đáy 10 pixel
+
+        // 2. VẼ KHUNG NỀN
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
         shapeRender.setProjectionMatrix(camera.combined);
         shapeRender.begin(ShapeRenderer.ShapeType.Filled);
-
-        shapeRender.setColor(0f, 0f, 0f, 0.78f);
-        shapeRender.rect(
-            camera.position.x - 190,
-            camera.position.y - 75,
-            380,
-            150
-        );
-
-        shapeRender.setColor(Color.DARK_GRAY);
-        shapeRender.rect(camera.position.x - 155, camera.position.y - 20, 310, 28);
-        shapeRender.rect(camera.position.x - 155, camera.position.y - 58, 310, 28);
-
+        // Nền đen mờ
+        shapeRender.setColor(0, 0, 0, 0.8f);
+        shapeRender.rect(boxX, boxY, boxWidth, boxHeight); // Khung to
+        // Viền trắng
+        shapeRender.setColor(Color.WHITE);
+        // Viền khung to (chỉ vẽ viền dưới và viền trên giống hàm draw)
+        shapeRender.rectLine(boxX, boxY, boxX + boxWidth, boxY, 2f);
+        shapeRender.rectLine(boxX, boxY + boxHeight, boxX + boxWidth, boxY + boxHeight, 2f);
         shapeRender.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
+        // 3. VẼ CHỮ VÀ CÁC LỰA CHỌN (Dùng SpriteBatch)
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        font.draw(game.batch, "Queen: Become the new Queen?", camera.position.x - 145, camera.position.y + 45);
-        font.draw(game.batch, "1. Accept", camera.position.x - 120, camera.position.y);
-        font.draw(game.batch, "2. Refuse", camera.position.x - 120, camera.position.y - 38);
+        menuFont.getData().setScale(0.7f);
 
+        // Tọa độ gốc để vẽ chữ bên trong hộp thoại
+        float textStartX = boxX + 20f;
+        float textStartY = boxY + boxHeight - 10f;
+        float arrowWidth = 14f;
+        float arrowHeight = 14f;
+
+        // --- VẼ CÂU HỎI ---
+        menuFont.setColor(Color.WHITE);
+        menuFont.draw(game.batch, "Trở thành ong chúa?", textStartX, textStartY, boxWidth - 40f, Align.left, true);
+
+        // --- LỰA CHỌN 1: CÓ (Vẽ thấp xuống 22 pixel) ---
+        float optionYesY = textStartY - 22f;
+        if (queenSelectedIndex == 0) {
+            // Vẽ mũi tên ngay trước chữ "Có"
+            game.batch.draw(arrowTexture, textStartX, optionYesY - 11f, arrowWidth, arrowHeight);
+        } else {
+            menuFont.setColor(Color.WHITE);
+        }
+        // Dịch chữ sang phải một chút (20px) để nhường chỗ cho mũi tên
+        menuFont.draw(game.batch, "Có", textStartX + 20f, optionYesY, boxWidth - 60f, Align.left, true);
+
+        // --- LỰA CHỌN 2: KHÔNG (Vẽ thấp xuống tiếp 20 pixel) ---
+        float optionNoY = optionYesY - 20f;
+        if (queenSelectedIndex == 1) {
+            // Vẽ mũi tên ngay trước chữ "Không"
+            game.batch.draw(arrowTexture, textStartX, optionNoY - 11f, arrowWidth, arrowHeight);
+        } else {
+            menuFont.setColor(Color.WHITE);
+        }
+        menuFont.draw(game.batch, "Không", textStartX + 20f, optionNoY, boxWidth - 60f, Align.left, true);
+
+        // Trả lại scale mặc định của font tránh ảnh hưởng chỗ khác
+        menuFont.getData().setScale(0.5f);
         game.batch.end();
     }
 
@@ -880,49 +1002,110 @@ public class PlayScreen implements Screen {
         float centerX = camera.position.x;
         float centerY = camera.position.y;
 
-        continueBtn.setPosition(centerX - continueBtn.width / 2, centerY + 10);
-        quitBtn.setPosition(centerX - quitBtn.width / 2, centerY - 30);
+        continueBtn.set(centerX - 50, centerY - 15, 100, 25);
+        quitBtn.set(centerX - 45, centerY - 40, 90, 25);
 
+        // Lấy tọa độ chuột hiện tại và chuyển đổi về tọa độ World của Camera
+        Vector3 touchPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+        camera.unproject(touchPoint);
+
+        if (continueBtn.contains(touchPoint.x, touchPoint.y)) {
+            pauseSelectedIndex = 0;
+        } else if (quitBtn.contains(touchPoint.x, touchPoint.y)) {
+            pauseSelectedIndex = 1;
+        }
+
+        // Xử lý điều khiển bằng phím mũi tên (Tùy chọn bổ sung cho mượt)
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) {
+            pauseSelectedIndex = 0;
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) {
+            pauseSelectedIndex = 1;
+        }
+
+        // 2. XỬ LÝ PHÍM XÁC NHẬN (ENTER HOẶC SPACE)
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if (pauseSelectedIndex == 0) {
+                // Chọn "Tiếp tục"
+                state = GameState.RUNNING;
+                AudioManager.getInstance().resumeBackgroundMusic(); // Tiếp tục phát nhạc nền
+            } else if (pauseSelectedIndex == 1) {
+                // Chọn "Thoát"
+                AudioManager.getInstance().stopBackgroundMusic();
+                game.setScreen(new FirstScreen(game));
+            }
+        }
+
+        // --- XỬ LÝ CLICK CHUỘT THUẦN TÚY ---
         if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-            Vector3 touchPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-            camera.unproject(touchPoint);
-
             if (continueBtn.contains(touchPoint.x, touchPoint.y)) {
                 state = GameState.RUNNING;
+                AudioManager.getInstance().resumeBackgroundMusic();
             } else if (quitBtn.contains(touchPoint.x, touchPoint.y)) {
-                AudioManager.getInstance().stopBackgroundMusic(); // NGẮT NHẠC GAME KHI THOÁT RA MENU CHÍNH
+                AudioManager.getInstance().stopBackgroundMusic();
                 game.setScreen(new FirstScreen(game));
             }
         }
     }
 
     private void drawPauseMenu() {
+        // VE LAI
+        // 1. Vẽ lớp phủ tối toàn màn hình
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
         shapeRender.setProjectionMatrix(camera.combined);
         shapeRender.begin(ShapeRenderer.ShapeType.Filled);
-
-        shapeRender.setColor(0, 0, 0, 0.6f);
+        shapeRender.setColor(0, 0, 0, 0.5f);
         shapeRender.rect(
             camera.position.x - viewport.getWorldWidth() / 2,
             camera.position.y - viewport.getWorldHeight() / 2,
             viewport.getWorldWidth(),
             viewport.getWorldHeight()
         );
-
-        shapeRender.setColor(Color.DARK_GRAY);
-        shapeRender.rect(continueBtn.x, continueBtn.y, continueBtn.width, continueBtn.height);
-        shapeRender.rect(quitBtn.x, quitBtn.y, quitBtn.width, quitBtn.height);
-
         shapeRender.end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
 
+        // 2. Vẽ chữ căn giữa bằng font size gốc
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        font.draw(game.batch, "Continue", continueBtn.x + 20, continueBtn.y + 20);
-        font.draw(game.batch, "Quit", quitBtn.x + 35, quitBtn.y + 20);
+        float viewWidth = viewport.getWorldWidth();
+        float viewHeight = viewport.getWorldHeight();
+        float startX = camera.position.x - viewWidth / 2;
+        float centerX = camera.position.x;
+        float centerY = camera.position.y;
+
+        // --- TIÊU ĐỀ: TẠM DỪNG (Dùng titleFont gốc, không scale) ---
+        titleFont.setColor(Color.WHITE);
+        titleFont.draw(game.batch, "TẠM DỪNG", startX, centerY + 45, viewWidth, Align.center, false);
+
+        // Kích thước mong muốn hiển thị của mũi tên (Ví dụ: pixel art 12x12 hoặc 16x16)
+        float arrowWidth = 12f;
+        float arrowHeight = 12f;
+
+        // --- LỰA CHỌN: TIẾP TỤC (Dùng menuFont gốc) ---
+        if (pauseSelectedIndex == 0) {
+            game.batch.draw(arrowTexture, centerX - 55, centerY - 14, arrowWidth, arrowHeight);
+        } else {
+            menuFont.setColor(Color.WHITE);
+        }
+        menuFont.draw(game.batch, "Tiếp tục", startX, centerY + 0, viewWidth, Align.center, false);
+
+        // --- LỰA CHỌN: THOÁT ---
+        if (pauseSelectedIndex == 1) {
+            game.batch.draw(arrowTexture, centerX - 45, centerY - 39, arrowWidth, arrowHeight);
+        } else {
+            menuFont.setColor(Color.WHITE);
+        }
+        menuFont.draw(game.batch, "Thoát", startX, centerY - 25, viewWidth, Align.center, false);
+
+        float textX = startX;
+        float textWidth = viewWidth - 15f;
+
+        // Tọa độ Y: Góc dưới màn hình là (centerY - viewHeight / 2). Cộng thêm tầm 15px để nhấc chữ lên khỏi sát sàn.
+        float textY = (centerY - viewHeight / 2f) + 15f;
+
+        hintFont.draw(game.batch, "Bấm SPACE để lựa chọn", textX, textY, textWidth, Align.right, false);
 
         game.batch.end();
     }
@@ -948,5 +1131,10 @@ public class PlayScreen implements Screen {
     public void dispose() {
         shapeRender.dispose();
         font.dispose();
+        titleFont.dispose();
+        menuFont.dispose();
+        if (hintFont != null) hintFont.dispose();
+        fontGenerator.dispose();
+        if (arrowTexture != null) arrowTexture.dispose();
     }
 }

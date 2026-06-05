@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="24" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="21" nextobjectid="101">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="24" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="22" nextobjectid="101">
  <tileset firstgid="1" source="wallfloor.tsx"/>
+ <tileset firstgid="301" source="bookself.tsx"/>
  <layer id="1" name="Wall" width="24" height="9" locked="1">
   <data encoding="csv">
 66,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,102,86,
@@ -14,7 +15,7 @@
 105,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,82,106
 </data>
  </layer>
- <objectgroup id="19" name="Guards">
+ <objectgroup id="19" name="Guards" locked="1">
   <object id="83" name="guard_2" x="429.198" y="226.358">
    <polyline points="0,0 -62.3219,-81.724 -149.925,1.17589 -224.006,-71.729 -329.836,-3.52766"/>
   </object>
@@ -22,18 +23,15 @@
    <polygon points="0,0 -382.667,2 -245.333,-74"/>
   </object>
  </objectgroup>
- <objectgroup id="20" name="ExaminePoints">
+ <objectgroup id="20" name="ExaminePoints" locked="1">
   <object id="83" name="queen_nest" x="541.495" y="93.4829" width="105.83" height="101.126" visible="0"/>
-  <object id="91" name="queen_shoot" x="420.379" y="81.1361" width="51.151" height="71.729"/>
+  <object id="91" name="queen_shoot" x="420.379" y="111.636" width="51.151" height="41.229"/>
   <object id="92" name="queen_flower" x="495.636" y="128.171" width="29.3971" height="21.7539"/>
-  <object id="93" name="queen_shoot" x="260.753" y="81.724" width="51.151" height="71.729"/>
-  <object id="94" name="queen_shoot" x="101.42" y="81.724" width="51.151" height="71.729"/>
-  <object id="95" name="queen_shoot" x="677.604" y="81.1361" width="51.151" height="71.729"/>
+  <object id="93" name="queen_shoot" x="260.753" y="110.724" width="51.151" height="42.729"/>
+  <object id="94" name="queen_shoot" x="101.42" y="109.724" width="51.151" height="43.729"/>
   <object id="96" name="queen_flower" x="478.585" y="144.928" width="29.3971" height="21.7539"/>
   <object id="97" name="queen_flower" x="499.751" y="163.742" width="29.3971" height="21.7539"/>
   <object id="98" name="queen_flower" x="659.672" y="167.858" width="29.3971" height="21.7539"/>
-  <object id="99" name="queen_flower" x="625.571" y="97.3045" width="29.3971" height="21.7539"/>
-  <object id="100" name="queen_flower" x="639.094" y="103.184" width="29.3971" height="21.7539"/>
  </objectgroup>
  <layer id="2" name="Floor" width="24" height="9" locked="1">
   <data encoding="csv">
@@ -48,17 +46,30 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <layer id="21" name="Queen_Blood" width="24" height="9" locked="1">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,479,480,481,482,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,493,494,495,496,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,507,508,509,510,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
  <objectgroup id="8" name="Corridor_Chamber" locked="1">
   <object id="27" name="Corridor.tmx" x="0" y="192" width="32" height="32"/>
  </objectgroup>
  <objectgroup id="10" name="Wax_Chamber" locked="1">
   <object id="31" name="Wax_Pumb.tmx" x="352" y="64" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="9" name="SpawnPoints" locked="1">
+ <objectgroup id="9" name="SpawnPoints">
   <object id="29" name="Corridor.tmx" x="14" y="213">
    <point/>
   </object>
-  <object id="30" name="Wax_Pumb.tmx" x="364" y="88">
+  <object id="30" name="Wax_Pumb.tmx" x="356.727" y="105.818">
    <point/>
   </object>
  </objectgroup>
@@ -146,8 +157,8 @@
    <capsule/>
   </object>
  </objectgroup>
- <objectgroup id="20" name="Queen_Interact">
-  <object id="83" name="queen_flower" x="544" y="128" width="64" height="64"/>
+ <objectgroup id="20" name="Queen_Interact" locked="1">
+  <object id="83" name="queen_flower" x="544" y="161" width="64" height="31"/>
  </objectgroup>
  <objectgroup id="4" name="Wall_Collision" locked="1">
   <object id="1" x="384" y="64" width="352" height="32"/>
@@ -157,7 +168,7 @@
   <object id="14" x="0" y="224" width="32" height="44"/>
   <object id="80" x="0" y="64" width="32" height="128"/>
   <object id="81" x="0" y="192" width="3" height="32"/>
-  <object id="82" x="352" y="64" width="32" height="3"/>
+  <object id="82" x="352" y="77" width="32" height="3"/>
  </objectgroup>
  <layer id="19" name="Overhead" width="24" height="9" locked="1">
   <data encoding="csv">

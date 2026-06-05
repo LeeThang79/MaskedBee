@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="20" nextobjectid="21">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="24" nextobjectid="21">
  <tileset firstgid="1" source="wall_paid.tsx"/>
  <tileset firstgid="197" source="floor_paid.tsx"/>
  <tileset firstgid="295" source="bookself.tsx"/>
  <tileset firstgid="505" source="wallfloor.tsx"/>
- <layer id="1" name="Wall" width="16" height="9">
+ <layer id="1" name="Wall" width="16" height="9" locked="1">
   <data encoding="csv">
 16,16,16,5,141,142,141,142,141,142,141,142,7,16,16,16,
 16,16,16,17,52,42,10,70,70,10,10,11,15,16,16,16,
@@ -17,7 +17,7 @@
 16,16,16,33,143,144,143,144,143,144,143,144,35,16,16,16
 </data>
  </layer>
- <layer id="2" name="Floor" width="16" height="9">
+ <layer id="2" name="Floor" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -30,20 +30,33 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="4" name="Decorate" width="16" height="9">
+ <layer id="23" name="Queen_Blood" width="16" height="9" locked="1">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,487,468,469,0,0,0,0,0,0,0,
+0,0,0,0,0,0,501,502,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="4" name="Decorate" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,313,314,296,0,0,296,317,318,0,0,0,0,
 0,0,0,0,327,328,0,0,0,0,331,332,0,0,0,0,
-0,0,0,0,0,0,429,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,443,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,457,458,459,460,0,0,0,0,0,0,
-0,0,0,0,0,437,438,472,473,474,437,438,0,0,0,0,
-0,0,0,0,0,451,452,0,0,0,451,452,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,459,460,461,462,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,389,390,0,0,0,389,390,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="7" name="Interact_Point" width="16" height="9">
+ <layer id="22" name="Decorate" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -56,7 +69,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="8" name="Wall_Collision">
+ <objectgroup id="8" name="Wall_Collision" locked="1">
   <object id="2" x="114.5" y="86" width="12.5" height="188.5"/>
   <object id="4" x="118.5" y="256" width="292.5" height="20"/>
   <object id="5" x="116" y="84.5" width="282" height="11"/>
@@ -64,38 +77,37 @@
   <object id="7" x="384.125" y="85.5" width="33.75" height="40.5"/>
   <object id="8" x="417.273" y="109.136" width="9.81818" height="64.7727"/>
  </objectgroup>
- <objectgroup id="10" name="Object_Collision">
+ <objectgroup id="10" name="Object_Collision" locked="1">
   <object id="9" x="326.333" y="223.375" width="34.9167" height="14.375"/>
   <object id="11" x="166.542" y="224.146" width="34.9167" height="14.375"/>
   <object id="12" x="238.542" y="150.979" width="53.9167" height="32.5417"/>
  </objectgroup>
- <objectgroup id="16" name="Chapel_Interact">
-  <object id="16" name="chapel_altar" x="224" y="128" width="96" height="64"/>
+ <objectgroup id="16" name="Chapel_Interact" locked="1">
+  <object id="16" name="chapel_altar" x="224" y="147.75" width="67.75" height="44.25"/>
  </objectgroup>
- <objectgroup id="11" name="Old_Corridor_Chamber">
+ <objectgroup id="11" name="Old_Corridor_Chamber" locked="1">
   <object id="13" name="Old_Corridor.tmx" x="384" y="126.125" width="33.125" height="35.75"/>
  </objectgroup>
- <objectgroup id="16" name="ExaminePoints">
-  <object id="16" name="chapel_statue" x="232" y="71.5" width="65.5" height="115.5"/>
+ <objectgroup id="16" name="ExaminePoints" locked="1">
+  <object id="16" name="chapel_statue" x="232" y="128.5" width="65.5" height="58.5"/>
   <object id="17" name="chapel_coffin" x="161" y="203.5" width="49" height="31.5"/>
-  <object id="18" name="chapel_coffin" x="318" y="204.5" width="55.5" height="33"/>
   <object id="19" name="chapel_bookcase1" x="318" y="34" width="75" height="66.5"/>
   <object id="20" name="chapel_special" x="128.5" y="60.5" width="29" height="39"/>
  </objectgroup>
- <objectgroup id="13" name="SpawnPoints">
-  <object id="14" name="Old_Corridor.tmx" x="358.5" y="150">
+ <objectgroup id="13" name="SpawnPoints" locked="1">
+  <object id="14" name="Old_Corridor.tmx" x="381.125" y="159.625">
    <point/>
   </object>
  </objectgroup>
- <layer id="18" name="Overhead" width="16" height="9">
+ <layer id="18" name="Overhead" width="16" height="9" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,765,0,0,416,417,418,0,0,0,0,0,0,
-0,0,0,0,0,0,0,430,431,432,0,0,0,0,0,0,
-0,0,0,0,0,0,0,444,445,446,0,0,0,0,0,0,
+0,0,0,0,765,0,0,418,419,420,0,0,0,0,0,0,
+0,0,0,0,0,0,0,432,433,434,0,0,0,0,0,0,
+0,0,0,0,0,0,0,446,447,448,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,375,376,0,0,0,375,376,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
