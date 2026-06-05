@@ -237,19 +237,18 @@
  <objectgroup id="10" name="Corridor_Chamber" locked="1">
   <object id="30" name="Corridor.tmx" x="258.596" y="68.3026" width="25.3868" height="26.5957"/>
  </objectgroup>
- <objectgroup id="9" name="SpawnPoints" locked="1">
+ <objectgroup id="9" name="SpawnPoints">
   <object id="29" name="Corridor.tmx" x="261.273" y="106.011">
    <point/>
   </object>
   <object id="54" name="Old_Corridor.tmx" x="194.227" y="213.591">
    <point/>
   </object>
- </objectgroup>
- <objectgroup id="24" name="Player_Spawn" locked="1">
-  <object id="66" name="player_spawn" x="262" y="110">
+  <object id="65" name="player_spawn" x="262" y="110">
    <point/>
   </object>
  </objectgroup>
+ <objectgroup id="24" name="Player_Spawn"/>
  <layer id="18" name="Overhead" width="16" height="11" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

@@ -16,8 +16,11 @@ public class PuzzleManager {
 
     private boolean waitingToHideLibraryKey = false;
     private float libraryKeyHideTimer = 0f;
+    private float pushCooldown = 0f;
+    private static final float PUSH_INTERVAL = 0.15f;
 
     public void update(Player player, MapManager mapManager) {
+        pushCooldown -= Gdx.graphics.getDeltaTime();
         updateDelayedLibraryKeyVisual(mapManager);
         handlePushables(player, mapManager);
         checkKeyPickup(player, mapManager);
@@ -191,14 +194,15 @@ public class PuzzleManager {
     }
 
     private void handlePushables(Player player, MapManager mapManager) {
+        if (pushCooldown > 0f) return;
         float pushDistance = 32f;
         float dx = 0f;
         float dy = 0f;
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT) || Gdx.input.isKeyJustPressed(Input.Keys.A)) dx = -pushDistance;
-        else if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) || Gdx.input.isKeyJustPressed(Input.Keys.D)) dx = pushDistance;
-        else if (Gdx.input.isKeyJustPressed(Input.Keys.UP) || Gdx.input.isKeyJustPressed(Input.Keys.W)) dy = pushDistance;
-        else if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN) || Gdx.input.isKeyJustPressed(Input.Keys.S)) dy = -pushDistance;
+        if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) dx = -pushDistance;
+        else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) dx = pushDistance;
+        else if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) dy = pushDistance;
+        else if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) dy = -pushDistance;
 
         if (dx == 0f && dy == 0f) return;
 
@@ -244,6 +248,7 @@ public class PuzzleManager {
                 b.x += dx;
                 b.y += dy;
                 mapManager.rememberPushableState(block);
+                pushCooldown = PUSH_INTERVAL;
             }
 
             break;

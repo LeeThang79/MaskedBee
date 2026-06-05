@@ -188,6 +188,9 @@
   <object id="78" name="Hidden_Room.tmx" x="130.401" y="157.475">
    <point/>
   </object>
+  <object id="99" name="player_spawn" x="384" y="352">
+   <point/>
+  </object>
  </objectgroup>
  <objectgroup id="39" name="Chest_Collision" locked="1">
   <object id="90" name="gold_key_chest_block" x="256" y="100" width="32" height="24"/>
