@@ -36,6 +36,7 @@ public class PuzzleLibrary {
     private int currentSequencePhase;
 
     private final Array<Integer> currentInput = new Array<>();
+    private final DialogueManager dialogueManager;
 
     // =====================================================
     // INTERACT POINTS
@@ -60,8 +61,9 @@ public class PuzzleLibrary {
 
     private final float SHOW_DELAY = 0.7f;
 
-    public PuzzleLibrary(MapManager mapManager) {
+    public PuzzleLibrary(MapManager mapManager, DialogueManager dialogueManager) {
         this.mapManager = mapManager;
+        this.dialogueManager = dialogueManager; // Lưu tham chiếu
         this.map = mapManager.getMap();
         this.wallCollision = mapManager.getWallCollision();
         this.interactPoints = mapManager.getInteractPoints();
@@ -71,8 +73,9 @@ public class PuzzleLibrary {
     }
 
     // Giữ constructor cũ để nếu chỗ nào trong code còn gọi kiểu cũ thì không bị lỗi compile.
-    public PuzzleLibrary(TiledMap map, Array<Rectangle> wallCollision, Array<RectangleMapObject> interactPoints) {
+    public PuzzleLibrary(TiledMap map, Array<Rectangle> wallCollision, Array<RectangleMapObject> interactPoints, DialogueManager dialogueManager) {
         this.mapManager = null;
+        this.dialogueManager = dialogueManager; // Lưu tham chiếu
         this.map = map;
         this.wallCollision = wallCollision;
         this.interactPoints = interactPoints;
@@ -221,6 +224,13 @@ public class PuzzleLibrary {
         }
     }
     private void startCurrentUnsolvedPhase() {
+        if (!started && !phase1Solved && dialogueManager != null) {
+            // Lời thoại khi bắt đầu Phase 1
+            dialogueManager.startDialogue(new String[]{
+                "Những cái nến đang thay đổi..."
+            });
+        }
+
         currentInput.clear();
         started = true;
 

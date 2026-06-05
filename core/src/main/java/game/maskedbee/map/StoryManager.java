@@ -112,15 +112,15 @@ public class StoryManager {
         }
         else if (objectName.equals("ritual_post")) {
             String[] text = {
-                "Những cây cột này đủ dày để giấu đi bóng của tôi, nhưng chúng chẳng mang lại chút cảm giác an toàn nào."
+                "Những cây cột này đủ dày để giấu đi bóng của mình, nhưng chúng chẳng mang lại chút cảm giác an toàn nào."
             };
             dialogueManager.startDialogue(text);
             return true;
         }
         else if (objectName.equals("ritual_door")) {
             String[] text = {
-                "Cửa bị khóa. Tôi cần tìm chìa khóa để mở." + "\n" +
-                    "Tôi có thể nghe thấy tiếng ho vọng ra từ phía bên kia. " +
+                "Cửa bị khóa. Mình cần tìm chìa khóa để mở." + "\n" +
+                    "Mình có thể nghe thấy tiếng ho vọng ra từ phía bên kia. " +
                     "Có ai đó đang ở trong."
             };
             dialogueManager.startDialogue(text);
@@ -150,15 +150,15 @@ public class StoryManager {
         // --- MAP 4: DISPOSAL PIT ---
         else if (objectName.equals("disposal_small_cocoon")) {
             String[] text = {
-                "Mỗi lần đẩy một cái, tôi lại nghe thấy tiếng oọc ạch phát ra từ bên trong." + "\n" +
-                    "Tôi không muốn nghĩ về thứ mà mình đang chạm vào."
+                "Mỗi lần đẩy một cái, mình lại nghe thấy tiếng oọc ạch phát ra từ bên trong." + "\n" +
+                    "Mình không muốn nghĩ về thứ mà mình đang chạm vào."
             };
             dialogueManager.startDialogue(text);
             return true;
         }
         else if (objectName.equals("disposal_big_cocoon")) {
             String[] text = {
-                "Tôi không muốn nghĩ về thứ mà mình đang chạm vào"
+                "Mình không muốn nghĩ về thứ mà mình đang chạm vào"
             };
             dialogueManager.startDialogue(text);
             return true;
@@ -181,7 +181,7 @@ public class StoryManager {
         }
         else if (objectName.equals("chapel_bookcase1")) {
             String[] text = {
-                "Hầu hết các cuốn sách ở đây đã bị dính chặt vào nhau bởi sáp vàng."
+                "Hầu hết các cuốn sách ở đây đã bị dính chặt vào nhau bởi sáp."
             };
             dialogueManager.startDialogue(text);
             return true;
@@ -189,7 +189,7 @@ public class StoryManager {
 
         else if (objectName.equals("chapel_special")) {
             String[] text = {
-                "Những trang cuối của cuốn nhật ký, dính đầy những vệt sáp nến\n" +
+                "Những trang cuối của cuốn nhật ký dính đầy những vệt sáp nến\n" +
                     "\"Servais nói rằng đau khổ đến từ sự chia cắt...",
                 "Đêm nay Servais đưa tôi xuống hầm mộ cũ. " +
                     "Và lần này tôi đã nghe rõ mồn một thứ âm thanh đó. " +
@@ -202,7 +202,7 @@ public class StoryManager {
         // --- MAP 4.5.2: OLD CORRIDOR ---
         if (objectName.equals("corridor_niche")) {
             String[] text = {
-                "Tôi có cảm giác như mình đang bị quan sát bởi chính những bức tường này."
+                "Mình có cảm giác như mình đang bị quan sát bởi chính những bức tường này."
             };
             dialogueManager.startDialogue(text);
             return true;
@@ -218,7 +218,15 @@ public class StoryManager {
         }
         else if (objectName.equals("library_table")) {
             String[] text = {
-                "Ai đó đã ngồi đây trong một thời gian rất dài.  Mặt gỗ lốm đốm mực và mật ong."
+                "Ai đó đã ngồi đây trong một thời gian rất dài.  Mặt gỗ lốm đốm mực và mật ong.",
+                "Có một cái công tắc ở đây."
+            };
+            dialogueManager.startDialogue(text);
+            return true;
+        }
+        else if (objectName.equals("library_button")) {
+            String[] text = {
+                "Mình có thể đẩy quyển sách này."
             };
             dialogueManager.startDialogue(text);
             return true;
@@ -226,7 +234,7 @@ public class StoryManager {
         else if (objectName.equals("library_chest")) {
             String[] text = {
                 "Một chiếc rương. Cảm giác nó chứa đựng một điều gì đó rất quan trọng. " + "\n" +
-                    "Tôi cần tìm cách mở nó."
+                    "Mình cần tìm cách mở nó."
             };
             dialogueManager.startDialogue(text);
             return true;
@@ -255,7 +263,7 @@ public class StoryManager {
         else if (objectName.equals("hidden_coffin")) {
             String[] text = {
                 "Một chiếc mặt nạ. " +
-                    "Nếu tôi đeo thứ này vào liệu chúng có coi tôi là đồng loại?"
+                    "Nếu mình đeo thứ này vào liệu chúng có coi mình là đồng loại?"
             };
             dialogueManager.startDialogue(text);
             return true;
@@ -283,7 +291,7 @@ public class StoryManager {
         }
         else if (objectName.equals("queen_shoot")) {
             String[] text = {
-                "Tôi có thể cảm nhận được sự chuyển động bên trong. " +
+                "Mình có thể cảm nhận được sự chuyển động bên trong. " +
                     "Chúng giống như những quả trứng đang đợi một lý do để nở."
             };
             dialogueManager.startDialogue(text);
@@ -301,7 +309,7 @@ public class StoryManager {
         if (objectName.equals("wax_tank")) {
             String[] text = {
                 "Một bể chứa khổng lồ. " +
-                    "Cảm giác như tôi đang nhìn vào tinh chất từ tất cả những người đã bị chúng bắt đi."
+                    "Cảm giác như mình đang nhìn vào tinh chất từ tất cả những người đã bị chúng bắt đi."
             };
             dialogueManager.startDialogue(text);
             return true;
@@ -318,7 +326,7 @@ public class StoryManager {
         else if (objectName.equals("wax_venti")) {
             String[] text = {
                 "Luồng khí thoát ra từ khe thông gió này nóng rực. " +
-                    "Trông nó giống như một điểm xả áp. Liệu tôi có thể phá hủy có máy này?"
+                    "Trông nó giống như một điểm xả áp. Liệu mình có thể phá hủy có máy này?"
             };
             dialogueManager.startDialogue(text);
             return true;
@@ -346,7 +354,7 @@ public class StoryManager {
         // Holding Chamber
         if (mapName.contains("Holding") && !seenHoldingIntro) {
             String[] story = {
-                "Có người ở đây. Tôi phải cứu họ."
+                "Có người ở đây. Mình phải cứu họ."
             };
             dialogueManager.startDialogue(story);
             seenHoldingIntro = true;
@@ -356,7 +364,7 @@ public class StoryManager {
         else if (mapName.contains("Disposal") && !seenDisposalIntro) {
             String[] story = {
                 "Thứ đỏ đỏ đằng xa kia trông như 1 chiếc công tắc." + "\n" +
-                "Tôi phải đẩy những cái kén qua một bên."
+                "Mình phải đẩy những cái kén qua một bên."
             };
             dialogueManager.startDialogue(story);
             seenDisposalIntro = true;
