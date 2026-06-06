@@ -15,37 +15,63 @@ import com.badlogic.gdx.utils.Array;
 public class Boss extends Entity {
     public enum State {
         PATROL,
-        ALERT,
         CHASE,
         SEARCH
     }
 
     public State currentState = State.PATROL;
 
-    public float patrolSpeed = 40f;
-    public float chaseSpeed = 70f;
+    public float patrolSpeed = 45f;
+    public float chaseSpeed = 250f;
 
-    public float visionRadius = 130f;
-    public float viewAngle = 60f;
+    // Boss quan sát vòng tròn 360 độ.
+    public float visionRadius = 180f;
 
     private float rotation = 0f;
-    private float alertTimer = 0f;
     private float lostSightTimer = 0f;
     private float searchTimer = 0f;
+    private int searchPhase = 0;
 
-    private static final float ALERT_TIME = 0.35f;
+    // Boss đuổi lâu quá không bắt được thì bỏ cuộc.
+    private float chaseTimer = 0f;
+    private float ignorePlayerTimer = 0f;
+
+    // Chống kẹt khi tuần tra.
+    private float patrolStuckTimer = 0f;
+    private float searchStuckTimer = 0f;
+
     private static final float LOSE_SIGHT_TIME = 1.2f;
     private static final float SEARCH_TIME = 1.6f;
+
+    // Boss đuổi tối đa 4 giây. Muốn lâu hơn thì tăng lên 5f hoặc 6f.
+    private static final float MAX_CHASE_TIME = 4f;
+
+    // Sau khi bỏ cuộc, tạm bỏ qua player 1.2 giây để không đuổi lại ngay.
+    private static final float GIVE_UP_IGNORE_TIME = 1.2f;
+
+    // Nếu tuần tra mà bị kẹt quá thời gian này thì bỏ qua waypoint hiện tại.
+    private static final float PATROL_STUCK_TIME = 0.45f;
+
+    // Nếu SEARCH mà bị kẹt quá thời gian này thì quay lại PATROL.
+    private static final float SEARCH_STUCK_TIME = 0.8f;
 
     private final Vector2 lastKnownPlayerPos = new Vector2();
     private final Vector2 tmpCenter = new Vector2();
     private final Vector2 tmpTarget = new Vector2();
+    private final Vector2 tmpSearchTarget = new Vector2();
 
     private Array<Vector2> patrolPath;
     private int targetWaypointIndex = 0;
 
     private Animation<TextureRegion> walkAnimation;
-    private boolean isFacingRight = true;
+
+    /*
+     * Nếu ảnh gốc ritualer_1.png đang quay sang TRÁI thì để false.
+     * Nếu ảnh gốc ritualer_1.png đang quay sang PHẢI thì đổi thành true.
+     */
+    private static final boolean SPRITE_FACES_RIGHT_BY_DEFAULT = false;
+
+    private boolean isFacingRight = false;
 
     public Boss(float startX, float startY, Array<Vector2> patrolPath) {
         super(startX, startY, 24, 28, 40f);
@@ -70,41 +96,49 @@ public class Boss extends Entity {
     }
 
     /**
-     * return true nếu boss bắt được Player.
+     * return true nếu Boss bắt được Player.
+     *
+     * skullVisionBlockers:
+     * - Không còn là vùng tàng hình.
+     * - Chỉ dùng để chặn tầm nhìn của Boss giống như vật cản.
      */
     public boolean update(
         float deltaTime,
         Player player,
         Array<Rectangle> walls,
-        Array<Rectangle> skullHideZones
+        Array<Rectangle> skullVisionBlockers
     ) {
         stateTime += deltaTime;
 
-        boolean playerHiddenInSkull = isPlayerHiddenInSkull(player, skullHideZones);
-        boolean canSeePlayer = !playerHiddenInSkull && canSeePlayer(player, walls, skullHideZones);
+        if (ignorePlayerTimer > 0f) {
+            ignorePlayerTimer -= deltaTime;
+        }
+
+        boolean rawCanSeePlayer = canSeePlayer(player, walls, skullVisionBlockers);
+        boolean canSeePlayer = rawCanSeePlayer && ignorePlayerTimer <= 0f;
 
         Vector2 bossCenter = getCenter(tmpCenter);
         Vector2 playerCenter = getPlayerCenter(player, tmpTarget);
 
+        // Nhìn thấy player thì đuổi.
+        // Nhưng nếu vừa bỏ cuộc thì ignorePlayerTimer sẽ chặn không cho đuổi lại ngay.
         if (canSeePlayer) {
             lastKnownPlayerPos.set(playerCenter);
             lostSightTimer = 0f;
             searchTimer = 0f;
+            searchPhase = 0;
+            searchStuckTimer = 0f;
 
-            if (currentState == State.PATROL || currentState == State.SEARCH) {
-                currentState = State.ALERT;
-                alertTimer = 0f;
+            if (currentState != State.CHASE) {
+                chaseTimer = 0f;
             }
+
+            currentState = State.CHASE;
         }
 
-        if (currentState == State.ALERT) {
-            faceTo(playerCenter);
-            alertTimer += deltaTime;
+        if (currentState == State.CHASE) {
+            chaseTimer += deltaTime;
 
-            if (alertTimer >= ALERT_TIME) {
-                currentState = State.CHASE;
-            }
-        } else if (currentState == State.CHASE) {
             if (canSeePlayer) {
                 lastKnownPlayerPos.set(playerCenter);
                 moveToward(lastKnownPlayerPos, chaseSpeed, deltaTime, walls);
@@ -114,35 +148,100 @@ public class Boss extends Entity {
                 if (lostSightTimer >= LOSE_SIGHT_TIME) {
                     currentState = State.SEARCH;
                     searchTimer = 0f;
+                    searchPhase = 0;
+                    searchStuckTimer = 0f;
+                    chaseTimer = 0f;
                 } else {
                     moveToward(lastKnownPlayerPos, chaseSpeed * 0.85f, deltaTime, walls);
                 }
             }
+
+            // Đuổi quá lâu mà chưa bắt được thì bỏ cuộc.
+            if (chaseTimer >= MAX_CHASE_TIME) {
+                giveUpAndReturnToPatrol();
+            }
+
         } else if (currentState == State.SEARCH) {
             float distanceToLastKnown = bossCenter.dst(lastKnownPlayerPos);
 
-            if (distanceToLastKnown > 8f) {
-                moveToward(lastKnownPlayerPos, patrolSpeed, deltaTime, walls);
-            } else {
-                rotation += 130f * deltaTime;
-                searchTimer += deltaTime;
+            if (searchPhase == 0) {
+                // Phase 0: đi tới vị trí cuối cùng nhìn thấy player.
+                if (distanceToLastKnown > 8f) {
+                    boolean moved = moveToward(lastKnownPlayerPos, patrolSpeed, deltaTime, walls);
 
-                if (searchTimer >= SEARCH_TIME) {
+                    if (!moved) {
+                        searchStuckTimer += deltaTime;
+
+                        if (searchStuckTimer >= SEARCH_STUCK_TIME) {
+                            giveUpAndReturnToPatrol();
+                        }
+                    } else {
+                        searchStuckTimer = 0f;
+                    }
+                } else {
+                    searchPhase = 1;
+                    searchTimer = 0f;
+                    searchStuckTimer = 0f;
+                }
+            } else {
+                // Phase 1: lượn vòng nhỏ quanh điểm đó rồi bỏ đi.
+                searchTimer += deltaTime;
+                rotation += 130f * deltaTime;
+
+                float searchAngle = searchTimer * 90f * MathUtils.degreesToRadians;
+
+                tmpSearchTarget.set(
+                    lastKnownPlayerPos.x + MathUtils.cos(searchAngle) * 24f,
+                    lastKnownPlayerPos.y + MathUtils.sin(searchAngle) * 24f
+                );
+
+                boolean moved = moveToward(tmpSearchTarget, patrolSpeed * 0.6f, deltaTime, walls);
+
+                if (!moved) {
+                    searchStuckTimer += deltaTime;
+                } else {
+                    searchStuckTimer = 0f;
+                }
+
+                if (searchTimer >= SEARCH_TIME || searchStuckTimer >= SEARCH_STUCK_TIME) {
                     currentState = State.PATROL;
+                    searchPhase = 0;
+                    searchTimer = 0f;
+                    searchStuckTimer = 0f;
+                    chaseTimer = 0f;
                     targetWaypointIndex = findNearestWaypointIndex();
                 }
             }
         } else {
+            chaseTimer = 0f;
             patrol(deltaTime, walls);
         }
 
-        // Boss bắt Player: mặt nạ bee không có tác dụng.
-        // Nhưng nếu Player đang trong Skull_Collision thì coi như đang núp, không bị bắt.
-        if (!playerHiddenInSkull && this.hitbox.overlaps(player.hitbox)) {
+        // Boss chạm Player là bắt luôn.
+        // Skull_Collision không còn làm player miễn bắt nữa.
+        if (this.hitbox.overlaps(player.hitbox)) {
             return true;
         }
 
         return false;
+    }
+
+    private void giveUpAndReturnToPatrol() {
+        currentState = State.PATROL;
+
+        lostSightTimer = 0f;
+        searchTimer = 0f;
+        chaseTimer = 0f;
+        searchPhase = 0;
+        searchStuckTimer = 0f;
+        patrolStuckTimer = 0f;
+
+        // Tạm bỏ qua player một chút, tránh vừa quay lại tuần tra đã đuổi tiếp ngay.
+        ignorePlayerTimer = GIVE_UP_IGNORE_TIME;
+
+        targetWaypointIndex = findNearestWaypointIndex();
+
+        System.out.println("Boss gave up chasing and returned to patrol.");
     }
 
     private void patrol(float deltaTime, Array<Rectangle> walls) {
@@ -152,27 +251,54 @@ public class Boss extends Entity {
         }
 
         Vector2 target = patrolPath.get(targetWaypointIndex);
+
+        float oldX = x;
+        float oldY = y;
+
         moveToward(target, patrolSpeed, deltaTime, walls);
 
         Vector2 center = getCenter(tmpCenter);
 
-        if (center.dst(target) < 8f) {
+        boolean reachedTarget = center.dst(target) < 8f;
+        boolean barelyMoved = Math.abs(x - oldX) < 0.1f && Math.abs(y - oldY) < 0.1f;
+
+        if (reachedTarget) {
+            patrolStuckTimer = 0f;
             targetWaypointIndex = (targetWaypointIndex + 1) % patrolPath.size;
+            return;
+        }
+
+        if (barelyMoved) {
+            patrolStuckTimer += deltaTime;
+
+            if (patrolStuckTimer >= PATROL_STUCK_TIME) {
+                patrolStuckTimer = 0f;
+
+                // Nếu bị kẹt do waypoint nằm sau xương/tường thì bỏ qua waypoint đó.
+                targetWaypointIndex = (targetWaypointIndex + 1) % patrolPath.size;
+
+                System.out.println("Boss patrol stuck. Skip waypoint: " + targetWaypointIndex);
+            }
+        } else {
+            patrolStuckTimer = 0f;
         }
     }
 
-    private void moveToward(Vector2 target, float moveSpeed, float deltaTime, Array<Rectangle> walls) {
+    /**
+     * return true nếu Boss thật sự di chuyển được.
+     */
+    private boolean moveToward(Vector2 target, float moveSpeed, float deltaTime, Array<Rectangle> walls) {
         Vector2 center = getCenter(tmpCenter);
 
         float dx = target.x - center.x;
         float dy = target.y - center.y;
 
         if (Math.abs(dx) < 1f && Math.abs(dy) < 1f) {
-            return;
+            return true;
         }
 
         float len = (float) Math.sqrt(dx * dx + dy * dy);
-        if (len == 0f) return;
+        if (len == 0f) return true;
 
         dx /= len;
         dy /= len;
@@ -183,73 +309,71 @@ public class Boss extends Entity {
             isFacingRight = dx >= 0f;
         }
 
+        float oldX = x;
+        float oldY = y;
+
         moveWithCollision(dx * moveSpeed * deltaTime, dy * moveSpeed * deltaTime, walls);
+
+        return Math.abs(x - oldX) > 0.05f || Math.abs(y - oldY) > 0.05f;
     }
 
-    private boolean canSeePlayer(Player player, Array<Rectangle> walls, Array<Rectangle> skullHideZones) {
+    private boolean canSeePlayer(
+        Player player,
+        Array<Rectangle> walls,
+        Array<Rectangle> skullVisionBlockers
+    ) {
         Vector2 bossCenter = getCenter(tmpCenter);
         Vector2 playerCenter = getPlayerCenter(player, tmpTarget);
 
+        // Player rón rén thì tầm nhìn Boss giảm còn 70%.
+        float currentVisionRadius = player.isCreeping ? visionRadius * 0.7f : visionRadius;
+
         float dist = bossCenter.dst(playerCenter);
-        if (dist > visionRadius) {
+
+        if (dist > currentVisionRadius) {
             return false;
         }
 
-        float angleToPlayer = MathUtils.atan2(
-            playerCenter.y - bossCenter.y,
-            playerCenter.x - bossCenter.x
-        ) * MathUtils.radiansToDegrees;
-
-        float angleDiff = Math.abs(angleToPlayer - rotation);
-        if (angleDiff > 180f) {
-            angleDiff = 360f - angleDiff;
-        }
-
-        if (angleDiff > viewAngle / 2f) {
-            return false;
-        }
-
-        return hasLineOfSight(player, walls, skullHideZones);
+        // Boss nhìn 360 độ nên không kiểm tra góc nhìn.
+        // Chỉ cần trong bán kính và không bị tường/skull chắn là thấy.
+        return hasLineOfSight(player, walls, skullVisionBlockers);
     }
 
-    private boolean hasLineOfSight(Player player, Array<Rectangle> walls, Array<Rectangle> skullHideZones) {
+    private boolean hasLineOfSight(
+        Player player,
+        Array<Rectangle> walls,
+        Array<Rectangle> skullVisionBlockers
+    ) {
         Vector2 bossPoint = getCenter(tmpCenter);
         Vector2 playerPoint = getPlayerCenter(player, tmpTarget);
 
-        for (Rectangle wall : walls) {
-            if (wall.overlaps(this.hitbox) || wall.overlaps(player.hitbox)) {
-                continue;
-            }
+        // Tường chặn tầm nhìn.
+        if (walls != null) {
+            for (Rectangle wall : walls) {
+                if (wall.overlaps(this.hitbox) || wall.overlaps(player.hitbox)) {
+                    continue;
+                }
 
-            if (Intersector.intersectSegmentRectangle(bossPoint, playerPoint, wall)) {
-                return false;
+                if (Intersector.intersectSegmentRectangle(bossPoint, playerPoint, wall)) {
+                    return false;
+                }
             }
         }
 
-        // Skull cũng có thể chặn tầm nhìn.
-        for (Rectangle skull : skullHideZones) {
-            if (skull.overlaps(this.hitbox) || skull.overlaps(player.hitbox)) {
-                continue;
-            }
+        // Skull_Collision chặn tầm nhìn như vật cản.
+        if (skullVisionBlockers != null) {
+            for (Rectangle skull : skullVisionBlockers) {
+                if (skull.overlaps(this.hitbox)) {
+                    continue;
+                }
 
-            if (Intersector.intersectSegmentRectangle(bossPoint, playerPoint, skull)) {
-                return false;
+                if (Intersector.intersectSegmentRectangle(bossPoint, playerPoint, skull)) {
+                    return false;
+                }
             }
         }
 
         return true;
-    }
-
-    private boolean isPlayerHiddenInSkull(Player player, Array<Rectangle> skullHideZones) {
-        if (skullHideZones == null) return false;
-
-        for (Rectangle skull : skullHideZones) {
-            if (player.hitbox.overlaps(skull)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private Vector2 getCenter(Vector2 out) {
@@ -264,21 +388,6 @@ public class Boss extends Entity {
             player.hitbox.x + player.hitbox.width / 2f,
             player.hitbox.y + player.hitbox.height / 2f
         );
-    }
-
-    private void faceTo(Vector2 target) {
-        Vector2 center = getCenter(tmpCenter);
-
-        rotation = MathUtils.atan2(
-            target.y - center.y,
-            target.x - center.x
-        ) * MathUtils.radiansToDegrees;
-
-        if (target.x < center.x) {
-            isFacingRight = false;
-        } else if (target.x > center.x) {
-            isFacingRight = true;
-        }
     }
 
     private int findNearestWaypointIndex() {
@@ -300,16 +409,18 @@ public class Boss extends Entity {
             }
         }
 
-        return nearest;
+        // Trả về waypoint sau waypoint gần nhất để Boss tiếp tục tuần tra,
+        // tránh đứng quay về chính waypoint vừa ở gần.
+        return (nearest + 1) % patrolPath.size;
     }
 
     @Override
     public void draw(SpriteBatch batch) {
         TextureRegion frame = walkAnimation.getKeyFrame(stateTime, true);
 
-        if (!isFacingRight && !frame.isFlipX()) {
-            frame.flip(true, false);
-        } else if (isFacingRight && frame.isFlipX()) {
+        boolean shouldFlipX = isFacingRight != SPRITE_FACES_RIGHT_BY_DEFAULT;
+
+        if (frame.isFlipX() != shouldFlipX) {
             frame.flip(true, false);
         }
 
@@ -319,21 +430,20 @@ public class Boss extends Entity {
         batch.draw(frame, drawX, drawY);
     }
 
-    public void drawDebug(ShapeRenderer shape) {
-        shape.setColor(currentState == State.CHASE ? Color.RED : Color.PURPLE);
-
+    public void drawDebug(ShapeRenderer shape, Player player) {
         Vector2 center = getCenter(tmpCenter);
 
-        float x1 = center.x + MathUtils.cosDeg(rotation - viewAngle / 2f) * visionRadius;
-        float y1 = center.y + MathUtils.sinDeg(rotation - viewAngle / 2f) * visionRadius;
+        float currentVisionRadius = player.isCreeping ? visionRadius * 0.7f : visionRadius;
 
-        float x2 = center.x + MathUtils.cosDeg(rotation + viewAngle / 2f) * visionRadius;
-        float y2 = center.y + MathUtils.sinDeg(rotation + viewAngle / 2f) * visionRadius;
+        // Tím = tuần tra / tìm kiếm
+        // Đỏ = đang đuổi player
+        if (currentState == State.CHASE) {
+            shape.setColor(Color.RED);
+        } else {
+            shape.setColor(Color.PURPLE);
+        }
 
-        shape.line(center.x, center.y, x1, y1);
-        shape.line(center.x, center.y, x2, y2);
-        shape.line(x1, y1, x2, y2);
-
+        shape.circle(center.x, center.y, currentVisionRadius);
         shape.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
     }
 }
