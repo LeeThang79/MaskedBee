@@ -15,10 +15,9 @@ public class DialogueManager {
     private ShapeRenderer shapeRenderer;
     //private BitmapFont font;
 
-    // Quản lý font chữ bằng FreeType
-    private FreeTypeFontGenerator fontGenerator;
+    // Quản lý font chữ bằng file .fnt
     private BitmapFont font;
-    private BitmapFont smallFont; // Nên tách riêng font nhỏ thay vì setScale liên tục để tránh nhòe
+    private BitmapFont smallFont; // Tách riêng font nhỏ để không phải setScale liên tục
 
     // Trạng thái hội thoại
     public boolean isShowing = false;
@@ -34,25 +33,13 @@ public class DialogueManager {
     public DialogueManager() {
         this.shapeRenderer = new ShapeRenderer();
         this.dialogueLines = new Array<>();
-        /*this.font = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
-        this.font.getData().setScale(0.4f);
-        */
-        this.fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("MaskedBee.ttf"));
 
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        this.font = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
+        this.font.getData().setScale(0.50f); // Chỉnh size cho lời thoại vừa vặn
 
-        // Cấu hình font chính cho lời thoại
-        parameter.size = 13; // Kích thước pixel thật bạn muốn hiển thị (Không lo bị vỡ hình)
-        parameter.color = Color.WHITE;
-
-        // QUAN TRỌNG: Để gõ được tiếng Việt có dấu với TTF, bạn cần định nghĩa tập ký tự
-        parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + "áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđĐ";
-
-        this.font = fontGenerator.generateFont(parameter);
-
-        // Tạo font riêng cho tên nhân vật và gợi ý (nhỏ hơn) thay vì dùng setScale() bóp méo chữ
-        parameter.size = 11;
-        this.smallFont = fontGenerator.generateFont(parameter);
+        // Font nhỏ cho Tên nhân vật và Gợi ý phím bấm
+        this.smallFont = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
+        this.smallFont.getData().setScale(0.40f);
     }
 
     // HÀM KÍCH HOẠT HỘI THOẠI
@@ -216,6 +203,5 @@ public class DialogueManager {
         shapeRenderer.dispose();
         font.dispose();
         smallFont.dispose();
-        fontGenerator.dispose();
     }
 }

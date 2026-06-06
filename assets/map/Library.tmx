@@ -167,11 +167,16 @@
  <objectgroup id="38" name="Hidden_Room_Collision" locked="1">
   <object id="84" x="116" y="128" width="12" height="32"/>
  </objectgroup>
- <objectgroup id="43" name="ExaminePoints" locked="1">
-  <object id="98" name="library_bookcase" x="131.5" y="167.667" width="59" height="55.3333"/>
-  <object id="102" name="library_bookcase" x="354.167" y="263.667" width="59" height="55.3333"/>
+ <objectgroup id="43" name="ExaminePoints">
+  <object id="93" name="library_bookcase" x="142.667" y="72" width="32.6667" height="55.3333"/>
+  <object id="97" name="library_bookcase" x="305.5" y="73" width="31.3333" height="55.3333"/>
+  <object id="98" name="library_bookcase" x="142.833" y="167.667" width="31.6667" height="55.3333"/>
+  <object id="99" name="library_bookcase" x="273.833" y="169.333" width="32.6667" height="55.3333"/>
+  <object id="100" name="library_bookcase" x="368.5" y="168" width="33.3333" height="55.3333"/>
+  <object id="101" name="library_bookcase" x="240.166" y="265.667" width="35.3333" height="55.3333"/>
+  <object id="102" name="library_bookcase" x="370.5" y="263.667" width="31" height="55.3333"/>
   <object id="103" name="library_chest" x="251.667" y="75.3333" width="42.3333" height="57.6667"/>
-  <object id="104" name="library_table" x="309.333" y="368.667" width="83.3333" height="48.3333"/>
+  <object id="104" name="library_table" x="318" y="374.667" width="67" height="42"/>
   <object id="105" name="library_special" x="195.667" y="357.667" width="23.3333" height="16.6667"/>
   <object id="100" name="library_button" x="194.5" y="190.333" width="59" height="37.3333"/>
   <object id="101" name="library_button" x="292.125" y="284.958" width="59" height="37.3333"/>
