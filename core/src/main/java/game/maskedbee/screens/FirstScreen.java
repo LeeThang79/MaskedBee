@@ -55,28 +55,17 @@ public class FirstScreen implements Screen {
         stage = new Stage(viewport, game.batch);
         Gdx.input.setInputProcessor(stage); // Cho phép sân khấu nhận tương tác chuột/phím
 
+        // 1. Tạo font cho Menu (Ví dụ: scale 1.0f hoặc nhỏ hơn tùy kích cỡ file .fnt của bạn)
+        fontMenu = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
+        fontMenu.getData().setScale(0.8f); // Chỉnh con số này để chữ menu vừa vặn
+
+        // 2. Tạo font cho Tiêu đề (Load lại file .fnt lần 2 để biến này độc lập hoàn toàn)
+        fontTitle = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
+        fontTitle.getData().setScale(2.0f); // Phóng to gấp 2 hoặc 2.5 lần để làm Tiêu đề
+
         // =========================================================================
-        // KHỞI TẠO VÀ GENERATE FONT TỪ FILE .TTF
-        // =========================================================================
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("MaskedBee.ttf"));
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-
-        parameter.characters = FreeTypeFontGenerator.DEFAULT_CHARS + "ẮẦÙỌÁẾỤĐƠáàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ";
-        parameter.size = 24;
-        parameter.color = Color.WHITE;
-        // Nếu game là pixel art, bật dòng này để font chữ vuông vức không bị nhòe:
-        parameter.minFilter = Texture.TextureFilter.Nearest;
-        parameter.magFilter = Texture.TextureFilter.Nearest;
-        fontMenu = generator.generateFont(parameter);
-
-        // Cấu hình font cho phần Tiêu đề
-        parameter.size = 64; // Kích cỡ chữ cho tiêu đề lớn hơn
-        parameter.color = Color.WHITE;
-        fontTitle = generator.generateFont(parameter);
-
-        generator.dispose();
-
+        // Gán font vào LabelStyle (Giữ nguyên như cũ của bạn)
         labelStyle = new Label.LabelStyle();
         labelStyle.font = fontMenu;
 
@@ -106,10 +95,8 @@ public class FirstScreen implements Screen {
         mainTable.add(createMenuOption("TÙY CHỌN", new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Code để mở màn hình Options (chưa làm)
-                Gdx.app.log("Menu", "Clicked Options - Chưa có tính năng");
-            }
-        })).left().padBottom(20).row();
+                game.setScreen(new OptionsScreen(game));
+            }})).left().padBottom(20).row();
 
         mainTable.add(createMenuOption("THOÁT", new ClickListener() {
             @Override

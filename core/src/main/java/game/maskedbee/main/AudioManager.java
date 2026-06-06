@@ -147,8 +147,16 @@ public class AudioManager {
         }
     }
 
+    public float getVolume() {
+        return this.currentVolume;
+    }
+
     public void setVolume(float volume) {
         this.targetVolume = volume;
+        // Đoạn code chỉnh âm thanh thực tế của bạn
+        if (backgroundMusic != null) {
+            backgroundMusic.setVolume(volume);
+        }
     }
 
     public void dispose() {

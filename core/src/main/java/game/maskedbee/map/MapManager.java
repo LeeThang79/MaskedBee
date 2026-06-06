@@ -22,10 +22,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
-
 import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
+import game.maskedbee.main.NotificationManager;
 import game.maskedbee.objects.Door;
 import game.maskedbee.objects.Key;
 import game.maskedbee.objects.Lever;
@@ -109,7 +109,6 @@ public class MapManager {
         }
         renderer.getBatch().end();
     }
-
 
     public void loadMap(String fileName) {
         try {
@@ -1012,6 +1011,8 @@ public class MapManager {
         // Chỉ khi COCoon/block nằm trên trigger mới lưu checkpoint.
         // Player tự đứng lên trigger chỉ là mở tạm, không được tính là giải puzzle.
         if (triggeredByPushable) {
+            NotificationManager.getInstance().show("Giải đố thành công\nĐã mở ra lối đi bí mật");
+            NotificationManager.getInstance().show("Checkpoint mới được lưu thành Disposal");
             saveProgressCheckpointHere();
         }
     }

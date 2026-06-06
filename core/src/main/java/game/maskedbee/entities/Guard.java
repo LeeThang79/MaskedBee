@@ -15,7 +15,7 @@ import com.badlogic.gdx.utils.Array;
 public class Guard extends Entity {
     public float patrolSpeed = 36f;
     public float investigateSpeed = 48f;
-    public float chaseSpeed = 60f;
+    public float chaseSpeed = 180f;
 
     public enum State {
         PATROL,
