@@ -66,7 +66,6 @@ public class PlayScreen implements Screen {
     private BitmapFont choiceMenuFont;  // Dung cho Queen/Exit
     private BitmapFont hintFont;        // Dùng cho dòng "Bấm Space để chọn"
     private BitmapFont font;
-    private BitmapFont choiceMenuFont;
     private Rectangle continueBtn;
     private Rectangle quitBtn;
 

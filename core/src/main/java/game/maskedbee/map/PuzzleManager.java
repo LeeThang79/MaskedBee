@@ -171,6 +171,11 @@ public class PuzzleManager {
             }
 
             String keyName = key.getName();
+            // Chưa giải phase 1 thì không cho lấy gold key
+            if ("gold_key".equalsIgnoreCase(keyName) && !mapManager.isPuzzleStepSolved("library_phase_1")) {
+                NotificationManager.getInstance().show("Chiếc rương đang bị khóa.");
+                return;
+            }
 
             key.collect();
 
