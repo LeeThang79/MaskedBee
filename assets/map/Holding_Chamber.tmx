@@ -312,14 +312,14 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="25" name="Prisoner_Interact">
+ <objectgroup id="25" name="Prisoner_Interact" locked="1">
   <object id="134" name="prisoner" x="320" y="128" width="32" height="32"/>
  </objectgroup>
- <objectgroup id="6" name="Jail_Collision">
+ <objectgroup id="6" name="Jail_Collision" locked="1">
   <object id="9" x="128" y="152" width="128" height="8"/>
   <object id="90" x="288" y="152" width="128" height="8"/>
   <object id="112" x="193.25" y="93.5" width="29" height="60"/>
-  <object id="135" x="322.875" y="114.545" width="16.375" height="38.9735"/>
+  <object id="135" x="324.375" y="115.42" width="14.875" height="38.0985"/>
  </objectgroup>
  <objectgroup id="8" name="Wall_Collision" locked="1">
   <object id="12" x="117" y="96" width="11" height="202"/>

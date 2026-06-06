@@ -27,10 +27,6 @@ public class FirstScreen implements Screen {
     private Viewport viewport;
     private OrthographicCamera camera;
     private Texture background;
-    private Texture masked;
-    private Texture newGame;
-    private Texture options;
-    private Texture quit;
     private Texture pointer;
 
     private BitmapFont fontMenu;

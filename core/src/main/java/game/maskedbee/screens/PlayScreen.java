@@ -61,9 +61,10 @@ public class PlayScreen implements Screen {
     private float guardCatchCooldown = 0f;
 
     private ShapeRenderer shapeRender;
-    private BitmapFont titleFont; // Dùng cho chữ TẠM DỪNG
-    private BitmapFont menuFont; // Dùng cho các tùy chọn
-    private BitmapFont hintFont; // Dùng cho dòng "Bấm Space để chọn"
+    private BitmapFont titleFont;       // Dùng cho chữ TẠM DỪNG
+    private BitmapFont menuFont;        // Dùng cho các tùy chọn
+    private BitmapFont choiceMenuFont;  // Dung cho Queen/Exit
+    private BitmapFont hintFont;        // Dùng cho dòng "Bấm Space để chọn"
     private BitmapFont font;
     private BitmapFont choiceMenuFont;
     private Rectangle continueBtn;
@@ -180,7 +181,7 @@ public class PlayScreen implements Screen {
     }
 
     private void recreatePuzzleLibrary() {
-        puzzleLibrary = new PuzzleLibrary(game.map);
+        puzzleLibrary = new PuzzleLibrary(game.map, dialogueManager);
     }
 
     private void reloadCurrentMapAndRespawn() {
@@ -958,8 +959,6 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        menuFont.getData().setScale(0.7f);
-
         // Tọa độ gốc để vẽ chữ bên trong hộp thoại
         float textStartX = boxX + 20f;
         float textStartY = boxY + boxHeight - 10f;
@@ -967,8 +966,8 @@ public class PlayScreen implements Screen {
         float arrowHeight = 14f;
 
         // --- VẼ CÂU HỎI ---
-        menuFont.setColor(Color.WHITE);
-        menuFont.draw(game.batch, "Bạn muốn thoát khỏi đây?", textStartX, textStartY, boxWidth - 40f, Align.left, true);
+        choiceMenuFont.setColor(Color.WHITE);
+        choiceMenuFont.draw(game.batch, "Bạn muốn thoát khỏi đây?", textStartX, textStartY, boxWidth - 40f, Align.left, true);
 
         // --- LỰA CHỌN 1: CÓ (Vẽ thấp xuống 22 pixel) ---
         float optionYesY = textStartY - 22f;
@@ -976,10 +975,10 @@ public class PlayScreen implements Screen {
             // Vẽ mũi tên ngay trước chữ "Có"
             game.batch.draw(arrowTexture, textStartX, optionYesY - 11f, arrowWidth, arrowHeight);
         } else {
-            menuFont.setColor(Color.WHITE);
+            choiceMenuFont.setColor(Color.WHITE);
         }
         // Dịch chữ sang phải một chút (20px) để nhường chỗ cho mũi tên
-        menuFont.draw(game.batch, "Thoát", textStartX + 20f, optionYesY, boxWidth - 60f, Align.left, true);
+        choiceMenuFont.draw(game.batch, "Thoát", textStartX + 20f, optionYesY, boxWidth - 60f, Align.left, true);
 
         // --- LỰA CHỌN 2: KHÔNG (Vẽ thấp xuống tiếp 20 pixel) ---
         float optionNoY = optionYesY - 20f;
@@ -987,12 +986,10 @@ public class PlayScreen implements Screen {
             // Vẽ mũi tên ngay trước chữ "Không"
             game.batch.draw(arrowTexture, textStartX, optionNoY - 11f, arrowWidth, arrowHeight);
         } else {
-            menuFont.setColor(Color.WHITE);
+            choiceMenuFont.setColor(Color.WHITE);
         }
-        menuFont.draw(game.batch, "Ở lại", textStartX + 20f, optionNoY, boxWidth - 60f, Align.left, true);
+        choiceMenuFont.draw(game.batch, "Ở lại", textStartX + 20f, optionNoY, boxWidth - 60f, Align.left, true);
 
-        // Trả lại scale mặc định của font tránh ảnh hưởng chỗ khác
-        menuFont.getData().setScale(0.5f);
         game.batch.end();
     }
 
@@ -1029,8 +1026,6 @@ public class PlayScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
         game.batch.begin();
 
-        menuFont.getData().setScale(0.7f);
-
         // Tọa độ gốc để vẽ chữ bên trong hộp thoại
         float textStartX = boxX + 20f;
         float textStartY = boxY + boxHeight - 10f;
@@ -1038,8 +1033,8 @@ public class PlayScreen implements Screen {
         float arrowHeight = 14f;
 
         // --- VẼ CÂU HỎI ---
-        menuFont.setColor(Color.WHITE);
-        menuFont.draw(game.batch, "Trở thành ong chúa?", textStartX, textStartY, boxWidth - 40f, Align.left, true);
+        choiceMenuFont.setColor(Color.WHITE);
+        choiceMenuFont.draw(game.batch, "Trở thành ong chúa?", textStartX, textStartY, boxWidth - 40f, Align.left, true);
 
         // --- LỰA CHỌN 1: CÓ (Vẽ thấp xuống 22 pixel) ---
         float optionYesY = textStartY - 22f;
@@ -1047,10 +1042,10 @@ public class PlayScreen implements Screen {
             // Vẽ mũi tên ngay trước chữ "Có"
             game.batch.draw(arrowTexture, textStartX, optionYesY - 11f, arrowWidth, arrowHeight);
         } else {
-            menuFont.setColor(Color.WHITE);
+            choiceMenuFont.setColor(Color.WHITE);
         }
         // Dịch chữ sang phải một chút (20px) để nhường chỗ cho mũi tên
-        menuFont.draw(game.batch, "Có", textStartX + 20f, optionYesY, boxWidth - 60f, Align.left, true);
+        choiceMenuFont.draw(game.batch, "Có", textStartX + 20f, optionYesY, boxWidth - 60f, Align.left, true);
 
         // --- LỰA CHỌN 2: KHÔNG (Vẽ thấp xuống tiếp 20 pixel) ---
         float optionNoY = optionYesY - 20f;
@@ -1058,12 +1053,10 @@ public class PlayScreen implements Screen {
             // Vẽ mũi tên ngay trước chữ "Không"
             game.batch.draw(arrowTexture, textStartX, optionNoY - 11f, arrowWidth, arrowHeight);
         } else {
-            menuFont.setColor(Color.WHITE);
+            choiceMenuFont.setColor(Color.WHITE);
         }
-        menuFont.draw(game.batch, "Không", textStartX + 20f, optionNoY, boxWidth - 60f, Align.left, true);
+        choiceMenuFont.draw(game.batch, "Không", textStartX + 20f, optionNoY, boxWidth - 60f, Align.left, true);
 
-        // Trả lại scale mặc định của font tránh ảnh hưởng chỗ khác
-        menuFont.getData().setScale(0.5f);
         game.batch.end();
     }
 
@@ -1407,6 +1400,7 @@ public class PlayScreen implements Screen {
         font.dispose();
         titleFont.dispose();
         menuFont.dispose();
+        if (choiceMenuFont != null) choiceMenuFont.dispose();
         if (hintFont != null) hintFont.dispose();
         if (arrowTexture != null) arrowTexture.dispose();
     }
