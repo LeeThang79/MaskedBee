@@ -182,7 +182,7 @@ public class PuzzleManager {
                 mapManager.showLibraryChestWithKey();
 
                 waitingToHideLibraryKey = true;
-                libraryKeyHideTimer = 3f;
+                libraryKeyHideTimer = 0.5f;
 
                 System.out.println("Picked gold_key. Chest will change after 3 seconds.");
             } else {

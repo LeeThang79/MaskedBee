@@ -150,7 +150,13 @@ public class MapManager {
                 if (layerName.equals("Skull_Collision")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
-                            skullCollision.add(((RectangleMapObject) obj).getRectangle());
+                            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+
+                            // Dùng riêng cho Boss kiểm tra xương có chắn tầm nhìn không
+                            skullCollision.add(rect);
+
+                            // Dùng cho Player/Boss không đi xuyên qua xương
+                            wallCollision.add(rect);
                         }
                     }
                 }

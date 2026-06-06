@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.Array;
 public class Boss extends Entity {
     public enum State {
         PATROL,
-        ALERT,
         CHASE,
         SEARCH
     }
@@ -23,17 +22,15 @@ public class Boss extends Entity {
     public State currentState = State.PATROL;
 
     public float patrolSpeed = 45f;
-    public float chaseSpeed = 185f;
+    public float chaseSpeed = 250f;
 
+    // Boss quan sát theo vòng tròn 360 độ quanh nó.
     public float visionRadius = 130f;
-    public float viewAngle = 60f;
 
     private float rotation = 0f;
-    private float alertTimer = 0f;
     private float lostSightTimer = 0f;
     private float searchTimer = 0f;
 
-    private static final float ALERT_TIME = 0f;
     private static final float LOSE_SIGHT_TIME = 1.2f;
     private static final float SEARCH_TIME = 1.6f;
 
@@ -78,27 +75,29 @@ public class Boss extends Entity {
 
     /**
      * return true nếu boss bắt được Player.
+     *
+     * skullVisionBlockers:
+     * - Không còn là vùng tàng hình.
+     * - Chỉ dùng để chặn tầm nhìn của boss giống như vật cản.
      */
     public boolean update(
         float deltaTime,
         Player player,
         Array<Rectangle> walls,
-        Array<Rectangle> skullHideZones
+        Array<Rectangle> skullVisionBlockers
     ) {
         stateTime += deltaTime;
 
-        boolean playerHiddenInSkull = isPlayerHiddenInSkull(player, skullHideZones);
-        boolean canSeePlayer = !playerHiddenInSkull && canSeePlayer(player, walls, skullHideZones);
+        boolean canSeePlayer = canSeePlayer(player, walls, skullVisionBlockers);
 
         Vector2 bossCenter = getCenter(tmpCenter);
         Vector2 playerCenter = getPlayerCenter(player, tmpTarget);
 
-        // Nhìn thấy Player là đuổi luôn, không qua ALERT nữa
+        // Nhìn thấy Player trong vòng tròn quan sát là đuổi luôn.
         if (canSeePlayer) {
             lastKnownPlayerPos.set(playerCenter);
             lostSightTimer = 0f;
             searchTimer = 0f;
-            alertTimer = 0f;
 
             currentState = State.CHASE;
         }
@@ -135,9 +134,11 @@ public class Boss extends Entity {
             patrol(deltaTime, walls);
         }
 
-        // Boss bắt Player: mặt nạ bee không có tác dụng.
-        // Nếu Player đang trong Skull_Collision thì coi như đang núp, không bị bắt.
-        if (!playerHiddenInSkull && this.hitbox.overlaps(player.hitbox)) {
+        /*
+         * Boss chạm Player là bắt luôn.
+         * Skull_Collision KHÔNG còn làm player miễn bắt nữa.
+         */
+        if (this.hitbox.overlaps(player.hitbox)) {
             return true;
         }
 
@@ -178,8 +179,6 @@ public class Boss extends Entity {
 
         rotation = MathUtils.atan2(dy, dx) * MathUtils.radiansToDegrees;
 
-        // Boss đi sang phải thì isFacingRight = true.
-        // Boss đi sang trái thì isFacingRight = false.
         if (Math.abs(dx) > 0.05f) {
             isFacingRight = dx >= 0f;
         }
@@ -187,36 +186,35 @@ public class Boss extends Entity {
         moveWithCollision(dx * moveSpeed * deltaTime, dy * moveSpeed * deltaTime, walls);
     }
 
-    private boolean canSeePlayer(Player player, Array<Rectangle> walls, Array<Rectangle> skullHideZones) {
+    private boolean canSeePlayer(
+        Player player,
+        Array<Rectangle> walls,
+        Array<Rectangle> skullVisionBlockers
+    ) {
         Vector2 bossCenter = getCenter(tmpCenter);
         Vector2 playerCenter = getPlayerCenter(player, tmpTarget);
 
         float dist = bossCenter.dst(playerCenter);
+
+        // Chỉ cần nằm trong bán kính vòng tròn là có thể bị thấy.
         if (dist > visionRadius) {
             return false;
         }
 
-        float angleToPlayer = MathUtils.atan2(
-            playerCenter.y - bossCenter.y,
-            playerCenter.x - bossCenter.x
-        ) * MathUtils.radiansToDegrees;
-
-        float angleDiff = Math.abs(angleToPlayer - rotation);
-        if (angleDiff > 180f) {
-            angleDiff = 360f - angleDiff;
-        }
-
-        if (angleDiff > viewAngle / 2f) {
-            return false;
-        }
-
-        return hasLineOfSight(player, walls, skullHideZones);
+        // Không kiểm tra góc nhìn nữa.
+        // Chỉ kiểm tra có bị tường/skull che tầm nhìn không.
+        return hasLineOfSight(player, walls, skullVisionBlockers);
     }
 
-    private boolean hasLineOfSight(Player player, Array<Rectangle> walls, Array<Rectangle> skullHideZones) {
+    private boolean hasLineOfSight(
+        Player player,
+        Array<Rectangle> walls,
+        Array<Rectangle> skullVisionBlockers
+    ) {
         Vector2 bossPoint = getCenter(tmpCenter);
         Vector2 playerPoint = getPlayerCenter(player, tmpTarget);
 
+        // Tường vẫn chặn tầm nhìn.
         for (Rectangle wall : walls) {
             if (wall.overlaps(this.hitbox) || wall.overlaps(player.hitbox)) {
                 continue;
@@ -227,30 +225,29 @@ public class Boss extends Entity {
             }
         }
 
-        // Skull cũng có thể chặn tầm nhìn.
-        for (Rectangle skull : skullHideZones) {
-            if (skull.overlaps(this.hitbox) || skull.overlaps(player.hitbox)) {
-                continue;
-            }
+        /*
+         * Skull_Collision giờ chỉ là vật cản tầm nhìn.
+         *
+         * Khác đoạn cũ:
+         * - Không còn check player đang đứng trong skull là tàng hình.
+         * - Không bỏ qua skull khi skull overlaps player.
+         *
+         * Như vậy nếu đường nhìn từ boss tới player bị cục xương cắt ngang,
+         * boss sẽ không thấy player.
+         */
+        if (skullVisionBlockers != null) {
+            for (Rectangle skull : skullVisionBlockers) {
+                if (skull.overlaps(this.hitbox)) {
+                    continue;
+                }
 
-            if (Intersector.intersectSegmentRectangle(bossPoint, playerPoint, skull)) {
-                return false;
+                if (Intersector.intersectSegmentRectangle(bossPoint, playerPoint, skull)) {
+                    return false;
+                }
             }
         }
 
         return true;
-    }
-
-    private boolean isPlayerHiddenInSkull(Player player, Array<Rectangle> skullHideZones) {
-        if (skullHideZones == null) return false;
-
-        for (Rectangle skull : skullHideZones) {
-            if (player.hitbox.overlaps(skull)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private Vector2 getCenter(Vector2 out) {
@@ -265,21 +262,6 @@ public class Boss extends Entity {
             player.hitbox.x + player.hitbox.width / 2f,
             player.hitbox.y + player.hitbox.height / 2f
         );
-    }
-
-    private void faceTo(Vector2 target) {
-        Vector2 center = getCenter(tmpCenter);
-
-        rotation = MathUtils.atan2(
-            target.y - center.y,
-            target.x - center.x
-        ) * MathUtils.radiansToDegrees;
-
-        if (target.x < center.x) {
-            isFacingRight = false;
-        } else if (target.x > center.x) {
-            isFacingRight = true;
-        }
     }
 
     private int findNearestWaypointIndex() {
@@ -308,17 +290,6 @@ public class Boss extends Entity {
     public void draw(SpriteBatch batch) {
         TextureRegion frame = walkAnimation.getKeyFrame(stateTime, true);
 
-        /*
-         * Logic lật ảnh:
-         *
-         * Nếu sprite gốc quay sang trái:
-         * - Muốn nhìn trái  -> không flip
-         * - Muốn nhìn phải -> flip
-         *
-         * Nếu sprite gốc quay sang phải:
-         * - Muốn nhìn phải -> không flip
-         * - Muốn nhìn trái  -> flip
-         */
         boolean shouldFlipX = isFacingRight != SPRITE_FACES_RIGHT_BY_DEFAULT;
 
         if (frame.isFlipX() != shouldFlipX) {
@@ -332,20 +303,26 @@ public class Boss extends Entity {
     }
 
     public void drawDebug(ShapeRenderer shape) {
-        shape.setColor(currentState == State.CHASE ? Color.RED : Color.PURPLE);
-
         Vector2 center = getCenter(tmpCenter);
 
-        float x1 = center.x + MathUtils.cosDeg(rotation - viewAngle / 2f) * visionRadius;
-        float y1 = center.y + MathUtils.sinDeg(rotation - viewAngle / 2f) * visionRadius;
+        // Vẽ vòng tròn quan sát thay vì hình phễu.
+        if (currentState == State.CHASE) {
+            shape.setColor(Color.RED);
+        } else if (currentState == State.SEARCH) {
+            shape.setColor(Color.ORANGE);
+        } else {
+            shape.setColor(Color.PURPLE);
+        }
 
-        float x2 = center.x + MathUtils.cosDeg(rotation + viewAngle / 2f) * visionRadius;
-        float y2 = center.y + MathUtils.sinDeg(rotation + viewAngle / 2f) * visionRadius;
+        shape.circle(center.x, center.y, visionRadius);
 
-        shape.line(center.x, center.y, x1, y1);
-        shape.line(center.x, center.y, x2, y2);
-        shape.line(x1, y1, x2, y2);
-
+        // Vẽ hitbox boss.
         shape.rect(hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+
+        // Vẽ điểm cuối cùng boss nhớ player.
+        if (currentState == State.CHASE || currentState == State.SEARCH) {
+            shape.setColor(Color.YELLOW);
+            shape.circle(lastKnownPlayerPos.x, lastKnownPlayerPos.y, 4f);
+        }
     }
 }
