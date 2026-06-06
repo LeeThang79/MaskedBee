@@ -6,6 +6,7 @@ import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.math.Rectangle;
 
 import game.maskedbee.entities.Player;
+import game.maskedbee.main.NotificationManager;
 import game.maskedbee.objects.Door;
 import game.maskedbee.objects.Key;
 import game.maskedbee.objects.Lever;
@@ -64,11 +65,13 @@ public class PuzzleManager {
             }
 
             if (!player.hasMask) {
+                NotificationManager.getInstance().show("Bạn cần có mặt nạ để tương tác với điểm này");
                 System.out.println("Ban can co mat na truoc khi tuong tac voi diem nay.");
                 return;
             }
 
             if (player.hasActivatedMask) {
+                NotificationManager.getInstance().show("Mặt nạ đã được kích hoạt rồi");
                 System.out.println("Mat na da duoc kich hoat roi.");
                 return;
             }
@@ -89,6 +92,7 @@ public class PuzzleManager {
 
         // Đã có mặt nạ rồi thì không lấy lại nữa
         if (player.hasMask) {
+            NotificationManager.getInstance().show("Bạn đã nhặt mặt nạ rồi, không thể nhặt thêm");
             return;
         }
 
@@ -101,6 +105,7 @@ public class PuzzleManager {
                 player.hasMask = true;
                 player.hasMaskItem = true;
                 mapManager.saveProgressCheckpointHere();
+                NotificationManager.getInstance().show("Bạn vừa nhặt được mặt nạ của nữ hoàng\n     Bấm 'P' để đeo");
                 System.out.println("Picked bee mask!");
                 return;
             }
@@ -123,6 +128,8 @@ public class PuzzleManager {
                         }
                     } else if ("door_lever".equals(lever.type)) {
                         mapManager.openDoor(lever.targetName);
+                        NotificationManager.getInstance().show("Cửa tù đã được mở");
+                        NotificationManager.getInstance().show("Checkpoint mới được lưu thành Holding Chamber");
                         mapManager.saveProgressCheckpointHere();
                     }
 
@@ -143,6 +150,7 @@ public class PuzzleManager {
                     if (door.canOpen(player.currentKey)) {
                         mapManager.openDoor(door.getName());
                     } else {
+                        NotificationManager.getInstance().show("Cần chìa khóa để mở cửa này");
                         System.out.println("Need key: " + door.getRequiredKeyName());
                     }
                     break;
@@ -183,7 +191,7 @@ public class PuzzleManager {
 
                 waitingToHideLibraryKey = true;
                 libraryKeyHideTimer = 3f;
-
+                NotificationManager.getInstance().show("Bạn đã nhặt được chìa khóa");
                 System.out.println("Picked gold_key. Chest will change after 3 seconds.");
             } else {
                 System.out.println("Picked key: " + player.currentKey);
@@ -259,6 +267,7 @@ public class PuzzleManager {
         for (Spike spike : mapManager.spikes) {
             if (spike.isUp && player.hitbox.overlaps(spike.hitbox)) {
                 System.out.println("Dap trung gai! Reset level!");
+                NotificationManager.getInstance().show("Bạn đã đạp trúng gai!");
                 return true;
             }
         }

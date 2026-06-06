@@ -15,7 +15,11 @@
 44,44,44,8,2,2,2,4,0,1,2,2,2,7,44,44
 </data>
  </layer>
- <layer id="24" name="Ventilation" width="16" height="10" locked="1">
+ <objectgroup id="25" name="ExaminePoints">
+  <object id="136" name="holding_skull" x="192.453" y="100.734" width="34.1007" height="28.6132"/>
+  <object id="137" name="holding_special" x="349.238" y="70.1611" width="39.1962" height="28.2212"/>
+ </objectgroup>
+ <layer id="24" name="Ventilation" width="16" height="10">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

@@ -9,6 +9,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import game.maskedbee.main.AudioManager;
+import game.maskedbee.main.NotificationManager;
 
 public class PuzzleLibrary {
     private final Array<Rectangle> wallCollision;
@@ -290,6 +291,9 @@ public class PuzzleLibrary {
             mapManager.markPuzzleStepSolved(PHASE_1_KEY);
         }
 
+        NotificationManager.getInstance().show("Đã giải xong phần một - Rương vàng đã mở!");
+        NotificationManager.getInstance().show("Checkpoint mới được lưu thành giai đoạn một của Library");
+
         System.out.println("Library phase 1 solved - opened gold key chest path");
 
         // Âm thanh mở rương sau khi giải phase 1
@@ -319,7 +323,8 @@ public class PuzzleLibrary {
         if (mapManager != null) {
             mapManager.markPuzzleStepSolved(PHASE_2_KEY);
         }
-
+        NotificationManager.getInstance().show("Đã giải xong phần hai - Lối đi vào phòng bí mật đã được mở!");
+        NotificationManager.getInstance().show("Checkpoint mới được lưu thành giai đoạn hai của Library");
         System.out.println("Library phase 2 solved - opened hidden room");
 
         currentInput.clear();
