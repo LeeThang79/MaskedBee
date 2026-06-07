@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import java.lang.reflect.Constructor;
 import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
@@ -22,6 +23,7 @@ import game.maskedbee.main.AudioManager;
 import game.maskedbee.main.GameFlowManager;
 import game.maskedbee.main.NotificationManager;
 import game.maskedbee.map.DialogueManager;
+import game.maskedbee.map.MapManager;
 import game.maskedbee.map.PuzzleLibrary;
 import game.maskedbee.map.PuzzleManager;
 import game.maskedbee.map.StoryManager;
@@ -30,7 +32,6 @@ import game.maskedbee.ui.ChoiceMenu;
 import game.maskedbee.ui.HudRenderer;
 import game.maskedbee.ui.InteractionPrompt;
 import game.maskedbee.ui.PauseMenu;
-
 
 public class PlayScreen implements Screen {
     public final CORE game;
@@ -46,7 +47,7 @@ public class PlayScreen implements Screen {
     private StoryManager storyManager;
     private DialogueManager dialogueManager;
 
-    private static final String START_MAP = "Library.tmx";
+    private static final String START_MAP = "Cocoon_Chamber.tmx";
 
     private OrthographicCamera camera;
     private Viewport viewport;
@@ -174,7 +175,7 @@ public class PlayScreen implements Screen {
     }
 
     private void reloadCurrentMapAndRespawn() {
-        game.map.clearSpikeLeverStateForCurrentMap();
+        game.map.state.clearSpikeLeverStateForCurrentMap();
 
         game.map.loadMap("map/" + game.map.getCurrentMapName());
         recreatePuzzleLibrary();
@@ -195,9 +196,9 @@ public class PlayScreen implements Screen {
         game.map.updateFloorHide(myPlayer);
         camera.position.set(myPlayer.x, myPlayer.y, 0);
         updateCamera();
-        storyManager.checkNewGameIntro(dialogueManager); // KÍCH HOẠT THOẠI MỞ ĐẦU GAME
 
         if (storyManager != null && dialogueManager != null) {
+            storyManager.checkNewGameIntro(dialogueManager); // KÍCH HOẠT THOẠI MỞ ĐẦU GAME
             storyManager.checkMapEnterEvent("map/" + START_MAP, dialogueManager);
         }
 
@@ -205,9 +206,8 @@ public class PlayScreen implements Screen {
             state = GameState.TUTORIAL;
         }
 
-        queenChoiceMenu = new game.maskedbee.ui.ChoiceMenu(this, "Trở thành ong chúa?", "Có", "Không");
-        exitChoiceMenu = new game.maskedbee.ui.ChoiceMenu(this, "Bạn muốn thoát khỏi đây?", "Thoát", "Ở lại");
-
+        queenChoiceMenu = new ChoiceMenu(this, "Trở thành ong chúa?", "Có", "Không");
+        exitChoiceMenu = new ChoiceMenu(this, "Bạn muốn thoát khỏi đây?", "Thoát", "Ở lại");
         interactionPromptUI = new InteractionPrompt(this);
     }
 
@@ -461,8 +461,8 @@ public class PlayScreen implements Screen {
         portalCooldown = 0.45f;
         guardCatchCooldown = 0f;
 
-        if (game.map.hasProgressCheckpoint()) {
-            String checkpointMap = game.map.getProgressCheckpointMapName();
+        if (game.map.state.hasProgressCheckpoint()) {
+            String checkpointMap = game.map.state.getProgressCheckpointMapName();
 
             System.out.println("Respawn at solved puzzle checkpoint: " + checkpointMap);
 
@@ -505,8 +505,7 @@ public class PlayScreen implements Screen {
         myPlayer.isHidingAtStone = false;
         myPlayer.noiseRadius = 0f;
         if (flowManager != null) flowManager.resetProgress();
-        interactionPromptUI.clear();
-        game.map.clearAllProgressState();
+        game.map.state.clearAllProgressState();
     }
 
     private void drawGame() {

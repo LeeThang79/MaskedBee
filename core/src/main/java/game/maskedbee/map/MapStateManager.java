@@ -1,8 +1,5 @@
 package game.maskedbee.map;
 
-import com.badlogic.gdx.maps.MapLayer;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.math.Rectangle;
@@ -10,44 +7,44 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
-import game.maskedbee.objects.Door;
-import game.maskedbee.objects.Key;
 import game.maskedbee.objects.Lever;
 import game.maskedbee.objects.PushableBlock;
 import game.maskedbee.objects.Spike;
-import game.maskedbee.main.AudioManager;
 
-/**
- * Quản lý toàn bộ trạng thái trong phiên chơi:
- * - Cửa đã mở, phòng ẩn đã mở, chìa khóa đã thu
- * - Vị trí pushable block, trạng thái spike/lever
- * - Progress checkpoint
- */
 public class MapStateManager {
 
     private String currentMapName = "";
 
-    // --- Trạng thái bền vững trong phiên chơi ---
-    private final ObjectSet<String> openedDoors         = new ObjectSet<>();
-    private final ObjectSet<String> openedHiddenRooms   = new ObjectSet<>();
-    private final ObjectSet<String> collectedKeys       = new ObjectSet<>();
-    private final ObjectSet<String> solvedPuzzleSteps   = new ObjectSet<>();
+    // =========================================================
+    // STATE DATA — CỬA / KEY / PUZZLE / CHECKPOINT
+    // =========================================================
 
-    // --- Trạng thái động ---
-    private final ObjectMap<String, Vector2>  savedPushablePositions = new ObjectMap<>();
-    private final ObjectMap<String, Boolean>  savedSpikeStates       = new ObjectMap<>();
-    private final ObjectMap<String, Boolean>  savedLeverStates       = new ObjectMap<>();
+    private final ObjectSet<String> openedDoors = new ObjectSet<>();
+    private final ObjectSet<String> openedHiddenRooms = new ObjectSet<>();
+    private final ObjectSet<String> collectedKeys = new ObjectSet<>();
+    private final ObjectSet<String> solvedPuzzleSteps = new ObjectSet<>();
 
-    // --- Progress checkpoint ---
-    private boolean hasProgressCheckpoint      = false;
-    private String  progressCheckpointMapName  = null;
+    private boolean hasProgressCheckpoint = false;
+    private String progressCheckpointMapName = null;
 
     // =========================================================
-    // Helpers: tạo key duy nhất cho từng đối tượng
+    // STATE DATA — PUSHABLE / SPIKE / LEVER
+    // =========================================================
+
+    private final ObjectMap<String, Vector2> savedPushablePositions = new ObjectMap<>();
+    private final ObjectMap<String, Boolean> savedSpikeStates = new ObjectMap<>();
+    private final ObjectMap<String, Boolean> savedLeverStates = new ObjectMap<>();
+
+    // =========================================================
+    // KEY HELPERS
     // =========================================================
 
     public void setCurrentMapName(String name) {
-        this.currentMapName = (name != null) ? name : "";
+        currentMapName = (name != null) ? name : "";
+    }
+
+    public String currentMapPrefix() {
+        return currentMapName + ":";
     }
 
     private String stateKey(String objectName) {
@@ -60,28 +57,33 @@ public class MapStateManager {
 
     private String tileObjectStateKey(String category, TiledMapTileMapObject obj) {
         String objectName = obj.getName();
+
         if (objectName != null && !objectName.isEmpty()) {
             return currentMapName + ":" + category + ":" + objectName;
         }
+
         return currentMapName + ":" + category + ":"
             + Math.round(obj.getX()) + ":"
             + Math.round(obj.getY());
     }
 
     // =========================================================
-    // DOORS
+    // DOOR STATE
     // =========================================================
 
     public boolean isDoorOpened(String doorName) {
+        if (doorName == null || doorName.isEmpty()) return false;
         return openedDoors.contains(stateKey(doorName));
     }
 
     public void markDoorOpened(String doorName) {
+        if (doorName == null || doorName.isEmpty()) return;
         openedDoors.add(stateKey(doorName));
     }
 
-    /** Áp lại trạng thái tất cả cửa đã mở cho map hiện tại. */
     public void applyOpenedDoors(String prefix, DoorApplier applier) {
+        if (applier == null) return;
+
         for (String key : openedDoors) {
             if (key.startsWith(prefix)) {
                 String doorName = key.substring(prefix.length());
@@ -90,13 +92,12 @@ public class MapStateManager {
         }
     }
 
-    /** Callback interface để MapManager tự xử lý logic mở cửa. */
     public interface DoorApplier {
         void apply(String doorName);
     }
 
     // =========================================================
-    // HIDDEN ROOMS
+    // HIDDEN ROOM STATE
     // =========================================================
 
     public boolean isHiddenRoomOpened() {
@@ -108,7 +109,7 @@ public class MapStateManager {
     }
 
     // =========================================================
-    // KEYS
+    // KEY STATE
     // =========================================================
 
     public boolean isKeyCollected(String keyName) {
@@ -121,8 +122,9 @@ public class MapStateManager {
         collectedKeys.add(stateKey(keyName));
     }
 
-    /** Áp lại chìa khóa đã thu cho map hiện tại. */
     public void applyCollectedKeys(String prefix, KeyApplier applier) {
+        if (applier == null) return;
+
         for (String key : collectedKeys) {
             if (key.startsWith(prefix)) {
                 String keyName = key.substring(prefix.length());
@@ -136,7 +138,7 @@ public class MapStateManager {
     }
 
     // =========================================================
-    // PUZZLE STEPS
+    // PUZZLE STEP STATE
     // =========================================================
 
     public boolean isPuzzleStepSolved(String stepName) {
@@ -146,92 +148,28 @@ public class MapStateManager {
 
     public void markPuzzleStepSolved(String stepName) {
         if (stepName == null || stepName.isEmpty()) return;
+
         solvedPuzzleSteps.add(stateKey(stepName));
+        saveProgressCheckpointHere();
+
+        System.out.println("Puzzle step solved: " + currentMapName + " / " + stepName);
     }
 
     // =========================================================
-    // PUSHABLE BLOCKS
+    // CHECKPOINT STATE
     // =========================================================
 
-    public void savePushablePosition(PushableBlock block) {
-        if (block == null) return;
-        Rectangle b = block.getBounds();
-        savedPushablePositions.put(pushableStateKey(block), new Vector2(b.x, b.y));
-    }
+    public void saveProgressCheckpointHere() {
+        if (currentMapName == null || currentMapName.isEmpty()) return;
 
-    public void applyPushablePositions(Array<PushableBlock> pushables) {
-        for (PushableBlock block : pushables) {
-            Vector2 saved = savedPushablePositions.get(pushableStateKey(block));
-            if (saved != null) {
-                block.setPosition(saved.x, saved.y);
-            }
+        if (hasProgressCheckpoint && currentMapName.equals(progressCheckpointMapName)) {
+            return;
         }
-    }
 
-    public void clearPushableStateForCurrentMap() {
-        String prefix = currentMapName + ":pushable:";
-        Array<String> toRemove = new Array<>();
-        for (String key : savedPushablePositions.keys()) {
-            if (key.startsWith(prefix)) toRemove.add(key);
-        }
-        for (String key : toRemove) savedPushablePositions.remove(key);
-    }
+        hasProgressCheckpoint = true;
+        progressCheckpointMapName = currentMapName;
 
-    // =========================================================
-    // SPIKES & LEVERS
-    // =========================================================
-
-    public void saveSpikeState(Spike spike) {
-        if (spike == null || spike.mapObject == null) return;
-        savedSpikeStates.put(tileObjectStateKey("spike", spike.mapObject), spike.isUp);
-    }
-
-    public void saveLeverState(Lever lever) {
-        if (lever == null || lever.mapObject == null) return;
-        savedLeverStates.put(tileObjectStateKey("lever", lever.mapObject), lever.isPulled);
-    }
-
-    public void applySpikeLeverStates(Array<Spike> spikes, Array<Lever> levers, TiledMap map) {
-        for (Spike spike : spikes) {
-            if (spike == null || spike.mapObject == null) continue;
-            Boolean saved = savedSpikeStates.get(tileObjectStateKey("spike", spike.mapObject));
-            if (saved != null && spike.isUp != saved) {
-                spike.toggle(map);
-            }
-        }
-        for (Lever lever : levers) {
-            if (lever == null || lever.mapObject == null) continue;
-            Boolean saved = savedLeverStates.get(tileObjectStateKey("lever", lever.mapObject));
-            if (saved != null && lever.isPulled != saved) {
-                lever.toggle(map);
-            }
-        }
-    }
-
-    public void clearSpikeLeverStateForCurrentMap() {
-        clearByPrefix(savedSpikeStates, currentMapName + ":spike:");
-        clearByPrefix(savedLeverStates, currentMapName + ":lever:");
-    }
-
-    private void clearByPrefix(ObjectMap<String, Boolean> map, String prefix) {
-        Array<String> toRemove = new Array<>();
-        for (String key : map.keys()) {
-            if (key.startsWith(prefix)) toRemove.add(key);
-        }
-        for (String key : toRemove) map.remove(key);
-    }
-
-    // =========================================================
-    // PROGRESS CHECKPOINT
-    // =========================================================
-
-    public void saveProgressCheckpointHere(String mapName) {
-        if (mapName == null || mapName.isEmpty()) return;
-        if (hasProgressCheckpoint && mapName.equals(progressCheckpointMapName)) return;
-
-        hasProgressCheckpoint     = true;
-        progressCheckpointMapName = mapName;
-        System.out.println("Checkpoint saved at: " + progressCheckpointMapName);
+        System.out.println("Checkpoint saved at solved puzzle: " + progressCheckpointMapName);
     }
 
     public boolean hasProgressCheckpoint() {
@@ -243,12 +181,111 @@ public class MapStateManager {
     }
 
     public void clearProgressCheckpoint() {
-        hasProgressCheckpoint     = false;
+        hasProgressCheckpoint = false;
         progressCheckpointMapName = null;
     }
 
     // =========================================================
-    // RESET TOÀN BỘ
+    // PUSHABLE STATE
+    // =========================================================
+
+    public void rememberPushableState(PushableBlock block) {
+        if (block == null) return;
+
+        Rectangle b = block.getBounds();
+        savedPushablePositions.put(pushableStateKey(block), new Vector2(b.x, b.y));
+    }
+
+    public void applyPushablePositions(Array<PushableBlock> pushables) {
+        for (PushableBlock block : pushables) {
+            Vector2 saved = savedPushablePositions.get(pushableStateKey(block));
+
+            if (saved != null) {
+                block.setPosition(saved.x, saved.y);
+            }
+        }
+    }
+
+    public void clearPushableStateForCurrentMap() {
+        String prefix = currentMapName + ":pushable:";
+        Array<String> keysToRemove = new Array<>();
+
+        for (String key : savedPushablePositions.keys()) {
+            if (key.startsWith(prefix)) {
+                keysToRemove.add(key);
+            }
+        }
+
+        for (String key : keysToRemove) {
+            savedPushablePositions.remove(key);
+        }
+    }
+
+    // =========================================================
+    // SPIKE / LEVER STATE
+    // =========================================================
+
+    public void rememberSpikeState(Spike spike) {
+        if (spike == null || spike.mapObject == null) return;
+
+        savedSpikeStates.put(
+            tileObjectStateKey("spike", spike.mapObject),
+            spike.isUp
+        );
+    }
+
+    public void rememberLeverState(Lever lever) {
+        if (lever == null || lever.mapObject == null) return;
+
+        savedLeverStates.put(
+            tileObjectStateKey("lever", lever.mapObject),
+            lever.isPulled
+        );
+    }
+
+    public void applySpikeLeverStates(Array<Spike> spikes, Array<Lever> levers, TiledMap map) {
+        for (Spike spike : spikes) {
+            if (spike == null || spike.mapObject == null) continue;
+
+            Boolean savedIsUp = savedSpikeStates.get(tileObjectStateKey("spike", spike.mapObject));
+
+            if (savedIsUp != null && spike.isUp != savedIsUp) {
+                spike.toggle(map);
+            }
+        }
+
+        for (Lever lever : levers) {
+            if (lever == null || lever.mapObject == null) continue;
+
+            Boolean savedPulled = savedLeverStates.get(tileObjectStateKey("lever", lever.mapObject));
+
+            if (savedPulled != null && lever.isPulled != savedPulled) {
+                lever.toggle(map);
+            }
+        }
+    }
+
+    public void clearSpikeLeverStateForCurrentMap() {
+        clearBooleanMapByPrefix(savedSpikeStates, currentMapName + ":spike:");
+        clearBooleanMapByPrefix(savedLeverStates, currentMapName + ":lever:");
+    }
+
+    private void clearBooleanMapByPrefix(ObjectMap<String, Boolean> map, String prefix) {
+        Array<String> keysToRemove = new Array<>();
+
+        for (String key : map.keys()) {
+            if (key.startsWith(prefix)) {
+                keysToRemove.add(key);
+            }
+        }
+
+        for (String key : keysToRemove) {
+            map.remove(key);
+        }
+    }
+
+    // =========================================================
+    // RESET ALL STATE
     // =========================================================
 
     public void clearAllProgressState() {
@@ -260,13 +297,5 @@ public class MapStateManager {
         savedSpikeStates.clear();
         savedLeverStates.clear();
         clearProgressCheckpoint();
-    }
-
-    // =========================================================
-    // HELPER: prefix cho map hiện tại
-    // =========================================================
-
-    public String currentMapPrefix() {
-        return currentMapName + ":";
     }
 }
