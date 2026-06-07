@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="16" nextobjectid="19">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="9" tilewidth="32" tileheight="32" infinite="0" nextlayerid="16" nextobjectid="19">
  <tileset firstgid="1" source="floor_paid.tsx"/>
  <tileset firstgid="99" source="wall_paid.tsx"/>
  <tileset firstgid="295" source="wallfloor.tsx"/>
@@ -43,7 +43,7 @@
  <objectgroup id="13" name="ExaminePoints" locked="1">
   <object id="17" name="hidden_niche" x="164" y="98.5" width="23" height="35.5"/>
   <object id="19" name="hidden_niche" x="289" y="102.5" width="65.5" height="31"/>
-  <object id="22" name="hidden_coffin" x="222.75" y="150" width="50" height="41.5"/>
+  <object id="22" name="hidden_coffin" x="222.75" y="161.5" width="50" height="30"/>
   <object id="24" name="hidden_special" x="198.5" y="96.5" width="24.5" height="31"/>
  </objectgroup>
  <objectgroup id="5" name="Library_Chamber" locked="1">
