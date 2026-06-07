@@ -66,7 +66,7 @@ public class HudRenderer {
         // B. VẼ ĐƯỜNG VIỀN
         shapeRender.begin(ShapeRenderer.ShapeType.Line);
         shapeRender.setColor(Color.GOLD);
-        shapeRender.rect(screen.getCamera().position.x - 170, screen.getCamera().position.y - 125, 340, 225);
+        shapeRender.rect(screen.getCamera().position.x - 170, screen.getCamera().position.y - 125, 340, 250);
         shapeRender.end();
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
@@ -76,14 +76,15 @@ public class HudRenderer {
         screen.game.batch.begin();
 
         font.setColor(Color.PINK);
-        font.draw(screen.game.batch, "--- HƯỚNG DẪN CƠ BẢN ---", screen.getCamera().position.x - 91, screen.getCamera().position.y + 80);
+        font.draw(screen.game.batch, "--- HƯỚNG DẪN CƠ BẢN ---", screen.getCamera().position.x - 91, screen.getCamera().position.y + 100);
 
         font.setColor(Color.WHITE);
-        hintFont.draw(screen.game.batch, "W, A, S, D hoặc UP, LEFT, DOWN, RIGHT: Di chuyển", screen.getCamera().position.x - 160, screen.getCamera().position.y + 50);
+        hintFont.draw(screen.game.batch, "W, A, S, D hoặc Mũi tên: Di chuyển", screen.getCamera().position.x - 160, screen.getCamera().position.y + 75);
+        hintFont.draw(screen.game.batch, "Ctrl : Đi rón rén", screen.getCamera().position.x - 160, screen.getCamera().position.y + 50);
         hintFont.draw(screen.game.batch, "G : Tìm manh mối", screen.getCamera().position.x - 160, screen.getCamera().position.y + 25);
         hintFont.draw(screen.game.batch, "E : Tương tác đồ vật", screen.getCamera().position.x - 160, screen.getCamera().position.y);
         hintFont.draw(screen.game.batch, "F : Mở khóa cửa/Núp", screen.getCamera().position.x - 160, screen.getCamera().position.y - 25);
-        hintFont.draw(screen.game.batch, "P : Đeo/Tháo mặt nạ ", screen.getCamera().position.x - 160, screen.getCamera().position.y - 50);
+        hintFont.draw(screen.game.batch, "P : Đeo/Tháo mặt nạ", screen.getCamera().position.x - 160, screen.getCamera().position.y - 50);
         hintFont.draw(screen.game.batch, "SPACE : Đi qua phòng tiếp theo", screen.getCamera().position.x - 160, screen.getCamera().position.y - 75);
 
         // Hiệu ứng chữ nhấp nháy báo hiệu bấm phím

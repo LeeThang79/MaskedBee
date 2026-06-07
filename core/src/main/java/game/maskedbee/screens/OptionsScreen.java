@@ -31,7 +31,7 @@ public class OptionsScreen implements Screen {
     private BitmapFont bodyFont;
     private BitmapFont hintFont;
 
-    // Biến lưu âm lượng toàn cục 
+    // Biến lưu âm lượng toàn cục
     private static float volumeSetting = AudioManager.getInstance().getVolume();
 
     public OptionsScreen(CORE game) {
@@ -116,12 +116,13 @@ public class OptionsScreen implements Screen {
 
         // Danh sách các nút (Căn trái toàn bộ cho giống cột tài liệu)
         float rowPadding = 10f;
-        addControlRow(mainTable, "W, A, S, D / Arrows", "Move Character", hintStyle, rowPadding);
-        addControlRow(mainTable, "G", "Examine Points / Push Cocoons", hintStyle, rowPadding);
-        addControlRow(mainTable, "E", "Pull Levers / Interact", hintStyle, rowPadding);
-        addControlRow(mainTable, "F", "Unlock Doors / Hide", hintStyle, rowPadding);
+        addControlRow(mainTable, "W, A, S, D / Mũi tên", "Di chuyển", hintStyle, rowPadding);
+        addControlRow(mainTable, "Ctrl", "Đi rón rén", hintStyle, rowPadding);
+        addControlRow(mainTable, "G", "Tìm manh mối", hintStyle, rowPadding);
+        addControlRow(mainTable, "E", "Tương tác đồ vật", hintStyle, rowPadding);
+        addControlRow(mainTable, "F", "Mở khóa cửa/Núp", hintStyle, rowPadding);
+        addControlRow(mainTable, "P", "Đeo/Tháo mặt nạ", hintStyle, rowPadding);
         addControlRow(mainTable, "SPACE / ENTER", "Pass Room / Select", hintStyle, rowPadding);
-        addControlRow(mainTable, "R", "Reset Room Puzzle", hintStyle, rowPadding);
 
         // --- PHẦN 4: NÚT QUAY LẠI ---
         final Label returnLabel = new Label("RETURN", titleStyle);
