@@ -15,113 +15,97 @@ import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.tiles.AnimatedTiledMapTile;
-import com.badlogic.gdx.math.Polyline;
-import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.ObjectSet;
 import game.maskedbee.entities.Boss;
 import game.maskedbee.entities.Guard;
 import game.maskedbee.entities.Player;
+import game.maskedbee.main.AudioManager;
 import game.maskedbee.main.NotificationManager;
 import game.maskedbee.objects.Door;
 import game.maskedbee.objects.Key;
 import game.maskedbee.objects.Lever;
 import game.maskedbee.objects.PushableBlock;
 import game.maskedbee.objects.Spike;
-import game.maskedbee.main.AudioManager;
 
+/**
+ * Chỉ chịu trách nhiệm:
+ *  - Load / unload TiledMap
+ *  - Render background / foreground / object layers
+ *  - Giữ data collision (wallCollision, doorObjects...)
+ *  - Expose getters cho các hệ thống khác
+ *
+ * State persistence  → MapStateManager  (stateful, giữ currentMapName)
+ * Collision logic    → MapCollisionHelper (stateless, tất cả hàm static)
+ */
 public class MapManager {
 
+    // =========================================================
+    // Dependencies
+    // =========================================================
+    private final MapStateManager state = new MapStateManager();
+
+    // =========================================================
+    // Map / Renderer
+    // =========================================================
     private TiledMap map;
     private OrthogonalTiledMapRenderer renderer;
 
-    private final Array<Rectangle> wallCollision = new Array<>();
-    private final Array<RectangleMapObject> doorObjects = new Array<>();
-    private final Array<MapObject> portalObjects = new Array<>();
+    private String currentMapName = "";
+    private String lastMapName    = "";
+
+    // =========================================================
+    // Collision data — MapManager sở hữu, MapCollisionHelper tính toán
+    // =========================================================
+    private final Array<Rectangle>          wallCollision  = new Array<>();
+    private final Array<Rectangle>          stoneCollision = new Array<>();
+    private final Array<Rectangle>          skullCollision = new Array<>();
+    private final Array<RectangleMapObject> doorObjects    = new Array<>();
+
+    // =========================================================
+    // Object lists
+    // =========================================================
+    private final Array<MapObject>          portalObjects  = new Array<>();
     private final Array<RectangleMapObject> interactPoints = new Array<>();
 
     private final Array<PushableBlock> pushables = new Array<>();
-    private final Array<Key> keys = new Array<>();
-    private final Array<Door> doors = new Array<>();
+    private final Array<Key>           keys      = new Array<>();
+    private final Array<Door>          doors     = new Array<>();
 
-    private Rectangle hideTrigger;
+    public final Array<Spike>  spikes  = new Array<>();
+    public final Array<Lever>  levers  = new Array<>();
+    public final Array<Guard>  guards  = new Array<>();
+    public final Array<Boss>   bosses  = new Array<>();
+
+    private Rectangle         hideTrigger;
     private TiledMapTileLayer doorCloseLayer;
     private TiledMapTileLayer doorOpenLayer;
 
-    public final Array<Spike> spikes = new Array<>();
-    public final Array<Lever> levers = new Array<>();
-    public final Array<Guard> guards = new Array<>();
-    public final Array<Boss> bosses = new Array<>();
+    private boolean wasFloorHideTriggered = false;
 
-    private final Array<Rectangle> stoneCollision = new Array<>();
-    private final Array<Rectangle> skullCollision = new Array<>();
-
-    private String currentMapName = "";
-    private String lastMapName = "";
-
-    // Lưu tiến trình trong phiên chơi hiện tại.
-    // Khi rời map rồi quay lại, MapManager sẽ load lại .tmx rồi áp lại trạng thái này.
-    private final ObjectSet<String> openedDoors = new ObjectSet<>();
-    private final ObjectSet<String> openedHiddenRooms = new ObjectSet<>();
-    private final ObjectSet<String> collectedKeys = new ObjectSet<>();
-    private final ObjectSet<String> solvedPuzzleSteps = new ObjectSet<>();
-
-    private boolean hasProgressCheckpoint = false;
-    private String progressCheckpointMapName = null;
-
-    // Lưu trạng thái động trong phiên chơi hiện tại
-    private final ObjectMap<String, Vector2> savedPushablePositions = new ObjectMap<>();
-    private final ObjectMap<String, Boolean> savedSpikeStates = new ObjectMap<>();
-    private final ObjectMap<String, Boolean> savedLeverStates = new ObjectMap<>();
-
-    private boolean wasFloorHideTriggered = false; // thêm dòng này
-
-    private String stateKey(String objectName) {
-        return currentMapName + ":" + objectName;
-    }
-
-    private String pushableStateKey(PushableBlock block) {
-        return currentMapName + ":pushable:" + block.getId();
-    }
-
-    private String tileObjectStateKey(String category, TiledMapTileMapObject obj) {
-        String objectName = obj.getName();
-
-        if (objectName != null && !objectName.isEmpty()) {
-            return currentMapName + ":" + category + ":" + objectName;
-        }
-
-        return currentMapName + ":" + category + ":"
-            + Math.round(obj.getX()) + ":"
-            + Math.round(obj.getY());
-    }
-    public void renderInteractPoints(OrthographicCamera camera) {
-        if (renderer == null || map == null) return;
-        renderer.setView(camera);
-        renderer.getBatch().begin();
-        for (MapLayer layer : map.getLayers()) {
-            if (layer.getName().contains("Interact")) {
-                renderObjectLayer(layer);
-            }
-        }
-        renderer.getBatch().end();
-    }
+    // =========================================================
+    // LOAD MAP
+    // =========================================================
 
     public void loadMap(String fileName) {
         try {
-            lastMapName = currentMapName;
+            lastMapName    = currentMapName;
             currentMapName = fileName.replace("map/", "");
-            if (map != null) map.dispose();
+
+            if (map != null)      map.dispose();
             if (renderer != null) renderer.dispose();
 
-            map = new TmxMapLoader().load(fileName);
+            map      = new TmxMapLoader().load(fileName);
             renderer = new OrthogonalTiledMapRenderer(map);
 
+            // Reset collision data
             wallCollision.clear();
+            stoneCollision.clear();
+            skullCollision.clear();
             doorObjects.clear();
+
+            // Reset object lists
             portalObjects.clear();
             interactPoints.clear();
             pushables.clear();
@@ -131,173 +115,27 @@ public class MapManager {
             levers.clear();
             guards.clear();
             bosses.clear();
-            skullCollision.clear();
-            stoneCollision.clear();
-
             hideTrigger = null;
 
             doorCloseLayer = getTileLayerSafe("Door_Close");
-            doorOpenLayer = getTileLayerSafe("Door_Open");
+            doorOpenLayer  = getTileLayerSafe("Door_Open");
 
+            // Cập nhật map name cho state manager
+            state.setCurrentMapName(currentMapName);
+
+            // Parse tất cả layer
             for (MapLayer layer : map.getLayers()) {
-                if (layer == null) continue;
-
-                String layerName = layer.getName();
-
-                // Skull_Collision là vùng núp boss.
-                // Không được cho vào wallCollision, vì player phải đi vào được.
-                if (layerName.equals("Skull_Collision")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-
-                            // Dùng riêng cho Boss kiểm tra xương có chắn tầm nhìn không
-                            skullCollision.add(rect);
-
-                            // Dùng cho Player/Boss không đi xuyên qua xương
-                            wallCollision.add(rect);
-                        }
-                    }
-                }
-
-                // Boss / Bosses layer.
-                else if (layerName.equals("Boss") || layerName.equals("Bosses")) {
-                    loadBossLayer(layer);
-                }
-                else if (layerName.equals("Jail_Door_Collision")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            RectangleMapObject rectObj = (RectangleMapObject) obj;
-                            if (rectObj.getName() == null || rectObj.getName().isEmpty()) {
-                                rectObj.setName("jail_door_hitbox");
-                            }
-                            doorObjects.add(rectObj);
-                        }
-                    }
-                }
-                else if (layerName.equals("Stone_Collision")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-                            // Stone vẫn là vật cản bình thường
-                            wallCollision.add(rect);
-                            // Nhưng chỉ Stone_Collision mới được dùng để núp bằng F
-                            stoneCollision.add(rect);
-                        }
-                    }
-                }
-                else if (layerName.equals("Chest_Collision")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            RectangleMapObject rectObj = (RectangleMapObject) obj;
-
-                            if (rectObj.getName() == null || rectObj.getName().isEmpty()) {
-                                rectObj.setName("gold_key_chest_block");
-                            }
-                            // Cho vào doorObjects để sau này openDoor() xóa được
-                            doorObjects.add(rectObj);
-                        }
-                    }
-                }
-                else if (layerName.contains("Collision")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            String objName = obj.getName();
-                            if (objName != null && objName.contains("jail_door")) {
-                                doorObjects.add((RectangleMapObject) obj);
-                            } else {
-                                wallCollision.add(((RectangleMapObject) obj).getRectangle());
-                            }
-                        }
-                    }
-                }
-                else if (layerName.equals("Doors")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            RectangleMapObject rectObj = (RectangleMapObject) obj;
-                            doorObjects.add(rectObj);
-                            doors.add(new Door(rectObj));
-                        }
-                    }
-                }
-                else if (layerName.equals("Pushable")) {
-                    int pushableIndex = 0;
-
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-                            Rectangle fixedRect = new Rectangle(
-                                (float) Math.floor(rect.x / 32f) * 32f,
-                                (float) Math.floor(rect.y / 32f) * 32f,
-                                32f,
-                                32f
-                            );
-
-                            String id = obj.getName();
-                            if (id == null || id.isEmpty()) {
-                                id = "pushable_" + Math.round(fixedRect.x) + "_" + Math.round(fixedRect.y) + "_" + pushableIndex;
-                            }
-
-                            pushables.add(new PushableBlock(fixedRect, id));
-                            pushableIndex++;
-                        }
-                    }
-                }
-                else if (layerName.equals("Hide_Trigger")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            hideTrigger = ((RectangleMapObject) obj).getRectangle();
-                        }
-                    }
-                }
-                else if (layerName.equals("Keys")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            keys.add(new Key((RectangleMapObject) obj));
-                        }
-                    }
-                }
-                else if (layerName.equals("Exit") || layerName.contains("_Chamber") || layerName.contains("Corridor")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        portalObjects.add(obj);
-                    }
-                }
-                else if (layerName.equals("Spikes")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof TiledMapTileMapObject) {
-                            spikes.add(new Spike((TiledMapTileMapObject) obj));
-                        }
-                    }
-                }
-                else if (layerName.equals("Switch")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof TiledMapTileMapObject) {
-                            levers.add(new Lever((TiledMapTileMapObject) obj));
-                        }
-                    }
-                }
-                else if (layerName.contains("Interact")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        if (obj instanceof RectangleMapObject) {
-                            interactPoints.add((RectangleMapObject) obj);
-                        }
-                    }
-                }
-                else if (layerName.equals("Guards")) {
-                    for (MapObject obj : layer.getObjects()) {
-                        Array<Vector2> path = readGuardPath(obj);
-                        if (path.size > 0) {
-                            guards.add(new Guard(path.get(0).x - 16f, path.get(0).y - 20f, path));
-                        }
-                    }
-                }
+                if (layer != null) parseLayer(layer);
             }
 
             resetFloorHideToClosed();
 
-            applySavedMapState();
-            applySavedPushableState();
-            applySavedSpikeLeverState();
+            // Áp lại trạng thái đã lưu
+            state.applyOpenedDoors(state.currentMapPrefix(), this::applyDoorOpened);
+            if (state.isHiddenRoomOpened()) applyHiddenRoomOpened();
+            state.applyCollectedKeys(state.currentMapPrefix(), this::hideCollectedKey);
+            state.applyPushablePositions(pushables);
+            state.applySpikeLeverStates(spikes, levers, map);
 
             updateFloorHide(null);
 
@@ -307,243 +145,476 @@ public class MapManager {
             Gdx.app.error("MapManager", "Error loading map: " + fileName, e);
         }
     }
-    private void playMusicForCurrentMap() {
-        if (currentMapName.equals("Library.tmx")
-            || currentMapName.equals("Hidden_Room.tmx")
-            || currentMapName.equals("Old_Corridor.tmx")
-            || currentMapName.equals("Old_Chapel.tmx")
-            || currentMapName.equals("Exit_Chamber.tmx")) {
 
-            AudioManager.getInstance().playBackgroundMusic("audio/Save_Room_Theme.ogg", 0.4f);
-        } else if (currentMapName.equals("Ritual_Chamber.tmx")
-            || currentMapName.equals("Queen_Chamber.tmx")
-            || currentMapName.equals("Corridor.tmx")) {
+    private void parseLayer(MapLayer layer) {
+        String name = layer.getName();
 
-            AudioManager.getInstance().playBackgroundMusic("audio/The_Gauntlet.ogg", 0.2f);
-        } else {
-            AudioManager.getInstance().playBackgroundMusic("audio/The_Gauntlet.ogg", 0.1f);
+        switch (name) {
+            case "Skull_Collision":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof RectangleMapObject) {
+                        Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                        skullCollision.add(rect);
+                        wallCollision.add(rect);
+                    }
+                }
+                break;
+
+            case "Boss": case "Bosses":
+                loadBossLayer(layer);
+                break;
+
+            case "Stone_Collision":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof RectangleMapObject) {
+                        Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+                        wallCollision.add(rect);
+                        stoneCollision.add(rect);
+                    }
+                }
+                break;
+
+            case "Jail_Door_Collision":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof RectangleMapObject) {
+                        RectangleMapObject r = (RectangleMapObject) obj;
+                        if (r.getName() == null || r.getName().isEmpty())
+                            r.setName("jail_door_hitbox");
+                        doorObjects.add(r);
+                    }
+                }
+                break;
+
+            case "Chest_Collision":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof RectangleMapObject) {
+                        RectangleMapObject r = (RectangleMapObject) obj;
+                        if (r.getName() == null || r.getName().isEmpty())
+                            r.setName("gold_key_chest_block");
+                        doorObjects.add(r);
+                    }
+                }
+                break;
+
+            case "Doors":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof RectangleMapObject) {
+                        RectangleMapObject r = (RectangleMapObject) obj;
+                        doorObjects.add(r);
+                        doors.add(new Door(r));
+                    }
+                }
+                break;
+
+            case "Pushable":
+                parsePushableLayer(layer);
+                break;
+
+            case "Hide_Trigger":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof RectangleMapObject)
+                        hideTrigger = ((RectangleMapObject) obj).getRectangle();
+                }
+                break;
+
+            case "Keys":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof RectangleMapObject)
+                        keys.add(new Key((RectangleMapObject) obj));
+                }
+                break;
+
+            case "Spikes":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof TiledMapTileMapObject)
+                        spikes.add(new Spike((TiledMapTileMapObject) obj));
+                }
+                break;
+
+            case "Switch":
+                for (MapObject obj : layer.getObjects()) {
+                    if (obj instanceof TiledMapTileMapObject)
+                        levers.add(new Lever((TiledMapTileMapObject) obj));
+                }
+                break;
+
+            case "Guards":
+                for (MapObject obj : layer.getObjects()) {
+                    Array<Vector2> path = readPath(obj);
+                    if (path.size > 0)
+                        guards.add(new Guard(path.get(0).x - 16f, path.get(0).y - 20f, path));
+                }
+                break;
+
+            default:
+                if (name.contains("Collision")) {
+                    parseGenericCollisionLayer(layer);
+                } else if (name.equals("Exit") || name.contains("_Chamber") || name.contains("Corridor")) {
+                    for (MapObject obj : layer.getObjects()) portalObjects.add(obj);
+                } else if (name.contains("Interact")) {
+                    for (MapObject obj : layer.getObjects()) {
+                        if (obj instanceof RectangleMapObject)
+                            interactPoints.add((RectangleMapObject) obj);
+                    }
+                }
+                break;
         }
     }
 
-    private void loadBossLayer(MapLayer layer) {
-        Array<Vector2> path = null;
-        Float bossX = null;
-        Float bossY = null;
-
+    private void parseGenericCollisionLayer(MapLayer layer) {
         for (MapObject obj : layer.getObjects()) {
-            Array<Vector2> objectPath = readPath(obj);
-
-            if (objectPath.size > 0) {
-                path = objectPath;
-
-                if (bossX == null || bossY == null) {
-                    bossX = objectPath.get(0).x;
-                    bossY = objectPath.get(0).y;
+            if (obj instanceof RectangleMapObject) {
+                String objName = obj.getName();
+                if (objName != null && objName.contains("jail_door")) {
+                    doorObjects.add((RectangleMapObject) obj);
+                } else {
+                    wallCollision.add(((RectangleMapObject) obj).getRectangle());
                 }
-
-                continue;
             }
+        }
+    }
 
+    private void parsePushableLayer(MapLayer layer) {
+        int idx = 0;
+        for (MapObject obj : layer.getObjects()) {
             if (obj instanceof RectangleMapObject) {
                 Rectangle rect = ((RectangleMapObject) obj).getRectangle();
-                bossX = rect.x;
-                bossY = rect.y;
-            } else if (obj instanceof PointMapObject) {
-                bossX = ((PointMapObject) obj).getPoint().x;
-                bossY = ((PointMapObject) obj).getPoint().y;
-            } else if (obj instanceof TiledMapTileMapObject) {
-                TiledMapTileMapObject tileObject = (TiledMapTileMapObject) obj;
-                bossX = tileObject.getX();
-                bossY = tileObject.getY() - 32f;
+                Rectangle fixed = new Rectangle(
+                    (float) Math.floor(rect.x / 32f) * 32f,
+                    (float) Math.floor(rect.y / 32f) * 32f,
+                    32f, 32f
+                );
+                String id = obj.getName();
+                if (id == null || id.isEmpty())
+                    id = "pushable_" + Math.round(fixed.x) + "_" + Math.round(fixed.y) + "_" + idx;
+                pushables.add(new PushableBlock(fixed, id));
+                idx++;
             }
-        }
-
-        if (path != null && path.size > 0) {
-            bosses.add(new Boss(0, 0, path));
-            System.out.println("Loaded boss with path");
-        } else if (bossX != null && bossY != null) {
-            bosses.add(new Boss(bossX, bossY, null));
-            System.out.println("Loaded boss at " + bossX + ", " + bossY);
         }
     }
 
-    private Array<Vector2> readPath(MapObject obj) {
-        Array<Vector2> path = new Array<>();
+    // =========================================================
+    // DOOR LOGIC
+    // =========================================================
 
-        if (obj instanceof PolylineMapObject) {
-            Polyline polyline = ((PolylineMapObject) obj).getPolyline();
-            float[] vertices = polyline.getTransformedVertices();
+    public void openDoor(String doorName) {
+        if (doorName == null) return;
 
-            for (int i = 0; i < vertices.length; i += 2) {
-                path.add(new Vector2(vertices[i], vertices[i + 1]));
+        if (doorName.toLowerCase().contains("hidden")) {
+            openHiddenRoom();
+            return;
+        }
+
+        if (!state.isDoorOpened(doorName)) {
+            AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.5f);
+            state.markDoorOpened(doorName);
+            applyDoorOpened(doorName);
+            System.out.println("🚪 Door opened: " + doorName);
+        }
+    }
+
+    private void applyDoorOpened(String doorName) {
+        if (doorName == null) return;
+
+        // Dùng MapCollisionHelper static để xóa door collision
+        MapCollisionHelper.removeDoorByName(doorObjects, doorName);
+
+        hideDoorObjectInLayer("Door",  doorName);
+        hideDoorObjectInLayer("Doors", doorName);
+        hideDoorObjectInLayer("Jail",  doorName);
+
+        for (Door door : doors) {
+            if (doorName.equals(door.getName())) {
+                door.open();
+                Rectangle b = door.getBounds();
+                int tileX = Math.round(b.x / 32f);
+                int tileY = Math.round(b.y / 32f);
+                if (doorCloseLayer != null) {
+                    for (int i = 0; i < 2; i++) doorCloseLayer.setCell(tileX, tileY + i, null);
+                }
+                if (doorOpenLayer != null) doorOpenLayer.setVisible(true);
+                break;
             }
-        } else if (obj instanceof PolygonMapObject) {
-            Polygon polygon = ((PolygonMapObject) obj).getPolygon();
-            float[] vertices = polygon.getTransformedVertices();
+        }
+    }
 
-            for (int i = 0; i < vertices.length; i += 2) {
-                path.add(new Vector2(vertices[i], vertices[i + 1]));
+    // =========================================================
+    // HIDDEN ROOM
+    // =========================================================
+
+    public void openHiddenRoom() {
+        if (!state.isHiddenRoomOpened()) {
+            AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.5f);
+        }
+        state.markHiddenRoomOpened();
+        state.saveProgressCheckpointHere(currentMapName);
+        applyHiddenRoomOpened();
+        System.out.println("✅ Hidden room opened");
+    }
+
+    private void applyHiddenRoomOpened() {
+        if (map == null) return;
+        setLayerVisibleSafe("Hide_Floor", false);
+
+        MapLayer hiddenCollision = map.getLayers().get("Hidden_Room_Collision");
+        if (hiddenCollision != null) {
+            hiddenCollision.setVisible(false);
+            for (MapObject obj : hiddenCollision.getObjects()) {
+                if (obj instanceof RectangleMapObject) {
+                    // Dùng MapCollisionHelper static để xóa wall
+                    MapCollisionHelper.removeWallByRect(
+                        wallCollision,
+                        ((RectangleMapObject) obj).getRectangle()
+                    );
+                }
+            }
+        }
+    }
+
+    // =========================================================
+    // KEYS
+    // =========================================================
+
+    public void markKeyCollected(String keyName) {
+        if (keyName == null || keyName.isEmpty()) return;
+        state.markKeyCollected(keyName);
+        for (Key key : keys) {
+            if (keyName.equals(key.getName())) { key.collect(); break; }
+        }
+    }
+
+    private void hideCollectedKey(String keyName) {
+        if (keyName == null) return;
+        for (Key key : keys) {
+            if (keyName.equals(key.getName())) { key.collect(); break; }
+        }
+        MapLayer keyLayer = map.getLayers().get("Keys");
+        if (keyLayer != null) {
+            for (MapObject obj : keyLayer.getObjects()) {
+                if (keyName.equals(obj.getName())) obj.setVisible(false);
+            }
+        }
+        if ("Library.tmx".equalsIgnoreCase(currentMapName) && "gold_key".equalsIgnoreCase(keyName)) {
+            showLibraryChestNoKey();
+        }
+    }
+
+    public boolean isKeyCollected(String keyName)    { return state.isKeyCollected(keyName); }
+    public boolean isHiddenRoomOpened()              { return state.isHiddenRoomOpened(); }
+
+    // =========================================================
+    // PUZZLE
+    // =========================================================
+
+    public void markPuzzleStepSolved(String stepName) {
+        state.markPuzzleStepSolved(stepName);
+        state.saveProgressCheckpointHere(currentMapName);
+        System.out.println("Puzzle step solved: " + currentMapName + " / " + stepName);
+    }
+
+    public boolean isPuzzleStepSolved(String stepName) { return state.isPuzzleStepSolved(stepName); }
+
+    // =========================================================
+    // PUSHABLES
+    // =========================================================
+
+    public void rememberPushableState(PushableBlock block) {
+        state.savePushablePosition(block);
+        AudioManager.getInstance().playSoundEffect("audio/Cocoon_Push.wav", 0.8f);
+    }
+
+    public void clearPushableStateForCurrentMap() {
+        state.clearPushableStateForCurrentMap();
+    }
+
+    public void resetPushables() {
+        state.clearPushableStateForCurrentMap();
+        for (PushableBlock block : pushables) block.resetPosition();
+        updateFloorHide(null);
+    }
+
+    // =========================================================
+    // SPIKES & LEVERS
+    // =========================================================
+
+    public void rememberSpikeState(Spike spike) { state.saveSpikeState(spike); }
+
+    public void rememberLeverState(Lever lever) {
+        state.saveLeverState(lever);
+        AudioManager.getInstance().playSoundEffect("audio/Lever_Sound.wav", 0.5f);
+    }
+
+    public void clearSpikeLeverStateForCurrentMap() { state.clearSpikeLeverStateForCurrentMap(); }
+
+    // =========================================================
+    // FLOOR HIDE / TRIGGER
+    // =========================================================
+
+    public void updateFloorHide(Player player) {
+        if (map == null) return;
+        MapLayer hideLayer = map.getLayers().get("Floor_Hide");
+        if (hideLayer == null) return;
+        if (hideTrigger == null) { hideLayer.setVisible(true); return; }
+
+        boolean triggeredByPlayer   = player != null && player.hitbox.overlaps(hideTrigger);
+        boolean triggeredByPushable = false;
+
+        for (PushableBlock block : pushables) {
+            Rectangle b = block.getBounds();
+            if (hideTrigger.contains(b.x + b.width / 2f, b.y + b.height / 2f)) {
+                triggeredByPushable = true;
+                break;
             }
         }
 
-        return path;
-    }
-    private TiledMapTileLayer getTileLayerSafe(String name) {
-        if (map == null) return null;
-        MapLayer layer = map.getLayers().get(name);
-        return (layer instanceof TiledMapTileLayer) ? (TiledMapTileLayer) layer : null;
+        boolean triggered = triggeredByPlayer || triggeredByPushable;
+        hideLayer.setVisible(!triggered);
+
+        if (triggered && !wasFloorHideTriggered) {
+            AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.6f);
+        }
+        wasFloorHideTriggered = triggered;
+
+        if (triggeredByPushable) {
+            NotificationManager.getInstance().show("Giải đố thành công\nĐã mở ra lối đi bí mật");
+            NotificationManager.getInstance().show("Checkpoint mới được lưu thành Disposal");
+            state.saveProgressCheckpointHere(currentMapName);
+        }
     }
 
-    private Array<Vector2> readGuardPath(MapObject obj) {
-        Array<Vector2> path = new Array<>();
+    private void resetFloorHideToClosed() {
+        if (map == null) return;
+        MapLayer hideLayer = map.getLayers().get("Floor_Hide");
+        if (hideLayer != null) hideLayer.setVisible(true);
+    }
 
-        if (obj instanceof PolylineMapObject) {
-            Polyline polyline = ((PolylineMapObject) obj).getPolyline();
-            float[] vertices = polyline.getTransformedVertices();
-            for (int i = 0; i < vertices.length; i += 2) {
-                path.add(new Vector2(vertices[i], vertices[i + 1]));
+    // =========================================================
+    // PORTAL
+    // =========================================================
+
+    public String checkPortal(Rectangle entityRect) {
+        for (MapObject portal : portalObjects) {
+            if (!(portal instanceof RectangleMapObject)) continue;
+            Rectangle rect = ((RectangleMapObject) portal).getRectangle();
+            if (!entityRect.overlaps(rect)) continue;
+
+            String dest = portal.getName();
+            if ("Old_Corridor.tmx".equals(dest) && hasFloorHideLayer()) {
+                if (!isFloorHideOpened()) return null;
+            } else {
+                for (RectangleMapObject door : doorObjects) {
+                    if (rect.overlaps(door.getRectangle())) return null;
+                }
             }
-        } else if (obj instanceof PolygonMapObject) {
-            com.badlogic.gdx.math.Polygon polygon = ((PolygonMapObject) obj).getPolygon();
-            float[] vertices = polygon.getTransformedVertices();
-            for (int i = 0; i < vertices.length; i += 2) {
-                path.add(new Vector2(vertices[i], vertices[i + 1]));
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+                || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+                if (dest != null && dest.endsWith(".tmx")) return "map/" + dest;
             }
         }
-
-        return path;
+        return null;
     }
+
+    private boolean isFloorHideOpened() {
+        MapLayer layer = map == null ? null : map.getLayers().get("Floor_Hide");
+        return layer != null && !layer.isVisible();
+    }
+
+    private boolean hasFloorHideLayer() {
+        return map != null && map.getLayers().get("Floor_Hide") != null;
+    }
+
+    // =========================================================
+    // SPAWN POINTS
+    // =========================================================
 
     public Rectangle getSpawnPoint(String fromMap) {
         if (map == null || fromMap == null) return null;
-
         MapLayer spawnLayer = map.getLayers().get("SpawnPoints");
         if (spawnLayer == null) return null;
 
-        String normalizedFromMap = normalizeMapName(fromMap);
-
+        String normalized = normalizeMapName(fromMap);
         for (MapObject obj : spawnLayer.getObjects()) {
-            String objName = obj.getName();
-            if (objName == null) continue;
-
-            String normalizedObjName = normalizeMapName(objName);
-
-            if (normalizedFromMap.equals(normalizedObjName)) {
-                if (obj instanceof RectangleMapObject) {
-                    return ((RectangleMapObject) obj).getRectangle();
-                }
-
-                if (obj instanceof PointMapObject) {
-                    float x = ((PointMapObject) obj).getPoint().x;
-                    float y = ((PointMapObject) obj).getPoint().y;
-                    return new Rectangle(x, y, 32, 32);
-                }
+            if (obj.getName() == null) continue;
+            if (!normalized.equals(normalizeMapName(obj.getName()))) continue;
+            if (obj instanceof RectangleMapObject) return ((RectangleMapObject) obj).getRectangle();
+            if (obj instanceof PointMapObject) {
+                float x = ((PointMapObject) obj).getPoint().x;
+                float y = ((PointMapObject) obj).getPoint().y;
+                return new Rectangle(x, y, 32, 32);
             }
         }
-
-        System.out.println("WARNING: Khong tim thay spawn tu map "
-            + fromMap + " trong SpawnPoints cua map " + currentMapName);
-
+        System.out.println("WARNING: Khong tim thay spawn tu map " + fromMap);
         return null;
-    }
-    private String normalizeMapName(String name) {
-        if (name == null) return "";
-
-        return name
-            .replace("\\", "/")
-            .replace("map/", "")
-            .trim()
-            .toLowerCase();
     }
 
     public Rectangle getPlayerSpawn() {
         if (map == null) return null;
-
-        String[] layerNames = {
-            "Player_spawn",
-            "Player_Spawn",
-            "player_spawn",
-            "SpawnPoints"
-        };
-
-        String[] objectNames = {
-            "player_spawn",
-            "Player_Spawn",
-            "Player_spawn"
-        };
-
-        for (String layerName : layerNames) {
-            for (String objectName : objectNames) {
-                Rectangle spawn = getPlayerSpawnFromLayer(layerName, objectName);
-                if (spawn != null) return spawn;
+        String[] layerNames  = { "Player_spawn", "Player_Spawn", "player_spawn", "SpawnPoints" };
+        String[] objectNames = { "player_spawn", "Player_Spawn", "Player_spawn" };
+        for (String ln : layerNames) {
+            for (String on : objectNames) {
+                Rectangle r = getPlayerSpawnFromLayer(ln, on);
+                if (r != null) return r;
             }
         }
-
         return null;
     }
+
     private Rectangle getPlayerSpawnFromLayer(String layerName, String objectName) {
         MapLayer layer = map.getLayers().get(layerName);
         if (layer == null) return null;
         for (MapObject obj : layer.getObjects()) {
-            if (objectName.equals(obj.getName())) {
-                if (obj instanceof RectangleMapObject) {
-                    return ((RectangleMapObject) obj).getRectangle();
-                }
-                if (obj instanceof PointMapObject) {
-                    float x = ((PointMapObject) obj).getPoint().x;
-                    float y = ((PointMapObject) obj).getPoint().y;
-                    return new Rectangle(x, y, 32, 32);
-                }
+            if (!objectName.equals(obj.getName())) continue;
+            if (obj instanceof RectangleMapObject) return ((RectangleMapObject) obj).getRectangle();
+            if (obj instanceof PointMapObject) {
+                float x = ((PointMapObject) obj).getPoint().x;
+                float y = ((PointMapObject) obj).getPoint().y;
+                return new Rectangle(x, y, 32, 32);
             }
         }
         return null;
     }
 
+    private String normalizeMapName(String name) {
+        if (name == null) return "";
+        return name.replace("\\", "/").replace("map/", "").trim().toLowerCase();
+    }
+
+    // =========================================================
+    // RENDER
+    // =========================================================
+
+    public void render(OrthographicCamera camera, boolean isMasked) {
+        renderBackground(camera, isMasked);
+        renderForeground(camera, isMasked);
+    }
+
     public void renderBackground(OrthographicCamera camera, boolean isMasked) {
         if (renderer == null || map == null) return;
-
         renderer.setView(camera);
 
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
-            if (layer.isVisible() && layer instanceof TiledMapTileLayer) {
-                String layerName = layer.getName();
-
-                // ================================================================
-                // LOGIC LỌC LAYER THEO MẶT NẠ
-                // ================================================================
-                if (layerName.equals("Queen_Blood") && !isMasked) {
-                    continue; // Nếu KHÔNG đeo mặt nạ -> Không vẽ Queen_Blood
-                }
-                if (layerName.equals("Blood") && isMasked) {
-                    continue; // Nếu đeo mặt nạ -> Không vẽ Blood
-                }
-                // ================================================================
-
-                if (!layerName.equals("Overhead") && !layerName.equals("Small_Cocon")) {
-                    renderer.renderTileLayer((TiledMapTileLayer) layer);
-                }
+            if (!layer.isVisible() || !(layer instanceof TiledMapTileLayer)) continue;
+            String n = layer.getName();
+            if (n.equals("Queen_Blood") && !isMasked) continue;
+            if (n.equals("Blood") && isMasked) continue;
+            if (!n.equals("Overhead") && !n.equals("Small_Cocon")) {
+                renderer.renderTileLayer((TiledMapTileLayer) layer);
             }
         }
         renderer.getBatch().end();
 
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
-            if (layer.isVisible() && !(layer instanceof TiledMapTileLayer)) {
-                String n = layer.getName();
-                if (!n.contains("Collision")
-                    && !n.contains("spawn")
-                    && !n.contains("Spawn")
-                    && !n.equals("SpawnPoints")
-                    && !n.equals("Overhead")
-                    && !n.equals("Guards")
-                    && !n.equals("Pushable")
-                    && !n.equals("Small_Cocoon")
-                    && !n.equals("Keys")
-                    && !n.equals("Hide_Trigger")
-                    && !n.contains("Interact_Point_0")) {
-                    renderObjectLayer(layer);
-                }
+            if (!layer.isVisible() || layer instanceof TiledMapTileLayer) continue;
+            String n = layer.getName();
+            if (!n.contains("Collision") && !n.contains("spawn") && !n.contains("Spawn")
+                && !n.equals("SpawnPoints") && !n.equals("Overhead") && !n.equals("Guards")
+                && !n.equals("Pushable") && !n.equals("Small_Cocoon") && !n.equals("Keys")
+                && !n.equals("Hide_Trigger") && !n.contains("Interact_Point_0")) {
+                renderObjectLayer(layer);
             }
         }
         renderer.getBatch().end();
@@ -551,42 +622,38 @@ public class MapManager {
 
     public void renderForeground(OrthographicCamera camera, boolean isMasked) {
         if (renderer == null || map == null) return;
-
         renderer.setView(camera);
+
         MapLayer overhead = map.getLayers().get("Overhead");
         if (overhead != null && overhead.isVisible()) {
-
-            // Kiểm tra nếu layer Overhead hoặc các sub-layer chứa tên máu theo cơ chế mặt nạ
-            String layerName = overhead.getName();
-            if (layerName.equals("Queen_Blood") && !isMasked) return;
-            if (layerName.equals("Blood") && isMasked) return;
-
+            String n = overhead.getName();
+            if (n.equals("Queen_Blood") && !isMasked) return;
+            if (n.equals("Blood") && isMasked) return;
             renderer.getBatch().begin();
-            if (overhead instanceof TiledMapTileLayer) {
-                renderer.renderTileLayer((TiledMapTileLayer) overhead);
-            } else {
-                renderObjectLayer(overhead);
-            }
+            if (overhead instanceof TiledMapTileLayer) renderer.renderTileLayer((TiledMapTileLayer) overhead);
+            else renderObjectLayer(overhead);
             renderer.getBatch().end();
         }
-        // Interact layers
+
         renderer.getBatch().begin();
         for (MapLayer layer : map.getLayers()) {
-            if (layer.getName().contains("Interact_Point_0")) {
-                renderObjectLayer(layer);
-            }
+            if (layer.getName().contains("Interact_Point_0")) renderObjectLayer(layer);
         }
         renderer.getBatch().end();
     }
 
-    public void render(OrthographicCamera camera, boolean isMasked) {
-        renderBackground(camera, isMasked);
-        renderForeground(camera, isMasked);
+    public void renderInteractPoints(OrthographicCamera camera) {
+        if (renderer == null || map == null) return;
+        renderer.setView(camera);
+        renderer.getBatch().begin();
+        for (MapLayer layer : map.getLayers()) {
+            if (layer.getName().contains("Interact")) renderObjectLayer(layer);
+        }
+        renderer.getBatch().end();
     }
 
     private void renderObjectLayer(MapLayer layer) {
         AnimatedTiledMapTile.updateAnimationBaseTime();
-
         for (MapObject obj : layer.getObjects()) {
             if (obj.isVisible() && obj instanceof TiledMapTileMapObject) {
                 TiledMapTileMapObject tObj = (TiledMapTileMapObject) obj;
@@ -594,553 +661,174 @@ public class MapManager {
                     tObj.getTile().getTextureRegion(),
                     tObj.getX(), tObj.getY() - 32,
                     tObj.getOriginX(), tObj.getOriginY(),
-                    tObj.getTextureRegion().getRegionWidth(), tObj.getTextureRegion().getRegionHeight(),
+                    tObj.getTextureRegion().getRegionWidth(),
+                    tObj.getTextureRegion().getRegionHeight(),
                     tObj.getScaleX(), tObj.getScaleY(), tObj.getRotation()
                 );
             }
         }
     }
 
-    public boolean isColliding(Rectangle entityRect) {
-        for (Rectangle wall : wallCollision) {
-            if (entityRect.overlaps(wall)) return true;
+    // =========================================================
+    // MUSIC
+    // =========================================================
+
+    private void playMusicForCurrentMap() {
+        if (currentMapName.equals("Library.tmx") || currentMapName.equals("Hidden_Room.tmx")
+            || currentMapName.equals("Old_Corridor.tmx") || currentMapName.equals("Old_Chapel.tmx")
+            || currentMapName.equals("Exit_Chamber.tmx")) {
+            AudioManager.getInstance().playBackgroundMusic("audio/Save_Room_Theme.ogg", 0.4f);
+        } else if (currentMapName.equals("Ritual_Chamber.tmx") || currentMapName.equals("Queen_Chamber.tmx")
+            || currentMapName.equals("Corridor.tmx")) {
+            AudioManager.getInstance().playBackgroundMusic("audio/The_Gauntlet.ogg", 0.2f);
+        } else {
+            AudioManager.getInstance().playBackgroundMusic("audio/The_Gauntlet.ogg", 0.1f);
         }
-        for (RectangleMapObject door : doorObjects) {
-            if (entityRect.overlaps(door.getRectangle())) return true;
-        }
-        for (PushableBlock block : pushables) {
-            if (entityRect.overlaps(block.getBounds())) return true;
-        }
-        return false;
     }
 
-    public Array<Rectangle> getWallCollision() {
-        return wallCollision;
-    }
+    // =========================================================
+    // BOSS / GUARD PATH
+    // =========================================================
 
-    public Array<Rectangle> getSkullCollision() {
-        return skullCollision;
-    }
+    private void loadBossLayer(MapLayer layer) {
+        Array<Vector2> path = null;
+        Float bossX = null, bossY = null;
 
-    public Array<Rectangle> getStoneCollision() {
-        return stoneCollision;
-    }
-    public Array<Rectangle> getFullCollision() {
-        Array<Rectangle> allHitboxes = new Array<>();
-        allHitboxes.addAll(wallCollision);
-
-        for (RectangleMapObject door : doorObjects) {
-            allHitboxes.add(door.getRectangle());
-        }
-
-        for (PushableBlock block : pushables) {
-            allHitboxes.add(block.getBounds());
-        }
-
-        return allHitboxes;
-    }
-
-    public PushableBlock getCollidingPushable(Rectangle rect) {
-        for (PushableBlock block : pushables) {
-            if (rect.overlaps(block.getBounds())) {
-                return block;
-            }
-        }
-        return null;
-    }
-
-    public String checkPortal(Rectangle entityRect) {
-        for (MapObject portal : portalObjects) {
-            if (!(portal instanceof RectangleMapObject)) {
+        for (MapObject obj : layer.getObjects()) {
+            Array<Vector2> objPath = readPath(obj);
+            if (objPath.size > 0) {
+                path = objPath;
+                if (bossX == null) { bossX = objPath.get(0).x; bossY = objPath.get(0).y; }
                 continue;
             }
-            Rectangle rect = ((RectangleMapObject) portal).getRectangle();
-            if (!entityRect.overlaps(rect)) {
-                continue;
-            }
-            String dest = portal.getName();
-            // PORTAL RIÊNG
-            if ("Old_Corridor.tmx".equals(dest) && hasFloorHideLayer()) {
-                if (!isFloorHideOpened()) {
-                    return null;
-                }
-            }
-            // PORTAL THƯỜNG
-            else {
-
-                for (RectangleMapObject door : doorObjects) {
-                    if (rect.overlaps(door.getRectangle())) {
-                        return null;
-                    }
-                }
-            }
-            // NHẤN SPACE / ENTER
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
-                || Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-                if (dest != null && dest.endsWith(".tmx")) {
-                    return "map/" + dest;
-                }
-            }
-        }
-        return null;
-    }
-
-    private boolean isFloorHideOpened() {
-        if (map == null) return false;
-
-        MapLayer hideLayer = map.getLayers().get("Floor_Hide");
-        if (hideLayer == null) return false;
-
-        return !hideLayer.isVisible();
-    }
-    private boolean hasFloorHideLayer() {
-        return map != null && map.getLayers().get("Floor_Hide") != null;
-    }
-
-    public void openDoor(String doorName) {
-        if (doorName == null) return;
-
-        String target = doorName.toLowerCase();
-
-        if (target.contains("hidden")) {
-            openHiddenRoom();
-            return;
-        }
-
-        boolean alreadyOpened = openedDoors.contains(stateKey(doorName));
-
-        if (!alreadyOpened) {
-            AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.5f);
-            openedDoors.add(stateKey(doorName));
-            applyDoorOpened(doorName);
-
-            System.out.println("🚪 Door opened: " + doorName);
-        }
-    }
-    private boolean shouldSaveCheckpointForDoor(String doorName) {
-        if (doorName == null) return false;
-        String n = doorName.toLowerCase();
-        return n.contains("jail")
-            || n.contains("chest")
-            || n.contains("gold_key")
-            || n.contains("hidden")
-            || n.contains("puzzle");
-    }
-    private void applyDoorOpened(String doorName) {
-        if (doorName == null) return;
-
-        String target = doorName.toLowerCase();
-
-        for (int i = doorObjects.size - 1; i >= 0; i--) {
-            String objName = doorObjects.get(i).getName();
-            if (objName == null) continue;
-
-            String current = objName.toLowerCase();
-            if (current.contains(target) || target.contains(current)) {
-                System.out.println("Removed door collision: " + objName);
-                doorObjects.removeIndex(i);
+            if (obj instanceof RectangleMapObject) {
+                Rectangle r = ((RectangleMapObject) obj).getRectangle();
+                bossX = r.x; bossY = r.y;
+            } else if (obj instanceof PointMapObject) {
+                bossX = ((PointMapObject) obj).getPoint().x;
+                bossY = ((PointMapObject) obj).getPoint().y;
+            } else if (obj instanceof TiledMapTileMapObject) {
+                TiledMapTileMapObject t = (TiledMapTileMapObject) obj;
+                bossX = t.getX(); bossY = t.getY() - 32f;
             }
         }
 
-        hideDoorObjectInLayer("Door", doorName);
-        hideDoorObjectInLayer("Doors", doorName);
-        hideDoorObjectInLayer("Jail", doorName);
+        if (path != null && path.size > 0) bosses.add(new Boss(0, 0, path));
+        else if (bossX != null && bossY != null) bosses.add(new Boss(bossX, bossY, null));
+    }
 
-        for (Door door : doors) {
-            if (door.getName() != null && door.getName().equals(doorName)) {
-                door.open();
-                Rectangle b = door.getBounds();
-                int tileX = Math.round(b.x / 32f);
-                int tileY = Math.round(b.y / 32f);
+    private Array<Vector2> readPath(MapObject obj) {
+        Array<Vector2> path = new Array<>();
+        if (obj instanceof PolylineMapObject) {
+            float[] v = ((PolylineMapObject) obj).getPolyline().getTransformedVertices();
+            for (int i = 0; i < v.length; i += 2) path.add(new Vector2(v[i], v[i + 1]));
+        } else if (obj instanceof PolygonMapObject) {
+            float[] v = ((PolygonMapObject) obj).getPolygon().getTransformedVertices();
+            for (int i = 0; i < v.length; i += 2) path.add(new Vector2(v[i], v[i + 1]));
+        }
+        return path;
+    }
 
-                if (doorCloseLayer != null) {
-                    for (int i = 0; i < 2; i++) {
-                        doorCloseLayer.setCell(tileX, tileY + i, null);
-                    }
-                }
+    // =========================================================
+    // VISIBILITY HELPERS
+    // =========================================================
 
-                if (doorOpenLayer != null) {
-                    doorOpenLayer.setVisible(true);
-                }
-                break;
-            }
+    private void hideDoorObjectInLayer(String layerName, String doorName) {
+        if (map == null || doorName == null) return;
+        MapLayer layer = map.getLayers().get(layerName);
+        if (layer == null) return;
+        for (MapObject obj : layer.getObjects()) {
+            if (doorName.equals(obj.getName())) obj.setVisible(false);
         }
     }
-    public void markPuzzleStepSolved(String stepName) {
-        if (stepName == null || stepName.isEmpty()) return;
 
-        solvedPuzzleSteps.add(stateKey(stepName));
-        saveProgressCheckpointHere();
-
-        System.out.println("Puzzle step solved: " + currentMapName + " / " + stepName);
-    }
-
-    public boolean isPuzzleStepSolved(String stepName) {
-        if (stepName == null || stepName.isEmpty()) return false;
-        return solvedPuzzleSteps.contains(stateKey(stepName));
-    }
-
-    public void openHiddenRoom() {
-        boolean alreadyOpened = openedHiddenRooms.contains(stateKey("hidden_room"));
-
-        if (!alreadyOpened) {
-            AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.5f);
-        }
-        saveProgressCheckpointHere();
-        openedHiddenRooms.add(stateKey("hidden_room"));
-        applyHiddenRoomOpened();
-        System.out.println("✅ Hidden room opened");
-    }
-    private void applyHiddenRoomOpened() {
+    private void setLayerVisibleSafe(String layerName, boolean visible) {
         if (map == null) return;
-        MapLayer hideFloor = map.getLayers().get("Hide_Floor");
-        if (hideFloor != null) {
-            hideFloor.setVisible(false);
-        }
-
-        MapLayer hiddenCollisionLayer = map.getLayers().get("Hidden_Room_Collision");
-        if (hiddenCollisionLayer != null) {
-            hiddenCollisionLayer.setVisible(false);
-
-            for (MapObject obj : hiddenCollisionLayer.getObjects()) {
-                if (obj instanceof RectangleMapObject) {
-                    Rectangle rectToRemove = ((RectangleMapObject) obj).getRectangle();
-
-                    for (int i = wallCollision.size - 1; i >= 0; i--) {
-                        Rectangle wall = wallCollision.get(i);
-                        if (wall.overlaps(rectToRemove)
-                            || rectToRemove.overlaps(wall)
-                            || sameRect(wall, rectToRemove)) {
-                            wallCollision.removeIndex(i);
-                        }
-                    }
-                }
-            }
-        }
+        MapLayer layer = map.getLayers().get(layerName);
+        if (layer != null) layer.setVisible(visible);
     }
 
-    private void applySavedMapState() {
-        if (openedHiddenRooms.contains(stateKey("hidden_room"))) {
-            applyHiddenRoomOpened();
-        }
-
-        String prefix = currentMapName + ":";
-
-        for (String key : openedDoors) {
-            if (key.startsWith(prefix)) {
-                String doorName = key.substring(prefix.length());
-                applyDoorOpened(doorName);
-            }
-        }
-
-        for (String key : collectedKeys) {
-            if (key.startsWith(prefix)) {
-                String keyName = key.substring(prefix.length());
-                hideCollectedKey(keyName);
-            }
-        }
-    }
-    public boolean isHiddenRoomOpened() {
-        return openedHiddenRooms.contains(stateKey("hidden_room"));
+    private TiledMapTileLayer getTileLayerSafe(String name) {
+        if (map == null) return null;
+        MapLayer layer = map.getLayers().get(name);
+        return (layer instanceof TiledMapTileLayer) ? (TiledMapTileLayer) layer : null;
     }
 
-    public void markKeyCollected(String keyName) {
-        if (keyName == null || keyName.isEmpty()) return;
-        collectedKeys.add(stateKey(keyName));
-        for (Key key : keys) {
-            if (keyName.equals(key.getName())) {
-                key.collect();
-                break;
-            }
-        }
-    }
-
-    private void hideCollectedKey(String keyName) {
-        if (keyName == null) return;
-
-        for (Key key : keys) {
-            if (keyName.equals(key.getName())) {
-                key.collect();
-                break;
-            }
-        }
-
-        MapLayer keyLayer = map.getLayers().get("Keys");
-        if (keyLayer != null) {
-            for (MapObject obj : keyLayer.getObjects()) {
-                if (keyName.equals(obj.getName())) {
-                    obj.setVisible(false);
-                }
-            }
-        }
-        if ("Library.tmx".equalsIgnoreCase(currentMapName)
-            && "gold_key".equalsIgnoreCase(keyName)) {
-            showLibraryChestNoKey();
-        }
-    }
-    public boolean isKeyCollected(String keyName) {
-        if (keyName == null || keyName.isEmpty()) return false;
-        return collectedKeys.contains(stateKey(keyName));
-    }
+    // =========================================================
+    // CHEST (Library specific)
+    // =========================================================
 
     public void showLibraryChestWithKey() {
         if (!"Library.tmx".equalsIgnoreCase(currentMapName)) return;
-
-        setLayerVisibleSafe("Chest_Close", false);
-        setLayerVisibleSafe("Chest_Open", false); // nếu map cũ còn layer này thì tắt luôn
-        setLayerVisibleSafe("Chest_Open_Key", true);
+        setLayerVisibleSafe("Chest_Close",       false);
+        setLayerVisibleSafe("Chest_Open",        false);
+        setLayerVisibleSafe("Chest_Open_Key",    true);
         setLayerVisibleSafe("Chest_Open_No_Key", false);
     }
 
     public void showLibraryChestNoKey() {
         if (!"Library.tmx".equalsIgnoreCase(currentMapName)) return;
-
-        setLayerVisibleSafe("Chest_Close", false);
-        setLayerVisibleSafe("Chest_Open", false); // nếu map cũ còn layer này thì tắt luôn
-        setLayerVisibleSafe("Chest_Open_Key", false);
+        setLayerVisibleSafe("Chest_Close",       false);
+        setLayerVisibleSafe("Chest_Open",        false);
+        setLayerVisibleSafe("Chest_Open_Key",    false);
         setLayerVisibleSafe("Chest_Open_No_Key", true);
     }
 
-    private void setLayerVisibleSafe(String layerName, boolean visible) {
-        if (map == null) return;
+    // =========================================================
+    // COLLISION GETTERS — truyền data vào MapCollisionHelper static
+    // =========================================================
 
-        MapLayer layer = map.getLayers().get(layerName);
-        if (layer != null) {
-            layer.setVisible(visible);
-        }
+    public boolean isColliding(Rectangle entityRect) {
+        return MapCollisionHelper.isColliding(entityRect, wallCollision, doorObjects, pushables);
     }
 
-
-    private void hideDoorObjectInLayer(String layerName, String doorName) {
-        if (map == null || doorName == null) return;
-
-        MapLayer visualDoorLayer = map.getLayers().get(layerName);
-        if (visualDoorLayer == null) return;
-
-        for (MapObject obj : visualDoorLayer.getObjects()) {
-            String objName = obj.getName();
-            if (objName != null && objName.equals(doorName)) {
-                obj.setVisible(false);
-            }
-        }
-    }
-    private boolean sameRect(Rectangle a, Rectangle b) {
-        return Math.abs(a.x - b.x) < 0.01f
-            && Math.abs(a.y - b.y) < 0.01f
-            && Math.abs(a.width - b.width) < 0.01f
-            && Math.abs(a.height - b.height) < 0.01f;
-    }
-    public void saveProgressCheckpointHere() {
-        if (currentMapName == null || currentMapName.isEmpty()) return;
-
-        if (hasProgressCheckpoint && currentMapName.equals(progressCheckpointMapName)) {
-            return;
-        }
-
-        hasProgressCheckpoint = true;
-        progressCheckpointMapName = currentMapName;
-
-        System.out.println("Checkpoint saved at solved puzzle: " + progressCheckpointMapName);
+    public Array<Rectangle> getFullCollision() {
+        return MapCollisionHelper.getFullCollision(wallCollision, doorObjects, pushables);
     }
 
-    public boolean hasProgressCheckpoint() {
-        return hasProgressCheckpoint;
+    public PushableBlock getCollidingPushable(Rectangle rect) {
+        return MapCollisionHelper.getCollidingPushable(rect, pushables);
     }
 
-    public String getProgressCheckpointMapName() {
-        return progressCheckpointMapName;
-    }
+    // Raw data getters — cho Guard, Boss, PuzzleLibrary dùng trực tiếp
+    public Array<Rectangle>          getWallCollision()  { return wallCollision; }
+    public Array<Rectangle>          getStoneCollision() { return stoneCollision; }
+    public Array<Rectangle>          getSkullCollision() { return skullCollision; }
+    public Array<RectangleMapObject> getDoorObjects()    { return doorObjects; }
 
-    public void clearProgressCheckpoint() {
-        hasProgressCheckpoint = false;
-        progressCheckpointMapName = null;
-    }
-    public void clearAllProgressState() {
-        openedDoors.clear();
-        openedHiddenRooms.clear();
-        collectedKeys.clear();
-        solvedPuzzleSteps.clear();
-        savedPushablePositions.clear();
-        savedSpikeStates.clear();
-        savedLeverStates.clear();
-        clearProgressCheckpoint();
-    }
+    // =========================================================
+    // STATE GETTERS — delegate sang MapStateManager
+    // =========================================================
 
+    public boolean hasProgressCheckpoint()        { return state.hasProgressCheckpoint(); }
+    public String  getProgressCheckpointMapName() { return state.getProgressCheckpointMapName(); }
+    public void    clearProgressCheckpoint()      { state.clearProgressCheckpoint(); }
+    public void    clearAllProgressState()        { state.clearAllProgressState(); }
+    public void    saveProgressCheckpointHere()   { state.saveProgressCheckpointHere(currentMapName); }
 
-    public void updateFloorHide(Player player) {
-        if (map == null) return;
+    // =========================================================
+    // GENERAL GETTERS
+    // =========================================================
 
-        MapLayer hideLayer = map.getLayers().get("Floor_Hide");
-        if (hideLayer == null) return;
-        // Không có trigger thì hầm mặc định đóng
-        if (hideTrigger == null) {
-            hideLayer.setVisible(true);
-            return;
-        }
-        boolean triggeredByPlayer = false;
-        boolean triggeredByPushable = false;
-        // Player đứng lên trigger thì hầm mở tạm thời
-        if (player != null && player.hitbox.overlaps(hideTrigger)) {
-            triggeredByPlayer = true;
-        }
-        // Cocoon / PushableBlock đứng lên trigger thì coi là giải xong puzzle
-        for (PushableBlock block : pushables) {
-            Rectangle b = block.getBounds();
-
-            float centerX = b.x + b.width / 2f;
-            float centerY = b.y + b.height / 2f;
-
-            if (hideTrigger.contains(centerX, centerY)) {
-                triggeredByPushable = true;
-                break;
-            }
-        }
-
-        boolean triggered = triggeredByPlayer || triggeredByPushable;
-
-        // Có player hoặc cocoon đè lên -> ẩn Floor_Hide -> hầm mở
-        // Không có gì đè lên -> hiện Floor_Hide -> hầm đóng
-        hideLayer.setVisible(!triggered);
-
-        // Chỉ phát âm thanh một lần khi vừa chuyển sang triggered
-        if (triggered && !wasFloorHideTriggered) {
-            AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.6f);
-        }
-        wasFloorHideTriggered = triggered;
-
-        // Chỉ khi COCoon/block nằm trên trigger mới lưu checkpoint.
-        // Player tự đứng lên trigger chỉ là mở tạm, không được tính là giải puzzle.
-        if (triggeredByPushable) {
-            NotificationManager.getInstance().show("Giải đố thành công\nĐã mở ra lối đi bí mật");
-            NotificationManager.getInstance().show("Checkpoint mới được lưu thành Disposal");
-            saveProgressCheckpointHere();
-        }
-    }
-    private void resetFloorHideToClosed() {
-        if (map == null) return;
-        MapLayer hideLayer = map.getLayers().get("Floor_Hide");
-        if (hideLayer != null) {
-            hideLayer.setVisible(true);
-        }
-    }
-    public void rememberPushableState(PushableBlock block) {
-        if (block == null) return;
-
-        Rectangle b = block.getBounds();
-        savedPushablePositions.put(pushableStateKey(block), new Vector2(b.x, b.y));
-        AudioManager.getInstance().playSoundEffect("audio/Cocoon_Push.wav", 0.8f);
-    }
-    private void applySavedPushableState() {
-        for (PushableBlock block : pushables) {
-            Vector2 saved = savedPushablePositions.get(pushableStateKey(block));
-            if (saved != null) {
-                block.setPosition(saved.x, saved.y);
-            }
-        }
-    }
-    public void clearPushableStateForCurrentMap() {
-        String prefix = currentMapName + ":pushable:";
-        Array<String> keysToRemove = new Array<>();
-
-        for (String key : savedPushablePositions.keys()) {
-            if (key.startsWith(prefix)) {
-                keysToRemove.add(key);
-            }
-        }
-
-        for (String key : keysToRemove) {
-            savedPushablePositions.remove(key);
-        }
-    }
-    public void resetPushables() {
-        clearPushableStateForCurrentMap();
-
-        for (PushableBlock block : pushables) {
-            block.resetPosition();
-        }
-
-        updateFloorHide(null);
-    }
-    public void rememberSpikeState(Spike spike) {
-        if (spike == null || spike.mapObject == null) return;
-
-        savedSpikeStates.put(
-            tileObjectStateKey("spike", spike.mapObject),
-            spike.isUp
-        );
-    }
-    public void rememberLeverState(Lever lever) {
-        if (lever == null || lever.mapObject == null) return;
-
-        savedLeverStates.put(
-            tileObjectStateKey("lever", lever.mapObject),
-            lever.isPulled
-        );
-        AudioManager.getInstance().playSoundEffect("audio/Lever_Sound.wav", 0.5f);
-    }
-    private void applySavedSpikeLeverState() {
-        for (Spike spike : spikes) {
-            if (spike == null || spike.mapObject == null) continue;
-
-            Boolean savedIsUp = savedSpikeStates.get(tileObjectStateKey("spike", spike.mapObject));
-            if (savedIsUp != null && spike.isUp != savedIsUp) {
-                spike.toggle(map);
-            }
-        }
-
-        for (Lever lever : levers) {
-            if (lever == null || lever.mapObject == null) continue;
-
-            Boolean savedPulled = savedLeverStates.get(tileObjectStateKey("lever", lever.mapObject));
-            if (savedPulled != null && lever.isPulled != savedPulled) {
-                lever.toggle(map);
-            }
-        }
-    }
-    public void clearSpikeLeverStateForCurrentMap() {
-        String spikePrefix = currentMapName + ":spike:";
-        String leverPrefix = currentMapName + ":lever:";
-
-        Array<String> spikeKeysToRemove = new Array<>();
-        for (String key : savedSpikeStates.keys()) {
-            if (key.startsWith(spikePrefix)) {
-                spikeKeysToRemove.add(key);
-            }
-        }
-        for (String key : spikeKeysToRemove) {
-            savedSpikeStates.remove(key);
-        }
-
-        Array<String> leverKeysToRemove = new Array<>();
-        for (String key : savedLeverStates.keys()) {
-            if (key.startsWith(leverPrefix)) {
-                leverKeysToRemove.add(key);
-            }
-        }
-        for (String key : leverKeysToRemove) {
-            savedLeverStates.remove(key);
-        }
-    }
-    public String getCurrentMapName() {
-        return currentMapName;
-    }
-    public String getLastMapName() {
-        return lastMapName;
-    }
-    public TiledMap getMap() {
-        return map;
-    }
+    public String               getCurrentMapName()  { return currentMapName; }
+    public String               getLastMapName()     { return lastMapName; }
+    public TiledMap             getMap()             { return map; }
+    public Array<PushableBlock> getPushables()       { return pushables; }
+    public Array<Key>           getKeys()            { return keys; }
+    public Array<Door>          getDoors()           { return doors; }
+    public Rectangle            getHideTrigger()     { return hideTrigger; }
+    public Array<RectangleMapObject> getInteractPoints() { return interactPoints; }
 
     public float getMapWidth() {
-        int width = map.getProperties().get("width", Integer.class);
-        int tileWidth = map.getProperties().get("tilewidth", Integer.class);
-        return width * tileWidth;
+        int w = map.getProperties().get("width",     Integer.class);
+        int t = map.getProperties().get("tilewidth", Integer.class);
+        return w * t;
     }
 
     public float getMapHeight() {
-        int height = map.getProperties().get("height", Integer.class);
-        int tileHeight = map.getProperties().get("tileheight", Integer.class);
-        return height * tileHeight;
+        int h = map.getProperties().get("height",     Integer.class);
+        int t = map.getProperties().get("tileheight", Integer.class);
+        return h * t;
     }
 
     public float getSortY() {
@@ -1149,30 +837,13 @@ public class MapManager {
         return (y != null) ? y : 0;
     }
 
-    public Array<RectangleMapObject> getInteractPoints() {
-        return interactPoints;
-    }
-
-    public Array<PushableBlock> getPushables() {
-        return pushables;
-    }
-
-    public Array<Key> getKeys() {
-        return keys;
-    }
-
-    public Array<Door> getDoors() {
-        return doors;
-    }
-
-    public Rectangle getHideTrigger() {
-        return hideTrigger;
-    }
+    // =========================================================
+    // DISPOSE
+    // =========================================================
 
     public void dispose() {
-        // NGẮT NHẠC NỀN KHI MAP MANAGER BỊ HỦY
         AudioManager.getInstance().stopBackgroundMusic();
-        if (map != null) map.dispose();
+        if (map != null)      map.dispose();
         if (renderer != null) renderer.dispose();
     }
 }
