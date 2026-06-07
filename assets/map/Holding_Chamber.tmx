@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="26" nextobjectid="138">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="16" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="26" nextobjectid="139">
  <tileset firstgid="1" source="wallfloor.tsx"/>
  <layer id="1" name="Wall" width="16" height="10" locked="1">
   <data encoding="csv">
@@ -15,11 +15,12 @@
 44,44,44,8,2,2,2,4,0,1,2,2,2,7,44,44
 </data>
  </layer>
- <objectgroup id="25" name="ExaminePoints">
+ <objectgroup id="25" name="ExaminePoints" locked="1">
   <object id="136" name="holding_skull" x="192.453" y="100.734" width="34.1007" height="28.6132"/>
   <object id="137" name="holding_special" x="349.238" y="70.1611" width="39.1962" height="28.2212"/>
+  <object id="138" name="holding_prisoner" x="320" y="127.875" width="32.75" height="27"/>
  </objectgroup>
- <layer id="24" name="Ventilation" width="16" height="10">
+ <layer id="24" name="Ventilation" width="16" height="10" locked="1">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

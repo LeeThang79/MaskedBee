@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator; // THÊM IMPORT
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
 
@@ -35,11 +34,11 @@ public class DialogueManager {
         this.dialogueLines = new Array<>();
 
         this.font = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
-        this.font.getData().setScale(0.50f); // Chỉnh size cho lời thoại vừa vặn
+        this.font.getData().setScale(0.45f); // Chỉnh size cho lời thoại vừa vặn
 
         // Font nhỏ cho Tên nhân vật và Gợi ý phím bấm
         this.smallFont = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
-        this.smallFont.getData().setScale(0.40f);
+        this.smallFont.getData().setScale(0.35f);
     }
 
     // HÀM KÍCH HOẠT HỘI THOẠI
@@ -144,19 +143,12 @@ public class DialogueManager {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        /*
-        // Giữ lại cỡ chữ cũ đang dùng
-        float originalScale = font.getData().scaleX;
-
-        // Chữ cho khung nhỏ (Có thể ép nhỏ font xuống một chút cho đẹp)
-        font.getData().setScale(originalScale * 0.8f);
-        // Vì font bạn đã ép qua Hiero nên giờ gõ tiếng Việt có dấu vô tư!
-
-        // Trả lại cỡ chữ bình thường và vẽ chữ cho khung to
-        font.getData().setScale(originalScale);
-        //Dòng mới: Tự động xuống dòng khi chữ chạm vách khung thoại
-        */
-        smallFont.draw(batch, "Cô gái bí ẩn", smallBoxX + 10f, smallBoxY + smallBoxHeight - 4f);
+        String currentLine = dialogueLines.get(currentLineIndex);
+        if (currentLine.contains("Tôi đã giấu được thứ này khỏi bọn lính gác")) {
+            smallFont.draw(batch, "Tù nhân", smallBoxX + 10f, smallBoxY + smallBoxHeight - 4f);
+        } else {
+            smallFont.draw(batch, "Cô gái bí ẩn", smallBoxX + 10f, smallBoxY + smallBoxHeight - 4f);
+        }
 
         font.draw(
             batch,
@@ -177,24 +169,6 @@ public class DialogueManager {
                     smallFont.draw(batch, "Bấm G để tiếp tục", promptX, promptY);
                 }
             }
-            /*
-            // Thu nhỏ font một chút
-            font.getData().setScale(originalScale * 0.75f);
-
-            // Toạ độ X: Lùi lại khoảng 95 pixel so với mép phải khung to (Vừa đủ cho cụm chữ)
-            float promptX = boxX + boxWidth - 90f;
-            // Toạ độ Y: Cách cạnh đáy khung to 15 pixel
-            float promptY = boxY + 15f;
-
-            // Tạo hiệu ứng nhấp nháy theo thời gian thực (Cứ 500ms đổi trạng thái ẩn/hiện)
-            if ((System.currentTimeMillis() / 500) % 2 == 0) {
-                font.draw(batch, "Bấm G để tiếp tục", promptX, promptY);
-            }
-
-            // Trả lại scale gốc để tránh lỗi size font ở frame tiếp theo
-            font.getData().setScale(originalScale);
-
-             */
         }
         batch.end();
     }

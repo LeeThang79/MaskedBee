@@ -2,8 +2,6 @@ package game.maskedbee.main;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
-
 
 public class AudioManager {
     private static AudioManager instance;
@@ -11,10 +9,10 @@ public class AudioManager {
     private Music backgroundMusic;
     private String currentMusicPath = "";
 
-    // Các biến phục vụ tính năng Fade (Nhỏ dần / To dần)
+    // Các biến phục vụ tính năng Fade
     private float targetVolume = 0.5f;     // Âm lượng đích mong muốn
     private float currentVolume = 0.5f;    // Âm lượng hiện tại đang phát
-    private float fadeSpeed = 1.5f;        // Tốc độ fade (càng cao càng nhanh, 2.0f mất khoảng 0.5 giây)
+    private float fadeSpeed = 1.5f;        // Tốc độ fade
 
     private boolean isFadingOut = false;   // Cờ đánh dấu đang nhỏ dần để tắt
     private String nextMusicPath = "";     // Lưu bài nhạc tiếp theo sẽ phát sau khi bài cũ tắt hẳn
@@ -28,9 +26,7 @@ public class AudioManager {
         return instance;
     }
 
-    /**
-     * Hàm phát nhạc nền có hỗ trợ Fade Out bài cũ (nếu có)
-     */
+    //Hàm phát nhạc nền
     public void playBackgroundMusic(String filePath, float volume) {
         this.targetVolume = volume;
 
@@ -69,11 +65,6 @@ public class AudioManager {
         }
     }
 
-    /**
-     * HÀM QUAN TRỌNG: Bạn CẦN gọi hàm này trong vòng lặp render chính của game
-     * để cập nhật âm lượng nhỏ dần/to dần theo thời gian thực.
-     * @param deltaTime Thời gian trôi qua giữa các khung hình (Gdx.graphics.getDeltaTime())
-     */
     public void update(float deltaTime) {
         if (backgroundMusic == null) return;
 
@@ -110,9 +101,7 @@ public class AudioManager {
         }
     }
 
-    /**
-     * Dừng nhạc lập tức và kích hoạt hiệu ứng nhỏ dần
-     */
+    //Dừng nhạc lập tức và kích hoạt hiệu ứng nhỏ dần
     public void fadeOutAndStop() {
         if (backgroundMusic != null && backgroundMusic.isPlaying()) {
             isFadingOut = true;
@@ -153,7 +142,6 @@ public class AudioManager {
 
     public void setVolume(float volume) {
         this.targetVolume = volume;
-        // Đoạn code chỉnh âm thanh thực tế của bạn
         if (backgroundMusic != null) {
             backgroundMusic.setVolume(volume);
         }
@@ -163,19 +151,12 @@ public class AudioManager {
         stopBackgroundMusic();
     }
 
-    /**
-     * Hàm phát hiệu ứng âm thanh ngắn (SFX) ngay lập tức khi tương tác puzzle, gạt cần...
-     * @param filePath Đường dẫn file âm thanh trong thư mục assets (Ví dụ: "audio/puzzle_wrong.wav")
-     * @param volume Âm lượng từ 0.0f (tắt) đến 1.0f (to nhất)
-     */
+    //Hàm phát hiệu ứng âm thanh ngắn (SFX) ngay lập tức
     public void playSoundEffect(String filePath, float volume) {
         try {
-            // Nạp file âm thanh ngắn từ thư mục assets vào RAM và phát ngay lập tức không độ trễ
             com.badlogic.gdx.audio.Sound sound = Gdx.audio.newSound(Gdx.files.internal(filePath));
             sound.play(volume);
 
-            // Lưu ý: Đối với các hiệu ứng âm thanh ngắn phát xong rồi thôi, LibGDX sẽ tự giải phóng.
-            // Nếu sau này tần suất phát quá nhiều, bạn nên dùng AssetManager để tối ưu quản lý bộ nhớ.
         } catch (Exception e) {
             Gdx.app.error("AudioManager", "Không thể phát hiệu ứng âm thanh: " + filePath, e);
         }

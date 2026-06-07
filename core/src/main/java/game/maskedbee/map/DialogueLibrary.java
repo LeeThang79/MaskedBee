@@ -19,7 +19,7 @@ public class DialogueLibrary {
         examineDialogues.put("ritual_post",new String[]{"Những cây cột này đủ dày để giấu đi bóng của mình, nhưng chúng chẳng mang lại chút cảm giác an toàn nào."});
         examineDialogues.put("ritual_door", new String[]{
             "Cửa bị khóa. Mình cần tìm chìa khóa để mở.\n"+
-            "Mình có thể nghe thấy tiếng ho vọng ra từ phía bên kia." + "Có ai đó đang ở trong."
+            "Mình có thể nghe thấy tiếng ho vọng ra từ phía bên kia. " + "Có ai đó đang ở trong."
         });
 
         // --- MAP 3: HOLDING CHAMBER ---
@@ -29,6 +29,7 @@ public class DialogueLibrary {
             "...Lũ lính gác cứ liên tục phát ra những tiếng cạch cạch kỳ dị bên ngoài thanh sắt...",
             "Bàn tay tôi trông không còn bình thường nữa. Tái nhợt. Các mạch máu nổi rõ và đậm màu hơn trước.\""
         });
+        examineDialogues.put("holding_prisoner", new String[]{"Tôi đã giấu được thứ này khỏi bọn lính gác... Hãy tìm đến cỗ máy đó và phá hủy tất cả!"});
 
         // --- MAP 4: DISPOSAL PIT ---
         examineDialogues.put("disposal_small_cocoon", new String[]{
@@ -40,7 +41,7 @@ public class DialogueLibrary {
 
         // --- MAP 4.5.1: OLD CHAPEL ---
         examineDialogues.put("chapel_statue", new String[]{
-            "Một bức tượng không đầu."
+            "Một bức tượng không đầu, chân đế loang lổ những vũng sáp quánh đặc. Thứ sáp ở đây không giống bất kỳ nơi nào khác."
         });
         examineDialogues.put("chapel_coffin", new String[]{
             "Chiếc quan tài này đã được niêm phong kiên cố."
@@ -70,11 +71,11 @@ public class DialogueLibrary {
             "Mình có thể đẩy quyển sách này."
         });
         examineDialogues.put("library_chest", new String[]{
-            "Một chiếc rương. Cảm giác nó chứa đựng một điều gì đó rất quan trọng. \nMình cần tìm cách mở nó."
+            "Một chiếc rương. Cảm giác nó chứa đựng một điều gì đó rất quan trọng. Mình cần tìm cách mở nó."
         });
         examineDialogues.put("library_special", new String[]{
             "Một ghi chép bí ẩn với nét chữ viết tay cẩn thận\n\"Tình trạng của ong chúa tồi tệ đi theo từng giờ. Lũ ong bắt đầu trở nên bồn chồn mỗi khi nó im lặng... ",
-            "Chúng ta đang cạn kiệt thời gian.\nTôi sẽ không để tất cả những thứ này thối rữa cùng với nó.\nPhải có một vật chứa khác tương thích. Chắc chắn phải có.\""
+            "Chúng ta đang cạn kiệt thời gian. Tôi sẽ không để tất cả những thứ này thối rữa cùng với nó.\nPhải có một vật chứa khác tương thích. Chắc chắn phải có.\""
         });
 
         // --- MAP 5.5: HIDDEN ROOM ---
@@ -87,7 +88,7 @@ public class DialogueLibrary {
         examineDialogues.put("hidden_special", new String[]{
             "Một trang nhật ký được kẹp vội bên trong cuốn sách cũ dính đầy sáp nến",
             "\"Servais đã cảnh cáo không khi ẩm thấp sẽ khiến cơn ho dữ dội hơn, nhưng mình lại thấy không khi nơi đây dễ chịu hơn lạ thường...",
-            "Sự tĩnh lặng trên kia khiến mình cảm thấy ngột ngạt. \nCó tiếng động vang lên bên dưới những phiến đá. ",
+            "Sự tĩnh lặng trên kia khiến mình cảm thấy ngột ngạt. \nCó tiếng động vang lên bên dưới những phiến đá...",
             "Nghe nó gần giống như một tiếng ngân nga khiến mình trở nên bình tâm ơn.\""
         });
 
@@ -116,8 +117,8 @@ public class DialogueLibrary {
         // --- SPECIAL: EXIT CHAMBER ---
         examineDialogues.put("exit_special", new String[]{
             "Một trang giấy với nét chữ viết tay cẩn thận, tao nhã\n\"Những kẻ khác gọi nó là kẻ mục nát từ rất lâu...",
-            "Nó đã biết lắng nghe tiếng nói bên dưới thánh đường từ trước khi tôi bắt đầu các bước chuẩn bị. ",
-            "Tôi chỉ đơn giản là chỉ cho nó cách để đáp lại.\\\""
+            "Nó đã biết lắng nghe tiếng nói bên dưới thánh đường từ trước khi tôi bắt đầu các bước chuẩn bị...",
+            "Tôi chỉ đơn giản là chỉ cho nó cách để đáp lại.\""
         });
 
 
@@ -125,6 +126,7 @@ public class DialogueLibrary {
         introDialogues.put("new_game", new String[]{"Tại sao mình lại ở nơi này? Phải tìm đường thoát khỏi đây..."});
         introDialogues.put("Holding", new String[]{"Có người ở đây. Mình phải cứu họ."});
         introDialogues.put("Disposal", new String[]{"Thứ đỏ đỏ đằng xa kia trông như 1 chiếc công tắc.\nMình phải đẩy những cái kén qua một bên."});
+        introDialogues.put("Ritual", new String[]{"Quái vật!! Mình không được để chúng bắt. \nVết máu kia có lẽ dẫn tới lối thoát..."});
     }
 
     // Hàm lấy thoại Examine

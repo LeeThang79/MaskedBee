@@ -76,7 +76,7 @@ public class StoryManager {
 
     public void checkMapEnterEvent(String mapName, DialogueManager dialogueManager) {
         // Chỉ quét xem mapName có chứa từ khóa (như Holding, Disposal) không
-        for (String key : new String[]{"Holding", "Disposal"}) {
+        for (String key : new String[]{"Holding", "Disposal", "Ritual"}) {
             if (mapName.contains(key) && !seenIntros.contains(key)) {
                 dialogueManager.startDialogue(DialogueLibrary.getIntroText(key));
                 seenIntros.add(key);

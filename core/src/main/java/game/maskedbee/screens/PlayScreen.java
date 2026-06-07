@@ -86,11 +86,11 @@ public class PlayScreen implements Screen {
 
         // 1. Tạo font cho Tiêu đề (Size to nhất)
         this.titleFont = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
-        this.titleFont.getData().setScale(1.2f);
+        this.titleFont.getData().setScale(1.0f);
 
         // 2. Tạo font cho Menu (Size vừa)
         this.menuFont = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));
-        this.menuFont.getData().setScale(0.8f);
+        this.menuFont.getData().setScale(0.7f);
 
         // 3. Chữ đếm ngược (Size nhỏ hơn xíu)
         this.font = new BitmapFont(Gdx.files.internal("MaskedBee.fnt"));

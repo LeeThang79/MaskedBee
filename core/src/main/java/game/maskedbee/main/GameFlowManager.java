@@ -62,7 +62,7 @@ public class GameFlowManager {
             if (!isNearInteractObject("wax_star", "wax_control", "wax_vent", "wax_pump")) return;
 
             if (!rescuedPrisoner) {
-                NotificationManager.getInstance().show("Bạn cần giải cứu tù nhân trước.");
+                NotificationManager.getInstance().show("Bạn cần bật lửa để tương tác.");
                 return;
             }
             if (waxCountdownStarted) {
@@ -72,18 +72,18 @@ public class GameFlowManager {
 
             waxCountdownStarted = true;
             waxCountdownTimer = WAX_ESCAPE_TIME;
-            NotificationManager.getInstance().show("Phòng thí nghiệm sẽ bị tự hủy!\nHãy trốn thoát trong hai phút");
+            NotificationManager.getInstance().show("Nơi này sắp tự hủy! Hãy trốn thoát!");
             return;
         }
 
         // C. Tương tác với Nữ Hoàng (Chuyển sang UI chọn)
         if ("Queen_Chamber.tmx".equalsIgnoreCase(currentMap)) {
             if (!screen.myPlayer.hasMask) {
-                NotificationManager.getInstance().show("Bạn cần có mặt nạ trước khi nói chuyện với nữ hoàng");
+                NotificationManager.getInstance().show("Bạn cần có mặt nạ.");
                 return;
             }
             if (!screen.myPlayer.hasActivatedMask) {
-                NotificationManager.getInstance().show("Bạn cần kích hoạt mặt nạ ở Old Chapel trước");
+                NotificationManager.getInstance().show("Bạn chưa đủ điều kiện.");
                 return;
             }
             if (isNearInteractObject("queen_flower")) {

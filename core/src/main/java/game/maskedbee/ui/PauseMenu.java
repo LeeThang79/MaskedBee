@@ -99,6 +99,7 @@ public class PauseMenu {
         float centerX = screen.getCamera().position.x;
         float centerY = screen.getCamera().position.y;
 
+
         titleFont.setColor(Color.WHITE);
         titleFont.draw(screen.game.batch, "TẠM DỪNG", startX, centerY + 45, viewWidth, Align.center, false);
 
