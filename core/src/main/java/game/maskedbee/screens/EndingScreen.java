@@ -147,53 +147,58 @@ public class EndingScreen implements Screen {
     private void renderEndingText(float screenWidth, float screenHeight) {
         if ("queen".equalsIgnoreCase(endingType)) {
             titleFont.setColor(Color.GOLD);
-            drawCentered(titleFont, "ENDING 1: THE NEW QUEEN", screenWidth, screenHeight * 0.75f);
+            drawCentered(titleFont, "ENDING: ONG CHÚA", screenWidth, screenHeight * 0.75f);
             bodyFont.setColor(Color.WHITE);
-            drawCentered(bodyFont, "You accepted the Queen's offer.", screenWidth, screenHeight * 0.58f);
+            drawCentered(bodyFont, "Bạn chấp nhận trở thành nữ hoàng mới của nơi này.", screenWidth, screenHeight * 0.58f);
             bodyFont.setColor(Color.LIGHT_GRAY);
-            drawCentered(bodyFont, "You became the new ruler of the hive.", screenWidth, screenHeight * 0.52f);
+            drawCentered(bodyFont, "\"Chiếc mặt nạ không còn cảm thấy nặng nề nữa. Tôi có thể cảm nhận được từng con ong, từng tế bào, từng nhịp thở của nơi này.\"", screenWidth, screenHeight * 0.50f);
         } else if ("escape".equalsIgnoreCase(endingType)) {
             titleFont.setColor(Color.SKY);
-            drawCentered(titleFont, "ENDING 2: ESCAPE", screenWidth, screenHeight * 0.75f);
+            drawCentered(titleFont, "ENDING: GIỮ LẠI NHÂN TÍNH", screenWidth, screenHeight * 0.75f);
             bodyFont.setColor(Color.WHITE);
-            drawCentered(bodyFont, "You refused the Queen.", screenWidth, screenHeight * 0.58f);
+            drawCentered(bodyFont, "Bạn từ chối trở thành ong chúa và trốn thoát khỏi nơi này.", screenWidth, screenHeight * 0.58f);
             bodyFont.setColor(Color.LIGHT_GRAY);
-            drawCentered(bodyFont, "You escaped with your own free will.", screenWidth, screenHeight * 0.52f);
+            drawCentered(bodyFont, "\"Tôi tháo bỏ chiếc mặt nạ.\nTôi chọn bước tiếp với tư cách là một con người.\"", screenWidth, screenHeight * 0.50f);
         } else if ("boss".equalsIgnoreCase(endingType)) {
             titleFont.setColor(Color.SCARLET);
-            drawCentered(titleFont, "BAD ENDING", screenWidth, screenHeight * 0.75f);
+            drawCentered(titleFont, "BAD ENDING: BỊ BẮT GIỮ", screenWidth, screenHeight * 0.75f);
             bodyFont.setColor(Color.WHITE);
-            drawCentered(bodyFont, "The ritualer caught you.", screenWidth, screenHeight * 0.58f);
-            bodyFont.setColor(Color.DARK_GRAY);
-            drawCentered(bodyFont, "There is no return.", screenWidth, screenHeight * 0.52f);
+            drawCentered(bodyFont, "Bạn đã bị bắt giữ bởi kẻ trùm đầu.", screenWidth, screenHeight * 0.52f);
         } else if ("no_mask".equalsIgnoreCase(endingType)) {
             titleFont.setColor(Color.ORANGE);
-            drawCentered(titleFont, "ENDING: LOST WITHOUT THE MASK", screenWidth, screenHeight * 0.75f);
+            drawCentered(titleFont, "ENDING: TRỐN THOÁT", screenWidth, screenHeight * 0.75f);
             bodyFont.setColor(Color.WHITE);
-            drawCentered(bodyFont, "You left the hive without the Queen's mask.", screenWidth, screenHeight * 0.58f);
+            drawCentered(bodyFont, "Bạn trốn thoát mà chưa khám phá hết sự thật.", screenWidth, screenHeight * 0.58f);
             bodyFont.setColor(Color.LIGHT_GRAY);
-            drawCentered(bodyFont, "The truth remained forever hidden.", screenWidth, screenHeight * 0.52f);
+            drawCentered(bodyFont, "\"Tôi không quay đầu lại và cũng không tìm kiếm câu trả lời. Tôi đã tự do... nhưng tại sao vẫn nghe thấy tiếng ngân nga?\"", screenWidth, screenHeight * 0.50f);
         } else if ("lab_escape".equalsIgnoreCase(endingType)) {
             titleFont.setColor(Color.CYAN);
-            drawCentered(titleFont, "ENDING: ESCAPE FROM THE WAX LAB", screenWidth, screenHeight * 0.75f);
+            drawCentered(titleFont, "ENDING: KẺ HỦY DIỆT", screenWidth, screenHeight * 0.75f);
             bodyFont.setColor(Color.WHITE);
-            drawCentered(bodyFont, "You freed the prisoner and triggered the wax pump.", screenWidth, screenHeight * 0.58f);
+            drawCentered(bodyFont, "Bạn giải cứu tù nhân và tìm ra cách phá hủy nơi này.", screenWidth, screenHeight * 0.58f);
             bodyFont.setColor(Color.LIGHT_GRAY);
-            drawCentered(bodyFont, "The hive collapsed behind you as you escaped.", screenWidth, screenHeight * 0.52f);
+            drawCentered(bodyFont, "\"Đôi bàn tay tôi cháy sạm,\nnhưng thế giới cuối cùng đã bình yên.\"", screenWidth, screenHeight * 0.50f);
         } else if ("lab_explosion".equalsIgnoreCase(endingType)) {
             titleFont.setColor(Color.RED);
-            drawCentered(titleFont, "ENDING: MELTDOWN", screenWidth, screenHeight * 0.75f);
+            drawCentered(titleFont, "BAD ENDING: MỘT CHÚT NỮA THÔI", screenWidth, screenHeight * 0.75f);
             bodyFont.setColor(Color.WHITE);
-            drawCentered(bodyFont, "The wax lab exploded before you could escape.", screenWidth, screenHeight * 0.58f);
-            bodyFont.setColor(Color.DARK_GRAY);
-            drawCentered(bodyFont, "Your journey ends in the burning hive.", screenWidth, screenHeight * 0.52f);
+            drawCentered(bodyFont, "Tầng hầm sụp đổ trước khi bạn kịp trốn thoát.", screenWidth, screenHeight * 0.52f);
         }
     }
 
     private void drawCentered(BitmapFont targetFont, String text, float screenWidth, float y) {
-        layout.setText(targetFont, text);
-        float x = (screenWidth - layout.width) / 2f;
-        targetFont.draw(game.batch, text, x, y);
+        float maxWidth = screenWidth * 0.90f; // Xác định chiều rộng tối đa cho text
+        float x = (screenWidth - maxWidth) / 2f;
+
+        targetFont.draw(
+            game.batch,
+            text,
+            x,
+            y,
+            maxWidth,
+            Align.center, // Căn giữa các dòng chữ với nhau
+            true          // Bật tính năng tự động xuống dòng
+        );
     }
 
     @Override public void resize(int width, int height) {}

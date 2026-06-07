@@ -272,6 +272,7 @@ public class PuzzleLibrary {
         // Sai
         if (currentInput.get(index) != answer[index]) {
             System.out.println("Wrong!");
+            AudioManager.getInstance().playSoundEffect("audio/Error.wav", 0.5f);
 
             currentInput.clear();
 
@@ -301,8 +302,7 @@ public class PuzzleLibrary {
             mapManager.markPuzzleStepSolved(PHASE_1_KEY);
         }
 
-        NotificationManager.getInstance().show("Đã giải xong phần một - Rương vàng đã mở!");
-        NotificationManager.getInstance().show("Checkpoint mới được lưu thành giai đoạn một của Library");
+        NotificationManager.getInstance().show("Checkpoint mới vừa được lưu.");
 
         System.out.println("Library phase 1 solved - opened gold key chest path");
 
@@ -333,8 +333,7 @@ public class PuzzleLibrary {
         if (mapManager != null) {
             mapManager.markPuzzleStepSolved(PHASE_2_KEY);
         }
-        NotificationManager.getInstance().show("Đã giải xong phần hai - Lối đi vào phòng bí mật đã được mở!");
-        NotificationManager.getInstance().show("Checkpoint mới được lưu thành giai đoạn hai của Library");
+        NotificationManager.getInstance().show("Checkpoint mới vừa được lưu.");
         System.out.println("Library phase 2 solved - opened hidden room");
 
         currentInput.clear();

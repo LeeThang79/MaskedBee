@@ -1012,8 +1012,8 @@ public class MapManager {
         // Player tự đứng lên trigger chỉ là mở tạm, không được tính là giải puzzle.
         if (triggeredByPushable) {
             if (!hasProgressCheckpoint || !currentMapName.equals(progressCheckpointMapName)) {
-                NotificationManager.getInstance().show("Giải đố thành công\nĐã mở ra lối đi bí mật");
-                NotificationManager.getInstance().show("Checkpoint mới được lưu thành Disposal");
+                NotificationManager.getInstance().show("Lối đi bí mật đã được mở!");
+                NotificationManager.getInstance().show("Checkpoint mới vừa được lưu.");
                 saveProgressCheckpointHere();
             }
         }
