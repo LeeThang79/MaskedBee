@@ -1005,9 +1005,11 @@ public class MapManager {
         // Chỉ khi COCoon/block nằm trên trigger mới lưu checkpoint.
         // Player tự đứng lên trigger chỉ là mở tạm, không được tính là giải puzzle.
         if (triggeredByPushable) {
-            NotificationManager.getInstance().show("Giải đố thành công\nĐã mở ra lối đi bí mật");
-            NotificationManager.getInstance().show("Checkpoint mới được lưu thành Disposal");
-            saveProgressCheckpointHere();
+            if (!hasProgressCheckpoint || !currentMapName.equals(progressCheckpointMapName)) {
+                NotificationManager.getInstance().show("Giải đố thành công\nĐã mở ra lối đi bí mật");
+                NotificationManager.getInstance().show("Checkpoint mới được lưu thành Disposal");
+                saveProgressCheckpointHere();
+            }
         }
     }
     private void resetFloorHideToClosed() {
