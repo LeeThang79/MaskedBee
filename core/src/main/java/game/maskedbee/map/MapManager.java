@@ -149,7 +149,13 @@ public class MapManager {
                 if (layerName.equals("Skull_Collision")) {
                     for (MapObject obj : layer.getObjects()) {
                         if (obj instanceof RectangleMapObject) {
-                            skullCollision.add(((RectangleMapObject) obj).getRectangle());
+                            Rectangle rect = ((RectangleMapObject) obj).getRectangle();
+
+                            // Dùng riêng cho Boss kiểm tra xương có chắn tầm nhìn không
+                            skullCollision.add(rect);
+
+                            // Dùng cho Player/Boss không đi xuyên qua xương
+                            wallCollision.add(rect);
                         }
                     }
                 }
@@ -705,11 +711,11 @@ public class MapManager {
 
         if (!alreadyOpened) {
             AudioManager.getInstance().playSoundEffect("audio/Door_Open.wav", 0.5f);
-        }
-        openedDoors.add(stateKey(doorName));
-        applyDoorOpened(doorName);
+            openedDoors.add(stateKey(doorName));
+            applyDoorOpened(doorName);
 
-        System.out.println("🚪 Door opened: " + doorName);
+            System.out.println("🚪 Door opened: " + doorName);
+        }
     }
     private boolean shouldSaveCheckpointForDoor(String doorName) {
         if (doorName == null) return false;

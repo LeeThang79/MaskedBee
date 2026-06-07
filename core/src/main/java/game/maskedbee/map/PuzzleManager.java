@@ -171,6 +171,11 @@ public class PuzzleManager {
             }
 
             String keyName = key.getName();
+            // Chưa giải phase 1 thì không cho lấy gold key
+            if ("gold_key".equalsIgnoreCase(keyName) && !mapManager.isPuzzleStepSolved("library_phase_1")) {
+                NotificationManager.getInstance().show("Chiếc rương đang bị khóa.");
+                return;
+            }
 
             key.collect();
 
@@ -190,7 +195,7 @@ public class PuzzleManager {
                 mapManager.showLibraryChestWithKey();
 
                 waitingToHideLibraryKey = true;
-                libraryKeyHideTimer = 3f;
+                libraryKeyHideTimer = 0.5f;
                 NotificationManager.getInstance().show("Bạn đã nhặt được chìa khóa");
                 System.out.println("Picked gold_key. Chest will change after 3 seconds.");
             } else {

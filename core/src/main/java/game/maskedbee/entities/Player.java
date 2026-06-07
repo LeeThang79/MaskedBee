@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 public class Player extends Entity {
-    public float walkSpeed = 150f;
+    public float walkSpeed = 140f;
     public float creepSpeed = 70f;
 
     public boolean isCreeping = false;

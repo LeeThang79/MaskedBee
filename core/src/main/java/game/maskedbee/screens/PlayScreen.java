@@ -567,7 +567,7 @@ public class PlayScreen implements Screen {
         }
 
         for (Boss boss : game.map.bosses) {
-            boss.drawDebug(shapeRender);
+            boss.drawDebug(shapeRender, myPlayer);
         }
 
         shapeRender.end();
