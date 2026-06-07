@@ -313,7 +313,7 @@ public class MapManager {
         wasFloorHideTriggered = triggered;
 
         if (triggeredByPushable) {
-            if (!hasProgressCheckpoint || !currentMapName.equals(progressCheckpointMapName)) {
+            if (!hasProgressCheckpoint() || !currentMapName.equals(getProgressCheckpointMapName())) {
                 NotificationManager.getInstance().show("Lối đi bí mật đã được mở!");
                 NotificationManager.getInstance().show("Checkpoint mới vừa được lưu.");
                 saveProgressCheckpointHere();
